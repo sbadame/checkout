@@ -1,0 +1,4 @@
+Creating a checkout program that:
+    * Reads a list of books from goodreads
+    * Enables users to search for books from the list
+    * Enables users to "checkout" a book, and record the checkout in an excel spreadsheet
