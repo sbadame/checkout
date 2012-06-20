@@ -3,6 +3,7 @@
 
 import oauth2 as oauth
 import time
+import urllib
 import urlparse
 
 HTTP_OK = '200'
@@ -56,31 +57,25 @@ def authorize():
 #access_oauth_token, access_oauth_token_secret = access_token['oauth_token'], access_token['oauth_token_secret']
 #print( "access_token = %s\naccess_token_secret = %s" % (access_oauth_token, access_oauth_token_secret) )
 
+developer_key = "OWT16QIggdjflRNPeqK8Zg"
 def goodreads(methodname, params={}, method='GET'):
-    import urllib
-    consumer = oauth.Consumer(key="OWT16QIggdjflRNPeqK8Zg",
+    consumer = oauth.Consumer(key=developer_key,
                               secret="zeBhib5d7203cRD3PjnsBqbm6Wi6JeoTLIxeWmCwRdY")
     access_token = oauth.Token('D6IfrBjT8Al1yTy4zq0cA', 'J9zvylsVlKN26GTaLDAgLUcjkujN9xMvZsUvm6X4')
     client  = oauth.Client(consumer, access_token)
     body = urllib.urlencode(params)
     headers = {'content-type': 'application/x-www-form-urlencoded'}
     resp, content = client.request(site + '/' + methodname, method, body, headers)
-
     if resp['status'] != HTTP_OK:
         raise Exception('Non HTTP OK status returned: %s' % resp['status'])
 
     return content
 
-print(goodreads("api/auth_user"))
+user_id = 10281211
+
+print(goodreads("review/list", {"format":"xml", "v":2, "id":user_id, "shelf": "checkedout", "key": developer_key}))
+
+#print(goodreads("api/auth_user"))
 #print(goodreads("updates/friends.xml", {}))
 
-#
-# Example
-#
-
-#print(goodreads("shelf/add_to_shelf.xml", params={'name': 'checkedout', 'book_id':13284343}, method='POST'))
-#print(goodreads("api/auth_user", {}))
-
-#print(goodreads("updates/friends.xml", {}))
-#print()
 
