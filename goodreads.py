@@ -9,12 +9,17 @@ import xml.etree.ElementTree as ET
 HTTP_OK = '200'
 HTTP_CREATED = '201'
 
+#Config Constants
+_CHECKEDOUT_SHELF_KEY = 'CHECKEDOUT_SHELF'
+_CHECKEDIN_SHELF_KEY = 'CHECKEDIN_SHELF'
+
 CONFIG_FILE_PATH = "checkout.credentials"
 
 SITE = "http://www.goodreads.com"
 REQUEST_TOKEN_URL = "%s/oauth/request_token" % SITE
 AUTHORIZE_URL = "%s/oauth/authorize" % SITE
 ACCESS_TOKEN_URL = "%s/oauth/access_token" % SITE
+
 
 class Config(dict):
     def __init__(self, filepath, *args):
@@ -51,9 +56,19 @@ if "DEVELOPER_KEY" not in config:
 DEVELOPER_KEY = config["DEVELOPER_KEY"]
 DEVELOPER_SECRET = config["DEVELOPER_SECRET"]
 
+if _CHECKEDOUT_SHELF_KEY in config:
+    CHECKEDOUT_SHELF = config[_CHECKEDOUT_SHELF_KEY]
+else:
+    CHECKEDOUT_SHELF = "checkedout"
+
+if _CHECKEDIN_SHELF_KEY in config:
+    CHECKEDIN_SHELF = config[_CHECKEDIN_SHELF_KEY]
+else:
+    CHECKEDIN_SHELF = "checkedin"
+
 consumer = oauth.Consumer(key = DEVELOPER_KEY, secret = DEVELOPER_SECRET)
 
-def get_access():
+def authenticate():
     client = oauth.Client(consumer)
     response, content = client.request(REQUEST_TOKEN_URL, "GET")
     time.sleep(1)
@@ -82,7 +97,7 @@ def get_access():
     return (access_token, access_secret)
 
 if "ACCESS_KEY" not in config:
-    config["ACCESS_KEY"], config["ACCESS_SECRET"] = get_access()
+    config["ACCESS_KEY"], config["ACCESS_SECRET"] = authenticate()
 
 ACCESS_KEY = config["ACCESS_KEY"]
 ACCESS_SECRET = config["ACCESS_SECRET"]
@@ -90,25 +105,66 @@ ACCESS_SECRET = config["ACCESS_SECRET"]
 access_token = oauth.Token(ACCESS_KEY, ACCESS_SECRET)
 
 
-def _request(methodname, params={}, method='GET'):
+def _request(methodname, params={}, method='GET', success=HTTP_OK):
     consumer = oauth.Consumer(key=DEVELOPER_KEY,
                               secret=DEVELOPER_SECRET)
     client  = oauth.Client(consumer, access_token)
     body = urllib.urlencode(params)
     headers = {'content-type': 'application/x-www-form-urlencoded'}
     resp, content = client.request(SITE + '/' + methodname, method, body, headers)
-    if resp['status'] != HTTP_OK:
-        raise Exception('Non HTTP OK status returned: %s' % resp['status'])
+    if resp['status'] != success:
+        raise Exception('Did not get expected HTTP status: %s' % resp['status'])
 
     return content
 
+_user_id = None
+def _cached_user_id():
+    if not _user_id:
+        user()
+    return _user_id
+
 def user():
+    global _user_id
     response = _request("api/auth_user")
     xml = ET.fromstring(response)
     user = xml.find("user")
-    return user.get("id"), user.findtext("name")
+    _user_id, user_name = int(user.get("id")), user.findtext("name")
+    return _user_id, user_name
+
+def search(query, shelf="checkedout"):
+    params = {
+        "v":2,
+        "shelf": shelf,
+        "key": DEVELOPER_KEY,
+    }
+    if query:
+        params["search[query]"] = query
+
+    response = _request("review/list/%d.xml" % _cached_user_id(), params)
+    xml = ET.fromstring(response)
+    results = []
+    for review in xml.findall("reviews/review"):
+        if not any([s.get("name") == shelf for s in review.findall("shelves/shelf")]):
+            results.append((int(review.findtext("book/id")), review.findtext("book/title")))
+    return results
+
+def add_to_shelf(shelf, book_id):
+    params = {
+        "name": shelf,
+        "book_id": book_id
+    }
+    _request("shelf/add_to_shelf.xml", params, method='POST', success=HTTP_CREATED)
+
+def checkout(book_id):
+    add_to_shelf(config[CHECKEDOUT_SHELF])
+
+def shelves():
+    params = {"key":DEVELOPER_KEY, "user_id":_cached_user_id()}
+    xml = ET.fromstring(_request("shelf/list.xml", params))
+    return [name.text for name in xml.findall("shelves/user_shelf/name")]
+
+def add_shelf(name):
+    return _request("user_shelves.xml", {"user_shelf[name]": name}, 'POST')
 
 if __name__ == '__main__':
-    user_id = 10281211
-
-    print(_request("review/list", {"format":"xml", "v":2, "id":user_id, "shelf": "checkedout", "key": DEVELOPER_KEY}))
+    pass
