@@ -43,8 +43,6 @@ except IOError as e:
         print("Error loading: %s (%s)" % (CONFIG_FILE_PATH, e))
         config = Config(CONFIG_FILE_PATH)
 
-for item in config.items(): print("%s=%s" % item)
-
 if "DEVELOPER_KEY" not in config:
     config["DEVELOPER_KEY"] = raw_input("No developer key found: What is the app's developer key?")
     config["DEVELOPER_SECRET"] = raw_input("What is the app's developer key secret?")
@@ -91,7 +89,7 @@ ACCESS_SECRET = config["ACCESS_SECRET"]
 access_token = oauth.Token(ACCESS_KEY, ACCESS_SECRET)
 
 
-def goodreads(methodname, params={}, method='GET'):
+def _request(methodname, params={}, method='GET'):
     consumer = oauth.Consumer(key=DEVELOPER_KEY,
                               secret=DEVELOPER_SECRET)
     client  = oauth.Client(consumer, access_token)
@@ -102,6 +100,9 @@ def goodreads(methodname, params={}, method='GET'):
         raise Exception('Non HTTP OK status returned: %s' % resp['status'])
 
     return content
+
+def user_id():
+    return _request("api/auth_user")
 
 #consumer = oauth.Consumer(key="OWT16QIggdjflRNPeqK8Zg",
 #                          secret="zeBhib5d7203cRD3PjnsBqbm6Wi6JeoTLIxeWmCwRdY")
