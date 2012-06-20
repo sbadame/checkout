@@ -1,6 +1,9 @@
+import csv
 import goodreads
+from datetime import datetime
 
 id, name = goodreads.user()
+checkoutrecord = csv.writer(open('checkout.csv', 'ab'))
 
 choice = None
 while choice not in [0, 1, 2, 3]:
@@ -57,6 +60,9 @@ elif choice == 2:
 
     try:
         goodreads.checkout(results[int(response)][0])
+        date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
+        name = raw_input("What's your name?")
+        checkoutrecord.writerow([date, name, "checked out", title])
     except ValueError:
         print("Didn't understand: %s. Good bye." % response)
 
@@ -70,9 +76,11 @@ elif choice == 3:
 
     try:
         goodreads.checkin(results[int(response)][0])
+        date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
+        name = raw_input("What's your name?")
+        checkoutrecord.writerow([date, name, "checked in", title])
     except ValueError:
         print("Didn't understand %s" % response)
-
 
 elif choice == 3:
     print("Return")
