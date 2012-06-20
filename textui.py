@@ -40,23 +40,38 @@ if choice == 0:
 
     if choice == 0:
         goodreads.config[goodreads._CHECKEDOUT_SHELF_KEY] = shelf_name
+        goodreads.CHECKEDOUT_SHELF = shelf_name
     elif choice == 1:
         goodreads.config[goodreads._CHECKEDIN_SHELF_KEY] = shelf_name
+        goodreads.CHECKEDIN_SHELF = shelf_name
 
 elif choice == 1:
     goodreads.authenticate()
+
 elif choice == 2:
     query = raw_input("Search for: ")
-    results = goodreads.search(query)
+    results = goodreads.search(query, goodreads.CHECKEDIN_SHELF)
     for index, (id, title) in enumerate(results):
         print("%d: %s" % (index, title))
     response = raw_input("Which would you like to check out?")
 
     try:
-        response_index = int(response)
-        goodreads.add_to_shelf("checkedout", results[response_index][0])
+        goodreads.checkout(results[int(response)][0])
     except ValueError:
         print("Didn't understand: %s. Good bye." % response)
+
+elif choice == 3:
+    query = raw_input("Search for: ")
+    results = goodreads.search(query, goodreads.CHECKEDOUT_SHELF)
+
+    for index, (id, title) in enumerate(results):
+        print("%d: %s" % (index, title))
+    response = raw_input("Which would you like to return?")
+
+    try:
+        goodreads.checkin(results[int(response)][0])
+    except ValueError:
+        print("Didn't understand %s" % response)
 
 
 elif choice == 3:

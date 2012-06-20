@@ -131,7 +131,7 @@ def user():
     _user_id, user_name = int(user.get("id")), user.findtext("name")
     return _user_id, user_name
 
-def search(query, shelf="checkedout"):
+def search(query, shelf):
     params = {
         "v":2,
         "shelf": shelf,
@@ -144,7 +144,7 @@ def search(query, shelf="checkedout"):
     xml = ET.fromstring(response)
     results = []
     for review in xml.findall("reviews/review"):
-        if not any([s.get("name") == shelf for s in review.findall("shelves/shelf")]):
+        if any([s.get("name") == shelf for s in review.findall("shelves/shelf")]):
             results.append((int(review.findtext("book/id")), review.findtext("book/title")))
     return results
 
@@ -153,10 +153,24 @@ def add_to_shelf(shelf, book_id):
         "name": shelf,
         "book_id": book_id
     }
-    _request("shelf/add_to_shelf.xml", params, method='POST', success=HTTP_CREATED)
+    _request("shelf/add_to_shelf.xml", params, 'POST', HTTP_CREATED)
+
+def remove_from_shelf(shelf, book_id):
+    params = {
+        "name": shelf,
+        "book_id": book_id,
+        "a": "remove"
+    }
+    _request("shelf/add_to_shelf.xml", params, method='POST')
+
 
 def checkout(book_id):
-    add_to_shelf(config[CHECKEDOUT_SHELF])
+    add_to_shelf(CHECKEDOUT_SHELF, book_id)
+    remove_from_shelf(CHECKEDIN_SHELF, book_id)
+
+def checkin(book_id):
+    add_to_shelf(CHECKEDIN_SHELF, book_id)
+    remove_from_shelf(CHECKEDOUT_SHELF, book_id)
 
 def shelves():
     params = {"key":DEVELOPER_KEY, "user_id":_cached_user_id()}
