@@ -3,6 +3,7 @@ import time
 import urllib
 import urlparse
 import json
+import xml.etree.ElementTree as ET
 
 #PROGRAM CONSTANTS
 HTTP_OK = '200'
@@ -101,8 +102,11 @@ def _request(methodname, params={}, method='GET'):
 
     return content
 
-def user_id():
-    return _request("api/auth_user")
+def user():
+    response = _request("api/auth_user")
+    xml = ET.fromstring(response)
+    user = xml.find("user")
+    return user.get("id"), user.findtext("name")
 
 #consumer = oauth.Consumer(key="OWT16QIggdjflRNPeqK8Zg",
 #                          secret="zeBhib5d7203cRD3PjnsBqbm6Wi6JeoTLIxeWmCwRdY")
