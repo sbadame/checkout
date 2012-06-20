@@ -2,3 +2,24 @@ Creating a checkout program that:
     * Reads a list of books from goodreads
     * Enables users to search for books from the list
     * Enables users to "checkout" a book, and record the checkout in an excel spreadsheet
+
+User uses application for the first time:
+    Checkout notices the empty persistence file and detects that this a new run
+    Asks user to authenticate with goodreads
+    Asks user which shelf contains all of the books available
+    Asks user which shelf to use as the "checkedout" shelf.
+    Asks user where to store the spreadsheet
+    Goes into student mode
+
+User wants to checkout a book:
+    User searches the teacher's shelf for a book
+    User checks if the book is available
+    If the book is available then ask the student if they would like to check it out
+    Add the book to the "checkedout" shelf
+    Update the spreadsheet to indicate that the book has been checkedout
+
+User returns a book:
+    User searches the teacher's shelf for the book
+    Marks the book as returned
+    The spreadsheet is updated to indicate that the book has been returned
+
