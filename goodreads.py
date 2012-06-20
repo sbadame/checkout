@@ -108,38 +108,7 @@ def user():
     user = xml.find("user")
     return user.get("id"), user.findtext("name")
 
-#consumer = oauth.Consumer(key="OWT16QIggdjflRNPeqK8Zg",
-#                          secret="zeBhib5d7203cRD3PjnsBqbm6Wi6JeoTLIxeWmCwRdY")
-#client = oauth.Client(consumer)
-#response, content = client.request(request_token_url, "GET")
-#if response['status'] != HTTP_OK:
-#    raise Exception("Something wrong with the developer keys or goodreads: " + response['status'])
-#
-#request_token_dict = dict(urlparse.parse_qsl(content))
-#request_oauth_token = request_token_dict['oauth_token']
-#request_oauth_token_secret = request_token_dict['oauth_token_secret']
-#
-#authorize_link = "%s?oauth_token=%s" % (authorize_url, request_oauth_token)
-#print(authorize_link)
-#raw_input("Press enter once authorized")
-#
-#request_token = oauth.Token(request_oauth_token, request_oauth_token_secret)
-#client = oauth.Client(consumer, request_token)
-#response, content = client.request(access_token_url, "POST")
-#if response['status'] != HTTP_OK:
-#    raise Exception("Something wrong getting the access token" + response['status'])
-#
-#access_token = dict(urlparse.parse_qsl(content))
-#access_oauth_token, access_oauth_token_secret = access_token['oauth_token'], access_token['oauth_token_secret']
-#print( "access_token = %s\naccess_token_secret = %s" % (access_oauth_token, access_oauth_token_secret) )
-
-
 if __name__ == '__main__':
     user_id = 10281211
 
-    print(goodreads("review/list", {"format":"xml", "v":2, "id":user_id, "shelf": "checkedout", "key": DEVELOPER_KEY}))
-
-#print(goodreads("api/auth_user"))
-#print(goodreads("updates/friends.xml", {}))
-
-
+    print(_request("review/list", {"format":"xml", "v":2, "id":user_id, "shelf": "checkedout", "key": DEVELOPER_KEY}))
