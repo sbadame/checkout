@@ -129,9 +129,10 @@ def goodreads(methodname, params={}, method='GET'):
 #print( "access_token = %s\naccess_token_secret = %s" % (access_oauth_token, access_oauth_token_secret) )
 
 
-user_id = 10281211
+if __name__ == '__main__':
+    user_id = 10281211
 
-print(goodreads("review/list", {"format":"xml", "v":2, "id":user_id, "shelf": "checkedout", "key": DEVELOPER_KEY}))
+    print(goodreads("review/list", {"format":"xml", "v":2, "id":user_id, "shelf": "checkedout", "key": DEVELOPER_KEY}))
 
 #print(goodreads("api/auth_user"))
 #print(goodreads("updates/friends.xml", {}))
