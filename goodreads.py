@@ -2,6 +2,7 @@ import oauth2 as oauth
 import time
 import urllib
 import urlparse
+import json
 
 #PROGRAM CONSTANTS
 HTTP_OK = '200'
@@ -14,22 +15,49 @@ REQUEST_TOKEN_URL = "%s/oauth/request_token" % SITE
 AUTHORIZE_URL = "%s/oauth/authorize" % SITE
 ACCESS_TOKEN_URL = "%s/oauth/access_token" % SITE
 
+class Config(dict):
+    def __init__(self, filepath, *args):
+        self.filepath = filepath
+        super(Config, self).__init__(self, *args)
+
+    @staticmethod
+    def load_from_file(fp):
+        c = Config(fp.name)
+        for k,v in json.load(fp).items():
+            c.__setitem__withoutwrite(k, v)
+        return c
+
+    def __setitem__withoutwrite(self, key, val):
+        super(Config, self).__setitem__(key, val)
+
+    def __setitem__(self, key, val):
+        super(Config, self).__setitem__(key, val)
+        with open(self.filepath, "w") as configfile:
+            json.dump(self, configfile)
+
 #CONSTANTS FROM CONFIG
-config = {}
 try:
-    with open(CONFIG_FILE_PATH) as configfile:
-        config.update(eval(configfile.read()))
+    with open(CONFIG_FILE_PATH, "r") as configfile:
+        config = Config.load_from_file(configfile)
 except IOError as e:
         print("Error loading: %s (%s)" % (CONFIG_FILE_PATH, e))
+        config = Config(CONFIG_FILE_PATH)
+
+for item in config.items(): print("%s=%s" % item)
+
+if "DEVELOPER_KEY" not in config:
+    config["DEVELOPER_KEY"] = raw_input("No developer key found: What is the app's developer key?")
+    config["DEVELOPER_SECRET"] = raw_input("What is the app's developer key secret?")
 
 DEVELOPER_KEY = config["DEVELOPER_KEY"]
 DEVELOPER_SECRET = config["DEVELOPER_SECRET"]
 
 consumer = oauth.Consumer(key = DEVELOPER_KEY, secret = DEVELOPER_SECRET)
 
-def authorize():
+def get_access():
     client = oauth.Client(consumer)
     response, content = client.request(REQUEST_TOKEN_URL, "GET")
+    time.sleep(1)
     if response['status'] != HTTP_OK:
         raise Exception("Something wrong with the developer keys or goodreads: " + response['status'])
 
@@ -45,22 +73,31 @@ def authorize():
     request_token = oauth.Token(request_token, request_token_secret)
     client = oauth.Client(consumer, request_token)
     response, content = client.request(ACCESS_TOKEN_URL, 'POST')
+    time.sleep(1)
     if response['status'] != HTTP_OK:
         raise Exception("Something went wrong getting the access token: %s" % response['status'])
 
     access_dict = dict(urlparse.parse_qsl(content))
     access_token = access_dict['oauth_token']
-    access_secret = access_dict['oauth_secret']
-    return oauth.Token(access_token, access_secret)
+    access_secret = access_dict['oauth_token_secret']
+    return (access_token, access_secret)
+
+if "ACCESS_KEY" not in config:
+    config["ACCESS_KEY"], config["ACCESS_SECRET"] = get_access()
+
+ACCESS_KEY = config["ACCESS_KEY"]
+ACCESS_SECRET = config["ACCESS_SECRET"]
+
+access_token = oauth.Token(ACCESS_KEY, ACCESS_SECRET)
+
 
 def goodreads(methodname, params={}, method='GET'):
     consumer = oauth.Consumer(key=DEVELOPER_KEY,
                               secret=DEVELOPER_SECRET)
-    access_token = oauth.Token('D6IfrBjT8Al1yTy4zq0cA', 'J9zvylsVlKN26GTaLDAgLUcjkujN9xMvZsUvm6X4')
     client  = oauth.Client(consumer, access_token)
     body = urllib.urlencode(params)
     headers = {'content-type': 'application/x-www-form-urlencoded'}
-    resp, content = client.request(site + '/' + methodname, method, body, headers)
+    resp, content = client.request(SITE + '/' + methodname, method, body, headers)
     if resp['status'] != HTTP_OK:
         raise Exception('Non HTTP OK status returned: %s' % resp['status'])
 
@@ -94,7 +131,7 @@ def goodreads(methodname, params={}, method='GET'):
 
 user_id = 10281211
 
-print(goodreads("review/list", {"format":"xml", "v":2, "id":user_id, "shelf": "checkedout", "key": developer_key}))
+print(goodreads("review/list", {"format":"xml", "v":2, "id":user_id, "shelf": "checkedout", "key": DEVELOPER_KEY}))
 
 #print(goodreads("api/auth_user"))
 #print(goodreads("updates/friends.xml", {}))
