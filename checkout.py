@@ -4,6 +4,7 @@ from checkoutgui import Ui_MainWindow
 from PyQt4 import QtGui
 
 
+""" To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
@@ -17,7 +18,6 @@ class Main(QtGui.QMainWindow):
             self.ui.books.setItem(index, 0, QtGui.QTableWidgetItem(title))
             self.ui.books.setItem(index, 1, QtGui.QTableWidgetItem(author))
             self.ui.books.setItem(index, 2, QtGui.QTableWidgetItem("available"))
-
 
 def main():
     app = QtGui.QApplication(sys.argv)
