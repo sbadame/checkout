@@ -41,8 +41,10 @@ class Main(QtGui.QMainWindow):
             'What is your name?')
 
         if success:
+            goodreads.checkout(id)
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
             checkoutrecord.writerow([date, name, "checked out", title])
+            self.populate_table(goodreads.listbooks(goodreads.CHECKEDIN_SHELF))
 
 def main():
     app = QtGui.QApplication(sys.argv)
