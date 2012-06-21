@@ -15,24 +15,28 @@ class Main(QtGui.QMainWindow):
         self.ui.setupUi(self)
         self.populate_table(goodreads.listbooks(goodreads.CHECKEDIN_SHELF))
 
-    def on_searchbutton_pressed(self):
+    def on_checkout_search_pressed(self):
         """ Connected to signal through AutoConnect """
-        search_query = self.ui.query_text.text()
+        search_query = self.ui.checkout_query.text()
         self.populate_table(goodreads.search(search_query, goodreads.CHECKEDIN_SHELF))
 
+    def on_checkin_search_pressed(self):
+        """ Connected to signal through AutoConnect """
+        print(self.ui.checkin_query.text())
+
     def populate_table(self, books):
-        self.ui.books.clearContents()
-        self.ui.books.setRowCount(0)
+        self.ui.checkedin_books.clearContents()
+        self.ui.checkedin_books.setRowCount(0)
         for (index, (id, title, author)) in enumerate(books):
-            self.ui.books.insertRow(index)
-            self.ui.books.setItem(index, 0, QtGui.QTableWidgetItem(title))
-            self.ui.books.setItem(index, 1, QtGui.QTableWidgetItem(author))
+            self.ui.checkedin_books.insertRow(index)
+            self.ui.checkedin_books.setItem(index, 0, QtGui.QTableWidgetItem(title))
+            self.ui.checkedin_books.setItem(index, 1, QtGui.QTableWidgetItem(author))
             checkout_button = QtGui.QPushButton("Checkout!")
             QtCore.QObject.connect(
                 checkout_button, 
                 QtCore.SIGNAL("clicked()"),
                 lambda b = (id, title, author): self.checkout_pressed(b))
-            self.ui.books.setCellWidget(index, 2, checkout_button)
+            self.ui.checkedin_books.setCellWidget(index, 2, checkout_button)
 
     def checkout_pressed(self, (id, title, author)):
         """ Connected to signal in populate_table """
