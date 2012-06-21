@@ -1,7 +1,7 @@
 import sys
 import goodreads
 from checkoutgui import Ui_MainWindow
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 
 
 """ To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
@@ -23,7 +23,15 @@ class Main(QtGui.QMainWindow):
             self.ui.books.insertRow(index)
             self.ui.books.setItem(index, 0, QtGui.QTableWidgetItem(title))
             self.ui.books.setItem(index, 1, QtGui.QTableWidgetItem(author))
-            self.ui.books.setItem(index, 2, QtGui.QTableWidgetItem("available"))
+            checkout_button = QtGui.QPushButton("Checkout!")
+            QtCore.QObject.connect(
+                checkout_button, 
+                QtCore.SIGNAL("clicked()"),
+                lambda b = (id, title, author): self.checkout_pressed(b))
+            self.ui.books.setCellWidget(index, 2, checkout_button)
+
+    def checkout_pressed(self, (id, title, author)):
+        print(title)
 
 
 def main():
