@@ -15,7 +15,12 @@ class Main(QtGui.QMainWindow):
         self.ui.setupUi(self)
         self.refresh()
 
-        self.ui.user_label.setText(str(self.ui.user_label.text()) % goodreads.user()[1])
+        self.ui.user_label.setText(
+            str(self.ui.user_label.text()) % goodreads.user()[1])
+        self.ui.checkedout_shelf_label.setText(
+            str(self.ui.checkedout_shelf_label.text()) % goodreads.CHECKEDOUT_SHELF)
+        self.ui.checkedin_shelf_label.setText(
+            str(self.ui.checkedin_shelf_label.text()) % goodreads.CHECKEDIN_SHELF)
 
     def on_checkout_search_pressed(self):
         """ Connected to signal through AutoConnect """
