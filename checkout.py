@@ -13,6 +13,7 @@ class Main(QtGui.QMainWindow):
         self.populate_table(goodreads.listbooks(goodreads.CHECKEDIN_SHELF))
 
     def on_searchbutton_pressed(self):
+        """ Connected to signal through AutoConnect """
         search_query = self.ui.query_text.text()
         self.populate_table(goodreads.search(search_query, goodreads.CHECKEDIN_SHELF))
 
@@ -31,7 +32,8 @@ class Main(QtGui.QMainWindow):
             self.ui.books.setCellWidget(index, 2, checkout_button)
 
     def checkout_pressed(self, (id, title, author)):
-        print(title)
+        """ Connected to signal in populate_table """
+        goodreads.checkout(id)
 
 
 def main():
