@@ -46,7 +46,14 @@ class Main(QtGui.QMainWindow):
             self.checkin_pressed)
 
     def on_switch_user_button_pressed(self):
-        print("Switch user")
+        def wait_for_user():
+            QtGui.QMessageBox.question(self, "Hold up!",
+"""I'm opening a link to goodreads for you.
+Once you have clicked on accept in the new browser window, click "Yes" below.""",
+                    QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+
+        goodreads.authenticate(wait_for_user)
+
 
     def on_switch_checkedout_button_pressed(self):
         print("Checked out")

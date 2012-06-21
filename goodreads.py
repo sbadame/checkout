@@ -68,7 +68,12 @@ else:
 
 consumer = oauth.Consumer(key = DEVELOPER_KEY, secret = DEVELOPER_SECRET)
 
-def authenticate():
+def authenticate(waitfunction=lambda:raw_input("Press enter once authorized.")):
+    """ Grabs a new set of keys from goodreads.
+        Opens the authorization link in a new browser window.
+        Calls the waitfunction() once the browser is opened. 
+        The waitfunction should return only when the user has authorized the app"""
+
     client = oauth.Client(consumer)
     response, content = client.request(REQUEST_TOKEN_URL, "GET")
     time.sleep(1)
@@ -82,7 +87,7 @@ def authenticate():
     authorize_link = "%s?oauth_token=%s" % (AUTHORIZE_URL, request_token)
     import webbrowser
     webbrowser.open(authorize_link)
-    raw_input("Press enter once authorized.")
+    waitfunction()
 
     request_token = oauth.Token(request_token, request_token_secret)
     client = oauth.Client(consumer, request_token)
