@@ -18,6 +18,7 @@ class Main(QtGui.QMainWindow):
 
     def populate_table(self, books):
         self.ui.books.clearContents()
+        self.ui.books.setRowCount(0)
         for (index, (id, title, author)) in enumerate(books):
             self.ui.books.insertRow(index)
             self.ui.books.setItem(index, 0, QtGui.QTableWidgetItem(title))
