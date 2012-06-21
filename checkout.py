@@ -33,7 +33,9 @@ class Main(QtGui.QMainWindow):
 
     def checkout_pressed(self, (id, title, author)):
         """ Connected to signal in populate_table """
-        goodreads.checkout(id)
+        name, ok = QtGui.QInputDialog.getText(self, 
+            'Checking out %s' % title,
+            'What is your name?')
 
 
 def main():
