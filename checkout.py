@@ -5,7 +5,11 @@ from checkoutgui import Ui_MainWindow
 from datetime import datetime
 from PyQt4 import QtGui, QtCore
 
-checkoutrecord = csv.writer(open('checkout.csv', 'ab'))
+_LOG_PATH_KEY = 'LOG_PATH'
+if _LOG_PATH_KEY not in goodreads.config:
+    goodreads.config[_LOG_PATH_KEY] = 'checkout.csv'
+
+checkoutrecord = csv.writer(open(goodreads.config[_LOG_PATH_KEY], 'ab'))
 
 """ To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
@@ -21,6 +25,9 @@ class Main(QtGui.QMainWindow):
             str(self.ui.checkedout_shelf_label.text()) % goodreads.CHECKEDOUT_SHELF)
         self.ui.checkedin_shelf_label.setText(
             str(self.ui.checkedin_shelf_label.text()) % goodreads.CHECKEDIN_SHELF)
+        self.ui.log_label.setText(
+            str(self.ui.log_label.text()) % goodreads.config[_LOG_PATH_KEY])
+
 
     def on_checkout_search_pressed(self):
         """ Connected to signal through AutoConnect """

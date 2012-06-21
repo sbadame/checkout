@@ -208,7 +208,7 @@
             </widget>
            </item>
            <item row="6" column="0">
-            <widget class="QLabel" name="label">
+            <widget class="QLabel" name="log_label">
              <property name="text">
               <string>The log is recorded at: &quot;%s&quot;.</string>
              </property>
