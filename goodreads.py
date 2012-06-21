@@ -145,7 +145,11 @@ def search(query, shelf):
     results = []
     for review in xml.findall("reviews/review"):
         if any([s.get("name") == shelf for s in review.findall("shelves/shelf")]):
-            results.append((int(review.findtext("book/id")), review.findtext("book/title")))
+            results.append((
+                int(review.findtext("book/id")),
+                review.findtext("book/title"),
+                review.findtext("book/authors/author/name")
+            ))
     return results
 
 def listbooks(shelf):

@@ -12,7 +12,7 @@ class Main(QtGui.QMainWindow):
         self.ui.setupUi(self)
 
         available_books = goodreads.listbooks(goodreads.CHECKEDIN_SHELF)
-        for (index, (id, title)) in enumerate(available_books):
+        for (index, (id, title, author)) in enumerate(available_books):
             self.ui.books.insertRow(index)
             self.ui.books.setItem(index, 0, QtGui.QTableWidgetItem(title))
             self.ui.books.setItem(index, 2, QtGui.QTableWidgetItem("available"))

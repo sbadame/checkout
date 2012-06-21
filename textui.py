@@ -55,7 +55,7 @@ elif choice == 2:
     print(goodreads.listbooks(goodreads.CHECKEDIN_SHELF))
     query = raw_input("Search for: ")
     results = goodreads.search(query, goodreads.CHECKEDIN_SHELF)
-    for index, (id, title) in enumerate(results):
+    for index, (id, title, author) in enumerate(results):
         print("%d: %s" % (index, title))
     response = raw_input("Which would you like to check out?")
 
@@ -72,7 +72,7 @@ elif choice == 3:
     query = raw_input("Search for: ")
     results = goodreads.search(query, goodreads.CHECKEDOUT_SHELF)
 
-    for index, (id, title) in enumerate(results):
+    for index, (id, title, author) in enumerate(results):
         print("%d: %s" % (index, title))
     response = raw_input("Which would you like to return?")
 
