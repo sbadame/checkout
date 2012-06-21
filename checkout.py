@@ -8,16 +8,22 @@ from PyQt4 import QtGui
 class Main(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.populate_table(goodreads.listbooks(goodreads.CHECKEDIN_SHELF))
 
-        available_books = goodreads.listbooks(goodreads.CHECKEDIN_SHELF)
-        for (index, (id, title, author)) in enumerate(available_books):
+    def on_searchbutton_pressed(self):
+        search_query = self.ui.query_text.text()
+        self.populate_table(goodreads.search(search_query, goodreads.CHECKEDIN_SHELF))
+
+    def populate_table(self, books):
+        self.ui.books.clearContents()
+        for (index, (id, title, author)) in enumerate(books):
             self.ui.books.insertRow(index)
             self.ui.books.setItem(index, 0, QtGui.QTableWidgetItem(title))
             self.ui.books.setItem(index, 1, QtGui.QTableWidgetItem(author))
             self.ui.books.setItem(index, 2, QtGui.QTableWidgetItem("available"))
+
 
 def main():
     app = QtGui.QApplication(sys.argv)
