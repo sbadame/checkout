@@ -1,8 +1,11 @@
+import csv
 import sys
 import goodreads
 from checkoutgui import Ui_MainWindow
+from datetime import datetime
 from PyQt4 import QtGui, QtCore
 
+checkoutrecord = csv.writer(open('checkout.csv', 'ab'))
 
 """ To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
@@ -33,10 +36,13 @@ class Main(QtGui.QMainWindow):
 
     def checkout_pressed(self, (id, title, author)):
         """ Connected to signal in populate_table """
-        name, ok = QtGui.QInputDialog.getText(self, 
+        name, success = QtGui.QInputDialog.getText(self,
             'Checking out %s' % title,
             'What is your name?')
 
+        if success:
+            date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
+            checkoutrecord.writerow([date, name, "checked out", title])
 
 def main():
     app = QtGui.QApplication(sys.argv)
