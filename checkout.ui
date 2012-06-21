@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>705</width>
+    <width>710</width>
     <height>646</height>
    </rect>
   </property>
@@ -21,7 +21,7 @@
        <item>
         <widget class="QTabWidget" name="tabWidget">
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="checkout_tab">
           <attribute name="title">
@@ -133,6 +133,92 @@
                <string>Checked In/Out</string>
               </property>
              </column>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tab">
+          <attribute name="title">
+           <string>Options</string>
+          </attribute>
+          <layout class="QFormLayout" name="formLayout_2">
+           <property name="fieldGrowthPolicy">
+            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+           </property>
+           <item row="2" column="0">
+            <widget class="QLabel" name="user_label">
+             <property name="text">
+              <string>Currently logged in as %s.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QPushButton" name="switch_user_button">
+             <property name="text">
+              <string>Switch to a different user</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="checkedout_shelf_label">
+             <property name="text">
+              <string>Your &quot;%s&quot; shelf is being used to store the books that are checked out.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QPushButton" name="pushButton">
+             <property name="text">
+              <string>Use a different shelf</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="checkedin_shelf_label">
+             <property name="text">
+              <string>Your &quot;%s&quot; shelf is being used to store the books that are checked in.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QPushButton" name="pushButton_2">
+             <property name="text">
+              <string>Use a different shelf</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0" colspan="2">
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="6" column="1">
+            <widget class="QPushButton" name="pushButton_4">
+             <property name="text">
+              <string>View the log file</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>The log is recorded at: &quot;%s&quot;.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="1">
+            <widget class="QPushButton" name="pushButton_3">
+             <property name="text">
+              <string>Use a different log file</string>
+             </property>
             </widget>
            </item>
           </layout>

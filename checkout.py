@@ -15,6 +15,8 @@ class Main(QtGui.QMainWindow):
         self.ui.setupUi(self)
         self.refresh()
 
+        self.ui.user_label.setText(self.ui.user_label.getText() % goodreads.user()[1])
+
     def on_checkout_search_pressed(self):
         """ Connected to signal through AutoConnect """
         search_query = self.ui.checkout_query.text()
