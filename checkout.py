@@ -15,6 +15,7 @@ class Main(QtGui.QMainWindow):
         for (index, (id, title, author)) in enumerate(available_books):
             self.ui.books.insertRow(index)
             self.ui.books.setItem(index, 0, QtGui.QTableWidgetItem(title))
+            self.ui.books.setItem(index, 1, QtGui.QTableWidgetItem(author))
             self.ui.books.setItem(index, 2, QtGui.QTableWidgetItem("available"))
 
 
