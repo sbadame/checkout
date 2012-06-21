@@ -45,6 +45,21 @@ class Main(QtGui.QMainWindow):
             self.ui.checkedout_books,
             self.checkin_pressed)
 
+    def on_switch_user_button_pressed(self):
+        print("Switch user")
+
+    def on_switch_checkedout_button_pressed(self):
+        print("Checked out")
+
+    def on_switch_checkedin_button_pressed(self):
+        print("Checked in")
+
+    def on_view_log_button_pressed(self):
+        print("view log")
+
+    def on_switch_log_button_pressed(self):
+        print("switch log")
+
     def populate_table(self, books, table, buttontext, onclick):
         table.clearContents()
         table.setRowCount(0)
