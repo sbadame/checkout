@@ -1,7 +1,7 @@
 import sys
-from PyQt4 import QtGui
-
+import goodreads
 from checkoutgui import Ui_MainWindow
+from PyQt4 import QtGui
 
 class Main(QtGui.QMainWindow):
     def __init__(self):

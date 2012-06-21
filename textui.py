@@ -52,6 +52,7 @@ elif choice == 1:
     goodreads.authenticate()
 
 elif choice == 2:
+    print(goodreads.listbooks(goodreads.CHECKEDIN_SHELF))
     query = raw_input("Search for: ")
     results = goodreads.search(query, goodreads.CHECKEDIN_SHELF)
     for index, (id, title) in enumerate(results):
@@ -67,6 +68,7 @@ elif choice == 2:
         print("Didn't understand: %s. Good bye." % response)
 
 elif choice == 3:
+    print(goodreads.listbooks(goodreads.CHECKEDOUT_SHELF))
     query = raw_input("Search for: ")
     results = goodreads.search(query, goodreads.CHECKEDOUT_SHELF)
 

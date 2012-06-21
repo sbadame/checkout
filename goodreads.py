@@ -148,6 +148,9 @@ def search(query, shelf):
             results.append((int(review.findtext("book/id")), review.findtext("book/title")))
     return results
 
+def listbooks(shelf):
+    return search(None, shelf)
+
 def add_to_shelf(shelf, book_id):
     params = {
         "name": shelf,
