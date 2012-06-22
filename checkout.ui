@@ -7,21 +7,21 @@
     <x>0</x>
     <y>0</y>
     <width>710</width>
-    <height>646</height>
+    <height>556</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Checkout</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QHBoxLayout" name="horizontalLayout_3">
     <item>
      <widget class="QWidget" name="widget" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QTabWidget" name="tabWidget">
          <property name="currentIndex">
-          <number>2</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="checkout_tab">
           <attribute name="title">
@@ -48,9 +48,12 @@
             <widget class="QTableWidget" name="checkedin_books">
              <property name="maximumSize">
               <size>
-               <width>791</width>
+               <width>16777215</width>
                <height>16777215</height>
               </size>
+             </property>
+             <property name="horizontalScrollBarPolicy">
+              <enum>Qt::ScrollBarAlwaysOff</enum>
              </property>
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>false</bool>
@@ -58,8 +61,14 @@
              <attribute name="horizontalHeaderDefaultSectionSize">
               <number>200</number>
              </attribute>
-             <attribute name="verticalHeaderStretchLastSection">
+             <attribute name="horizontalHeaderStretchLastSection">
               <bool>true</bool>
+             </attribute>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+             <attribute name="verticalHeaderStretchLastSection">
+              <bool>false</bool>
              </attribute>
              <column>
               <property name="text">
@@ -105,18 +114,27 @@
             <widget class="QTableWidget" name="checkedout_books">
              <property name="maximumSize">
               <size>
-               <width>791</width>
+               <width>16777215</width>
                <height>16777215</height>
               </size>
              </property>
+             <property name="horizontalScrollBarPolicy">
+              <enum>Qt::ScrollBarAlwaysOff</enum>
+             </property>
              <attribute name="horizontalHeaderCascadingSectionResizes">
-              <bool>false</bool>
+              <bool>true</bool>
              </attribute>
              <attribute name="horizontalHeaderDefaultSectionSize">
               <number>200</number>
              </attribute>
-             <attribute name="verticalHeaderStretchLastSection">
+             <attribute name="horizontalHeaderStretchLastSection">
               <bool>true</bool>
+             </attribute>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+             <attribute name="verticalHeaderStretchLastSection">
+              <bool>false</bool>
              </attribute>
              <column>
               <property name="text">
