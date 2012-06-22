@@ -2,3 +2,4 @@ checkout.credentials
 *.pyc
 *.csv
 checkoutgui.py
+build/**
