@@ -1,6 +1,8 @@
 import sys
 from cx_Freeze import setup, Executable
 
+""" To build on windows: python.exe setup.py bdist_msi """
+
 base = None
 if sys.platform == "win32":
     base = "Win32GUI"
