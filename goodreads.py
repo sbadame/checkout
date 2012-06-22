@@ -101,7 +101,7 @@ def authenticate(waitfunction=lambda:raw_input("Press enter once authorized.")):
     access_secret = access_dict['oauth_token_secret']
     return (access_token, access_secret)
 
-if "ACCESS_KEY" not in config:
+if "ACCESS_KEY" not in config or "ACCESS_SECRET" not in config:
     config["ACCESS_KEY"], config["ACCESS_SECRET"] = authenticate()
 
 ACCESS_KEY = config["ACCESS_KEY"]

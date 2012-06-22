@@ -12,6 +12,11 @@ if _LOG_PATH_KEY not in goodreads.config:
 
 checkoutrecord = csv.writer(open(goodreads.config[_LOG_PATH_KEY], 'ab'))
 
+USER_LABEL_TEXT = 'Currently logged in as %s.'
+CHECKEDOUT_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are checked out.'
+CHECKEDIN_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are checked in.'
+LOG_LABEL_TEXT = 'The log is recorded at "%s".'
+
 """ To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
     def __init__(self):
@@ -19,16 +24,6 @@ class Main(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.refresh()
-
-        self.ui.user_label.setText(
-            str(self.ui.user_label.text()) % goodreads.user()[1])
-        self.ui.checkedout_shelf_label.setText(
-            str(self.ui.checkedout_shelf_label.text()) % goodreads.CHECKEDOUT_SHELF)
-        self.ui.checkedin_shelf_label.setText(
-            str(self.ui.checkedin_shelf_label.text()) % goodreads.CHECKEDIN_SHELF)
-        self.ui.log_label.setText(
-            str(self.ui.log_label.text()) % goodreads.config[_LOG_PATH_KEY])
-
 
     def on_checkout_search_pressed(self):
         """ Connected to signal through AutoConnect """
@@ -58,10 +53,21 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
 
     def on_switch_checkedout_button_pressed(self):
         dialog = ShelfDialog(self, "the checked out books")
-        dialog.exec_()
+        if dialog.exec_():
+            shelf = dialog.shelf()
+            if shelf:
+                goodreads.config[goodreads._CHECKEDOUT_SHELF_KEY] = shelf
+                goodreads.CHECKEDOUT_SHELF = shelf
+                self.refresh()
 
     def on_switch_checkedin_button_pressed(self):
-        print("Checked in")
+        dialog = ShelfDialog(self, "the checked in books")
+        if dialog.exec_():
+            shelf = dialog.shelf()
+            if shelf:
+                goodreads.config[goodreads._CHECKEDIN_SHELF_KEY] = shelf
+                goodreads.CHECKEDIN_SHELF = shelf
+                self.refresh()
 
     def on_view_log_button_pressed(self):
         print("view log")
@@ -86,8 +92,7 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
     def checkout_pressed(self, id, title):
         """ Connected to signal in populate_table """
         name, success = QtGui.QInputDialog.getText(self,
-            'Checking out %s' % title,
-            'What is your name?')
+            'Checking out %s' % title, 'What is your name?')
 
         if success:
             goodreads.checkout(id)
@@ -107,14 +112,22 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
             self.refresh()
 
     def refresh(self):
-            self.refresh_checkedout()
-            self.refresh_checkedin()
+        self.refresh_checkedout()
+        self.refresh_checkedin()
+        self.ui.user_label.setText(
+            USER_LABEL_TEXT % goodreads.user()[1])
+        self.ui.checkedout_shelf_label.setText(
+            CHECKEDOUT_SHELF_LABEL_TEXT % goodreads.CHECKEDOUT_SHELF)
+        self.ui.checkedin_shelf_label.setText(
+            CHECKEDIN_SHELF_LABEL_TEXT % goodreads.CHECKEDIN_SHELF)
+        self.ui.log_label.setText(
+            LOG_LABEL_TEXT % goodreads.config[_LOG_PATH_KEY])
 
     def refresh_checkedin(self):
         self.populate_table(
             goodreads.listbooks(goodreads.CHECKEDIN_SHELF),
             self.ui.checkedin_books,
-            "Check it out!",
+            "Check this book out!",
             self.checkout_pressed)
 
     def refresh_checkedout(self):
@@ -147,6 +160,9 @@ class ShelfDialog(QtGui.QDialog, BaseShelfDialog):
     def refresh(self):
         self.list.clear()
         self.list.insertItems(0, goodreads.shelves())
+
+    def shelf(self):
+        return str(self.list.currentItem().text())
 
 def main():
     app = QtGui.QApplication(sys.argv)
