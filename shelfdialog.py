@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'shelfdialog.ui'
 #
-# Created: Thu Jun 21 18:56:52 2012
+# Created: Thu Jun 21 19:38:39 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -32,7 +32,7 @@ class Ui_Dialog(object):
         self.label = QtGui.QLabel(self.widget)
         self.label.setObjectName(_fromUtf8("label"))
         self.verticalLayout.addWidget(self.label)
-        self.list = QtGui.QListView(self.widget)
+        self.list = QtGui.QListWidget(self.widget)
         self.list.setObjectName(_fromUtf8("list"))
         self.verticalLayout.addWidget(self.list)
         self.new_shelf_button = QtGui.QPushButton(self.widget)

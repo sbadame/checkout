@@ -47,7 +47,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QListView" name="list"/>
+     <widget class="QListWidget" name="list"/>
     </item>
     <item>
      <widget class="QPushButton" name="new_shelf_button">

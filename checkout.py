@@ -4,6 +4,7 @@ import goodreads
 from checkoutgui import Ui_MainWindow
 from datetime import datetime
 from PyQt4 import QtGui, QtCore
+from shelfdialog import Ui_Dialog as BaseShelfDialog
 
 _LOG_PATH_KEY = 'LOG_PATH'
 if _LOG_PATH_KEY not in goodreads.config:
@@ -56,7 +57,8 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
 
 
     def on_switch_checkedout_button_pressed(self):
-        print("Checked out")
+        dialog = ShelfDialog(self, "the checked out books")
+        dialog.exec_()
 
     def on_switch_checkedin_button_pressed(self):
         print("Checked in")
@@ -121,6 +123,30 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
             self.ui.checkedout_books,
             "Return this book",
             self.checkin_pressed)
+
+class ShelfDialog(QtGui.QDialog, BaseShelfDialog):
+    def __init__(self, parent, use):
+        QtGui.QDialog.__init__(self, parent)
+        self.setupUi(self)
+        self.label.setText(str(self.label.text()) % use)
+        QtCore.QObject.connect(
+            self.new_shelf_button,
+            QtCore.SIGNAL("clicked()"),
+            self.create_new_shelf)
+        self.refresh()
+
+    def create_new_shelf(self):
+        name, success = QtGui.QInputDialog.getText(self,
+            'Adding a new shelf',
+            'What would you like to name the new shelf?')
+
+        if success:
+            goodreads.add_shelf(name)
+            self.refresh()
+
+    def refresh(self):
+        self.list.clear()
+        self.list.insertItems(0, goodreads.shelves())
 
 def main():
     app = QtGui.QApplication(sys.argv)
