@@ -70,7 +70,14 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
                 self.refresh()
 
     def on_view_log_button_pressed(self):
-        print("view log")
+        config_file = goodreads.config[_LOG_PATH_KEY]
+        import os
+        if sys.platform.startswith('win'):
+            os.startfile(config_file)
+        elif sys.platform.startswith("darwin"):
+            os.system("open " + config_file)
+        else:
+            os.system("xdg-open " + config_file)
 
     def on_switch_log_button_pressed(self):
         print("switch log")
