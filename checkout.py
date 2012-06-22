@@ -80,7 +80,8 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
             os.system("xdg-open " + config_file)
 
     def on_switch_log_button_pressed(self):
-        print("switch log")
+        file = QtGui.QFileDialog.getSaveFileNameAndFilter(self, filter="CSV file (*.csv)")
+        print(file)
 
     def populate_table(self, books, table, buttontext, onclick):
         table.clearContents()
