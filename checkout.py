@@ -80,8 +80,9 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
             os.system("xdg-open " + config_file)
 
     def on_switch_log_button_pressed(self):
-        file = QtGui.QFileDialog.getSaveFileNameAndFilter(self, filter="CSV file (*.csv)")
-        print(file)
+        file = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
+        goodreads.config[_LOG_PATH_KEY] = str(file)
+        self.refresh()
 
     def populate_table(self, books, table, buttontext, onclick):
         table.clearContents()
