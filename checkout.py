@@ -92,16 +92,18 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
             table.setItem(index, 0, QtGui.QTableWidgetItem(title))
             table.setItem(index, 1, QtGui.QTableWidgetItem(author))
             checkout_button = QtGui.QPushButton(buttontext)
+            checkout_button.setFixedWidth(150)
             QtCore.QObject.connect(
                 checkout_button,
                 QtCore.SIGNAL("clicked()"),
                 lambda a = id, b = title: onclick(a,b))
             table.setCellWidget(index, 2, checkout_button)
-        table.resizeColumnsToContents()
         horizontal_header = table.horizontalHeader()
-        horizontal_header.setResizeMode(0, QtGui.QHeaderView.ResizeMode.Stretch)
-        horizontal_header.setResizeMode(1, QtGui.QHeaderView.ResizeMode.Interactive)
-        horizontal_header.setResizeMode(2, QtGui.QHeaderView.ResizeMode.ResizeToContents)
+        horizontal_header.setResizeMode(0, QtGui.QHeaderView.Stretch)
+        horizontal_header.setResizeMode(1, QtGui.QHeaderView.ResizeToContents)
+        horizontal_header.setResizeMode(2, QtGui.QHeaderView.Fixed)
+        horizontal_header.setStretchLastSection(False)
+        table.setColumnWidth(2, 155)
 
     def checkout_pressed(self, id, title):
         """ Connected to signal in populate_table """
