@@ -103,7 +103,6 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
         horizontal_header.setResizeMode(1, QtGui.QHeaderView.ResizeToContents)
         horizontal_header.setResizeMode(2, QtGui.QHeaderView.Fixed)
         horizontal_header.setStretchLastSection(False)
-        table.setColumnWidth(2, 155)
 
     def checkout_pressed(self, id, title):
         """ Connected to signal in populate_table """
