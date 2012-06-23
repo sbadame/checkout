@@ -97,6 +97,7 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
                 QtCore.SIGNAL("clicked()"),
                 lambda a = id, b = title: onclick(a,b))
             table.setCellWidget(index, 2, checkout_button)
+        table.resizeColumnsToContents()
 
     def checkout_pressed(self, id, title):
         """ Connected to signal in populate_table """
