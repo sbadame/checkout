@@ -98,6 +98,10 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
                 lambda a = id, b = title: onclick(a,b))
             table.setCellWidget(index, 2, checkout_button)
         table.resizeColumnsToContents()
+        horizontal_header = table.horizontalHeader()
+        horizontal_header.setResizeMode(0, QtGui.QHeaderView.ResizeMode.Stretch)
+        horizontal_header.setResizeMode(1, QtGui.QHeaderView.ResizeMode.Interactive)
+        horizontal_header.setResizeMode(2, QtGui.QHeaderView.ResizeMode.ResizeToContents)
 
     def checkout_pressed(self, id, title):
         """ Connected to signal in populate_table """
