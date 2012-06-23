@@ -92,7 +92,6 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
             table.setItem(index, 0, QtGui.QTableWidgetItem(title))
             table.setItem(index, 1, QtGui.QTableWidgetItem(author))
             checkout_button = QtGui.QPushButton(buttontext)
-            #checkout_button.setFixedWidth(150)
             QtCore.QObject.connect(
                 checkout_button,
                 QtCore.SIGNAL("clicked()"),
