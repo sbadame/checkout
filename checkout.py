@@ -22,14 +22,14 @@ _LOG_PATH_KEY = 'LOG_PATH'
 class Main(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-
-
         try:
             with open(CONFIG_FILE_PATH, "r") as configfile:
                 config = Config.load_from_file(configfile)
         except IOError as e:
                 print("Error loading: %s (%s)" % (CONFIG_FILE_PATH, e))
                 config = Config(CONFIG_FILE_PATH)
+
+        print(QtGui.QInputDialog.getText(None, "Developer Key?", "sup"))
 
         if "DEVELOPER_KEY" not in config:
             config["DEVELOPER_KEY"] = raw_input("No developer key found: What is the app's developer key?")
