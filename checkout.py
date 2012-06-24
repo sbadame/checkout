@@ -48,8 +48,6 @@ class Main(QtGui.QMainWindow):
         if _LOG_PATH_KEY not in self.goodreads.config:
             self.goodreads.config[_LOG_PATH_KEY] = 'checkout.csv'
 
-        self.checkoutrecord = csv.writer(open(self.goodreads.config[_LOG_PATH_KEY], 'ab'))
-
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.refresh()
@@ -139,7 +137,9 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
         if success:
             self.goodreads.checkout(id)
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
-            self.checkoutrecord.writerow([date, name, "checked out", title])
+
+            writer = csv.writer(open(self.goodreads.config[_LOG_PATH_KEY], 'ab'))
+            writer.writerow([date, name, "checked out", title])
             self.refresh()
 
     def checkin_pressed(self, id, title):
@@ -150,7 +150,8 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
         if reply == QtGui.QMessageBox.Yes:
             self.goodreads.checkin(id)
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
-            self.checkoutrecord.writerow([date, "", "checked in", title])
+            writer = csv.writer(open(self.goodreads.config[_LOG_PATH_KEY], 'ab'))
+            writer.writerow([date, "", "checked in", title])
             self.refresh()
 
     def refresh(self):
