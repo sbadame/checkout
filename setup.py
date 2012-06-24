@@ -8,7 +8,7 @@ if sys.platform == "win32":
     base = "Win32GUI"
 
 setup( name = "Checkout",
-       version = "0.1",
+       version = "0.2",
        description = "A simple library checkout system that interfaces with goodreads.com",
        options = {"build_exe" : {"includes": "atexit"}},
        executables = [Executable("checkout.py", base=base)])

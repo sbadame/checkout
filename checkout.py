@@ -1,5 +1,6 @@
 import csv
 import sys
+import os.path as path
 
 from config import Config
 from goodreads import GoodReads
@@ -8,9 +9,7 @@ from datetime import datetime
 from PyQt4 import QtGui, QtCore
 from shelfdialog import Ui_Dialog as BaseShelfDialog
 
-#CONSTANTS FROM CONFIG
-DEV_KEY_FILE_PATH = "checkout.credentials"
-CONFIG_FILE_PATH = "checkout.credentials"
+CONFIG_FILE_PATH = path.normpath(path.expanduser("~/checkout.credentials"))
 
 USER_LABEL_TEXT = 'Currently logged in as %s.'
 CHECKEDOUT_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are checked out.'
@@ -51,7 +50,7 @@ class Main(QtGui.QMainWindow):
             self.on_switch_checkedin_button_pressed(refresh=False)
 
         if _LOG_PATH_KEY not in self.goodreads.config:
-            self.goodreads.config[_LOG_PATH_KEY] = 'checkout.csv'
+            self.goodreads.config[_LOG_PATH_KEY] = path.normpath(path.expanduser("~/checkout.csv"))
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -78,8 +77,7 @@ class Main(QtGui.QMainWindow):
         QtGui.QMessageBox.question(self, "Hold up!",
 """I'm opening a link to goodreads for you.
 Once the goodreads page loads click "Yes" below to continue.
-If this is your first time, you will have to give 'Checkout' permission to access your
-goodreads arround.""",
+If this is your first time, you will have to give 'Checkout' permission to access your goodreads account.""",
             QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
     def on_switch_user_button_pressed(self):
