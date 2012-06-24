@@ -2,4 +2,5 @@ checkout.credentials
 *.pyc
 *.csv
 checkoutgui.py
+shelfdialog.py
 build/**
