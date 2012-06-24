@@ -13,19 +13,23 @@ REQUEST_TOKEN_URL = "%s/oauth/request_token" % SITE
 AUTHORIZE_URL = "%s/oauth/authorize" % SITE
 ACCESS_TOKEN_URL = "%s/oauth/access_token" % SITE
 
+DEFAULT_WAIT = lambda: raw_input("Press enter once authorized.")
+
 class GoodReads:
-    def __init__(self, config):
+    def __init__(self, config, waitfunction=DEFAULT_WAIT):
         self.config = config
 
-        self.checkedout_shelf = config['CHECKEDOUT_SHELF']
-        self.checkedin_shelf = config['CHECKEDIN_SHELF']
+        if 'CHECKEDOUT_SHELF' in config:
+            self.checkedout_shelf = config['CHECKEDOUT_SHELF']
+        if 'CHECKEDIN_SHELF' in config:
+            self.checkedin_shelf = config['CHECKEDIN_SHELF']
 
         DEV_KEY = config["DEVELOPER_KEY"]
         DEV_SECRET = config["DEVELOPER_SECRET"]
         self.consumer = oauth.Consumer(key = DEV_KEY, secret = DEV_SECRET)
 
         if "ACCESS_KEY" not in config or "ACCESS_SECRET" not in config:
-            config["ACCESS_KEY"], config["ACCESS_SECRET"] = self.authenticate()
+            config["ACCESS_KEY"], config["ACCESS_SECRET"] = self.authenticate(waitfunction)
 
         ACCESS_KEY = config["ACCESS_KEY"]
         ACCESS_SECRET = config["ACCESS_SECRET"]
@@ -33,7 +37,7 @@ class GoodReads:
 
         self._user_id = None
 
-    def authenticate(self, waitfunction=lambda:raw_input("Press enter once authorized.")):
+    def authenticate(self, waitfunction=DEFAULT_WAIT):
         """ Grabs a new set of keys from goodreads.
             Opens the authorization link in a new browser window.
             Calls the waitfunction() once the browser is opened. 

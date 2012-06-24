@@ -27,23 +27,28 @@ class Main(QtGui.QMainWindow):
             with open(CONFIG_FILE_PATH, "r") as configfile:
                 config = Config.load_from_file(configfile)
         except IOError as e:
-                print("Error loading: %s (%s)" % (CONFIG_FILE_PATH, e))
+                print("Error loading: %s (%s). (This is normal for a first run)" % (CONFIG_FILE_PATH, e))
                 config = Config(CONFIG_FILE_PATH)
 
         if "DEVELOPER_KEY" not in config or "DEVELOPER_SECRET" not in config:
-            config["DEVELOPER_KEY"] = raw_input("No developer key found: What is the app's developer key?")
             key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
-                    'A developer key is needed to communicate with goodreads')
+                    'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
             if not success: exit()
 
-            config["DEVELOPER_KEY"] = key
+            config["DEVELOPER_KEY"] = str(key)
 
             secret, success = QtGui.QInputDialog.getText(None, "Developer Secret?",
-                    'What is the developer secret for the key that you just gave?')
+                    'What is the developer secret for the key that you just gave?\n(It\'s also on that page with the key: http://www.goodreads.com/api/keys)')
             if not success: exit()
-            config["DEVELOPER_SECRET"] = secret
+            config["DEVELOPER_SECRET"] = str(secret)
 
-        self.goodreads = GoodReads(config)
+        self.goodreads = GoodReads(config, waitfunction=self.wait_for_user)
+
+        if "CHECKEDOUT_SHELF" not in config:
+            self.on_switch_checkedout_button_pressed(refresh=False)
+
+        if "CHECKEDIN_SHELF" not in config:
+            self.on_switch_checkedin_button_pressed(refresh=False)
 
         if _LOG_PATH_KEY not in self.goodreads.config:
             self.goodreads.config[_LOG_PATH_KEY] = 'checkout.csv'
@@ -68,32 +73,37 @@ class Main(QtGui.QMainWindow):
             self.ui.checkedout_books,
             self.checkin_pressed)
 
-    def on_switch_user_button_pressed(self):
-        def wait_for_user():
-            QtGui.QMessageBox.question(self, "Hold up!",
+
+    def wait_for_user(self):
+        QtGui.QMessageBox.question(self, "Hold up!",
 """I'm opening a link to goodreads for you.
-Once you have clicked on accept in the new browser window, click "Yes" below.""",
-                    QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+Once the goodreads page loads click "Yes" below to continue.
+If this is your first time, you will have to give 'Checkout' permission to access your
+goodreads arround.""",
+            QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
-        self.goodreads.authenticate(wait_for_user)
+    def on_switch_user_button_pressed(self):
+        self.goodreads.authenticate(self.wait_for_user)
 
-    def on_switch_checkedout_button_pressed(self):
+    def on_switch_checkedout_button_pressed(self, refresh=True):
         dialog = ShelfDialog(self, "the checked out books", self.goodreads)
         if dialog.exec_():
             shelf = dialog.shelf()
             if shelf:
                 self.goodreads.config['CHECKEDOUT_SHELF'] = shelf
                 self.goodreads.checkedout_shelf = shelf
-                self.refresh()
+                if refresh:
+                    self.refresh()
 
-    def on_switch_checkedin_button_pressed(self):
+    def on_switch_checkedin_button_pressed(self, refresh=True):
         dialog = ShelfDialog(self, "the checked in books", self.goodreads)
         if dialog.exec_():
             shelf = dialog.shelf()
             if shelf:
                 self.goodreads.config['CHECKEDIN_SHELF'] = shelf
                 self.goodreads.checkedin_shelf = shelf
-                self.refresh()
+                if refresh:
+                    self.refresh()
 
     def on_view_log_button_pressed(self):
         config_file = self.goodreads.config[_LOG_PATH_KEY]
@@ -139,7 +149,7 @@ Once you have clicked on accept in the new browser window, click "Yes" below."""
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
 
             writer = csv.writer(open(self.goodreads.config[_LOG_PATH_KEY], 'ab'))
-            writer.writerow([date, name, "checked out", title])
+            writer.writerow([date, str(name), "checked out", title])
             self.refresh()
 
     def checkin_pressed(self, id, title):
@@ -198,7 +208,7 @@ class ShelfDialog(QtGui.QDialog, BaseShelfDialog):
             'What would you like to name the new shelf?')
 
         if success:
-            self.goodreads.add_shelf(name)
+            self.goodreads.add_shelf(str(name))
             self.refresh()
 
     def refresh(self):
