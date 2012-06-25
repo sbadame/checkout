@@ -13,7 +13,7 @@ CONFIG_FILE_PATH = path.normpath(path.expanduser("~/checkout.credentials"))
 
 USER_LABEL_TEXT = 'Currently logged in as %s.'
 CHECKEDOUT_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are checked out.'
-CHECKEDIN_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are checked in.'
+CHECKEDIN_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are available.'
 LOG_LABEL_TEXT = 'The log is recorded at "%s".'
 _LOG_PATH_KEY = 'LOG_PATH'
 
@@ -94,7 +94,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                     self.refresh()
 
     def on_switch_checkedin_button_pressed(self, refresh=True):
-        dialog = ShelfDialog(self, "the checked in books", self.goodreads)
+        dialog = ShelfDialog(self, "the available books", self.goodreads)
         if dialog.exec_():
             shelf = dialog.shelf()
             if shelf:
@@ -146,8 +146,9 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             self.goodreads.checkout(id)
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
 
-            writer = csv.writer(open(self.goodreads.config[_LOG_PATH_KEY], 'ab'))
-            writer.writerow([date, str(name), "checked out", title])
+            with open(self.goodreads.config[_LOG_PATH_KEY], 'ab') as logfile:
+                writer = csv.writer(logfile)
+                writer.writerow([date, str(name), "checked out", title])
             self.refresh()
 
     def checkin_pressed(self, id, title):
@@ -158,8 +159,9 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         if reply == QtGui.QMessageBox.Yes:
             self.goodreads.checkin(id)
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
-            writer = csv.writer(open(self.goodreads.config[_LOG_PATH_KEY], 'ab'))
-            writer.writerow([date, "", "checked in", title])
+            with open(self.goodreads.config[_LOG_PATH_KEY], 'ab') as logfile:
+                writer = csv.writer(logfile)
+                writer.writerow([date, "", "checked in", title])
             self.refresh()
 
     def refresh(self):
