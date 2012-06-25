@@ -74,9 +74,18 @@ class GoodReads:
         client  = oauth.Client(self.consumer, self.access_token)
         body = urllib.urlencode(params)
         headers = {'content-type': 'application/x-www-form-urlencoded'}
-        resp, content = client.request(SITE + '/' + methodname, method, body, headers)
+
+        try_again = True
+        while try_again:
+            resp, content = client.request(SITE + '/' + methodname, method, body, headers)
+            if resp['status'] != '502':
+                try_again = False
+            else:
+                time.sleep(1)
+
         if resp['status'] != success:
             raise Exception('Did not get expected HTTP status: %s' % resp['status'])
+
         return content
 
     def user(self):
@@ -91,25 +100,38 @@ class GoodReads:
             self.user()
         return self._user_id
 
-    def search(self, query, shelf):
+    def search(self, query, shelf, page=1):
         params = {
             "v":2,
             "shelf": shelf,
             "key": self.config["DEVELOPER_KEY"],
+            "page": page,
+            "per_page": 200
         }
+
         if query:
             params["search[query]"] = query
 
-        response = self._request("review/list/%d.xml" % self._cached_user_id(), params)
-        xml = ET.fromstring(response)
         results = []
-        for review in xml.findall("reviews/review"):
-            if any([s.get("name") == shelf for s in review.findall("shelves/shelf")]):
-                results.append((
-                    int(review.findtext("book/id")),
-                    review.findtext("book/title"),
-                    review.findtext("book/authors/author/name")
-                ))
+
+        #We may need to load multiple pages of reponse we only get a max of 200 books per page
+        load_next_page = True
+        while load_next_page:
+            response = self._request("review/list/%d.xml" % self._cached_user_id(), params)
+
+            xml = ET.fromstring(response)
+            reviews = xml.findall("reviews/review")
+            if reviews:
+                for review in reviews:
+                    if any([s.get("name") == shelf for s in review.findall("shelves/shelf")]):
+                        results.append((
+                            int(review.findtext("book/id")),
+                            review.findtext("book/title"),
+                            review.findtext("book/authors/author/name")
+                        ))
+                params["page"] += 1
+            else:
+                load_next_page = False
         return results
 
     def listbooks(self, shelf):
