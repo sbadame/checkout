@@ -29,11 +29,9 @@ class GoodReads:
         self.consumer = oauth.Consumer(key = DEV_KEY, secret = DEV_SECRET)
 
         if "ACCESS_KEY" not in config or "ACCESS_SECRET" not in config:
-            config["ACCESS_KEY"], config["ACCESS_SECRET"] = self.authenticate(waitfunction)
-
-        ACCESS_KEY = config["ACCESS_KEY"]
-        ACCESS_SECRET = config["ACCESS_SECRET"]
-        self.access_token = oauth.Token(ACCESS_KEY, ACCESS_SECRET)
+            self.authenticate(waitfunction)
+        else:
+            self.access_token = oauth.Token(config["ACCESS_KEY"], config["ACCESS_SECRET"])
 
         self._user_id = None
 
@@ -66,9 +64,9 @@ class GoodReads:
             raise Exception("Something went wrong getting the access token: %s" % response['status'])
 
         access_dict = dict(urlparse.parse_qsl(content))
-        access_token = access_dict['oauth_token']
-        access_secret = access_dict['oauth_token_secret']
-        return (access_token, access_secret)
+        self.config["ACCESS_KEY"], self.config["ACCESS_SECRET"] = access_dict['oauth_token'], access_dict['oauth_token_secret']
+        self.access_token = oauth.Token(self.config["ACCESS_KEY"], self.config["ACCESS_SECRET"])
+        self.user()
 
     def _request(self, methodname, params={}, method='GET', success=HTTP_OK):
         client  = oauth.Client(self.consumer, self.access_token)
@@ -93,6 +91,7 @@ class GoodReads:
         xml = ET.fromstring(response)
         user = xml.find("user")
         self._user_id, user_name = int(user.get("id")), user.findtext("name")
+        print("New user: " + user_name)
         return self._user_id, user_name
 
     def _cached_user_id(self):
