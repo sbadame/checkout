@@ -162,7 +162,6 @@ class GoodReads:
         }
         self._request("shelf/add_to_shelf.xml", params, method='POST')
 
-
     def checkout(self, book_id):
         self.add_to_shelf(self.checkedout_shelf, book_id)
         self.remove_from_shelf(self.checkedin_shelf, book_id)

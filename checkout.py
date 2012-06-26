@@ -40,23 +40,26 @@ class Main(QtGui.QMainWindow):
         self.configthread.start()
 
     def update_progress(self, text):
+        self.progress.show()
         self.progress.setLabelText(text)
 
     def on_checkout_search_pressed(self):
         """ Connected to signal through AutoConnect """
         search_query = self.ui.checkout_query.text()
-        self.populate_table(
-            self.goodreads.search(search_query, self.goodreads.checkedin_shelf),
-            self.ui.checkedin_books,
-            self.checkout_pressed)
+
+        long_task = lambda: self.goodreads.search(search_query, self.goodreads.checkedin_shelf)
+        self.checkout_searcher = BookPasser(long_task)
+        self.checkout_searcher.books_arrived.connect(self.refresh_checkedin)
+        self.checkout_searcher.start()
 
     def on_checkin_search_pressed(self):
         """ Connected to signal through AutoConnect """
         search_query = self.ui.checkin_query.text()
-        self.populate_table(
-            self.goodreads.search(search_query, self.goodreads.checkedout_shelf),
-            self.ui.checkedout_books,
-            self.checkin_pressed)
+
+        long_task = lambda: self.goodreads.search(search_query, self.goodreads.checkedout_shelf)
+        self.checkin_searcher = BookPasser(long_task)
+        self.checkin_searcher.books_arrived.connect(self.refresh_checkedout)
+        self.checkin_searcher.start()
 
     def wait_for_user(self):
         QtGui.QMessageBox.question(self, "Hold up!",
@@ -103,22 +106,6 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         self.goodreads.config[_LOG_PATH_KEY] = str(file)
         self.refresh()
 
-    def populate_table(self, books, table, buttontext, onclick):
-        table.clearContents()
-        table.setRowCount(0)
-        for (index, (id, title, author)) in enumerate(books):
-            table.insertRow(index)
-            table.setItem(index, 0, QtGui.QTableWidgetItem(title))
-            table.setItem(index, 1, QtGui.QTableWidgetItem(author))
-            checkout_button = QtGui.QPushButton(buttontext)
-            checkout_button.clicked.connect(lambda a = id, b = title: onclick(a,b))
-            table.setCellWidget(index, 2, checkout_button)
-
-        horizontal_header = table.horizontalHeader()
-        horizontal_header.setResizeMode(0, QtGui.QHeaderView.Stretch)
-        horizontal_header.setResizeMode(1, QtGui.QHeaderView.ResizeToContents)
-        horizontal_header.setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
-        horizontal_header.setStretchLastSection(False)
 
     def checkout_pressed(self, id, title):
         """ Connected to signal in populate_table """
@@ -151,14 +138,16 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         self.progress.show()
         self.refresher = RefreshWorker(self)
         self.refresher.progress_signal.connect(self.update_progress)
+        self.refresher.finished.connect(self.progress.hide)
+
         self.refresher.checkedin_books_arrived.connect(self.refresh_checkedin)
         self.refresher.checkedout_books_arrived.connect(self.refresh_checkedout)
-        self.refresher.finished.connect(self.progress.hide)
         self.refresher.newUserSignal.connect(self.ui.user_label.setText)
         self.refresher.checkedout_shelf_arrived.connect(self.ui.checkedout_shelf_label.setText)
         self.refresher.checkedin_shelf_arrived.connect(self.ui.checkedin_shelf_label.setText)
         self.refresher.log_file_arrived.connect(self.ui.log_label.setText)
         self.refresher.newUserSignal.connect(self.ui.user_label.setText)
+
         self.refresher.start()
 
     def refresh_checkedin(self, books):
@@ -166,6 +155,23 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
     def refresh_checkedout(self, books):
         self.populate_table(books, self.ui.checkedout_books, "Return this book", self.checkin_pressed)
+
+    def populate_table(self, books, table, buttontext, onclick):
+        table.clearContents()
+        table.setRowCount(0)
+        for (index, (id, title, author)) in enumerate(books):
+            table.insertRow(index)
+            table.setItem(index, 0, QtGui.QTableWidgetItem(title))
+            table.setItem(index, 1, QtGui.QTableWidgetItem(author))
+            checkout_button = QtGui.QPushButton(buttontext)
+            checkout_button.clicked.connect(lambda a = id, b = title: onclick(a,b))
+            table.setCellWidget(index, 2, checkout_button)
+
+        horizontal_header = table.horizontalHeader()
+        horizontal_header.setResizeMode(0, QtGui.QHeaderView.Stretch)
+        horizontal_header.setResizeMode(1, QtGui.QHeaderView.ResizeToContents)
+        horizontal_header.setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
+        horizontal_header.setStretchLastSection(False)
 
 class ShelfDialog(QtGui.QDialog, BaseShelfDialog):
     def __init__(self, parent, use, goodreads):
@@ -237,6 +243,17 @@ class Worker(QtCore.QThread):
 
         if _LOG_PATH_KEY not in self.main.goodreads.config:
             self.main.goodreads.config[_LOG_PATH_KEY] = path.normpath(path.expanduser("~/checkout.csv"))
+
+class BookPasser(QtCore.QThread):
+    books_arrived = QtCore.pyqtSignal(list)
+
+    def __init__(self, longtask, parent = None):
+        QtCore.QThread.__init__(self, parent)
+        self.longtask = longtask
+
+    def run(self):
+        self.books_arrived.emit(self.longtask())
+
 
 class RefreshWorker(QtCore.QThread):
     progress_signal = QtCore.pyqtSignal(str)
