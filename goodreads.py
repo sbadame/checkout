@@ -15,9 +15,16 @@ ACCESS_TOKEN_URL = "%s/oauth/access_token" % SITE
 
 DEFAULT_WAIT = lambda: raw_input("Press enter once authorized.")
 
+def SIMPLE_LOG(description):
+    print("Log: " + description)
+
+def NOOP_LOG(description):
+    pass
+
 class GoodReads:
-    def __init__(self, config, waitfunction=DEFAULT_WAIT):
+    def __init__(self, config, waitfunction=DEFAULT_WAIT, log=NOOP_LOG):
         self.config = config
+        self.log = log
 
         if 'CHECKEDOUT_SHELF' in config:
             self.checkedout_shelf = config['CHECKEDOUT_SHELF']
@@ -36,12 +43,14 @@ class GoodReads:
         self._user_id = None
 
     def authenticate(self, waitfunction=DEFAULT_WAIT):
+        self.log("Authenticating")
         """ Grabs a new set of keys from goodreads.
             Opens the authorization link in a new browser window.
             Calls the waitfunction() once the browser is opened. 
             The waitfunction should return only when the user has authorized the app"""
 
         client = oauth.Client(self.consumer)
+        self.log("Getting request token")
         response, content = client.request(REQUEST_TOKEN_URL, "GET")
         time.sleep(1)
         if response['status'] != HTTP_OK:
@@ -58,6 +67,7 @@ class GoodReads:
 
         request_token = oauth.Token(request_token, request_token_secret)
         client = oauth.Client(self.consumer, request_token)
+        self.log("Getting access token")
         response, content = client.request(ACCESS_TOKEN_URL, 'POST')
         time.sleep(1)
         if response['status'] != HTTP_OK:
@@ -69,6 +79,7 @@ class GoodReads:
         self.user()
 
     def _request(self, methodname, params={}, method='GET', success=HTTP_OK):
+        self.log("Accessing: " + methodname)
         client  = oauth.Client(self.consumer, self.access_token)
         body = urllib.urlencode(params)
         headers = {'content-type': 'application/x-www-form-urlencoded'}
@@ -78,6 +89,7 @@ class GoodReads:
             resp, content = client.request(SITE + '/' + methodname, method, body, headers)
             if resp['status'] != '502':
                 try_again = False
+                self.log("Accessing: " + methodname + " failed. Trying again")
             else:
                 time.sleep(1)
 
@@ -91,7 +103,6 @@ class GoodReads:
         xml = ET.fromstring(response)
         user = xml.find("user")
         self._user_id, user_name = int(user.get("id")), user.findtext("name")
-        print("New user: " + user_name)
         return self._user_id, user_name
 
     def _cached_user_id(self):
