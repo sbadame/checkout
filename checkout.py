@@ -245,7 +245,7 @@ class Worker(QtCore.QThread):
             self.main.goodreads.config[_LOG_PATH_KEY] = path.normpath(path.expanduser("~/checkout.csv"))
 
 class BookPasser(QtCore.QThread):
-    books_arrived = QtCore.pyqtSignal(list)
+    books_arrived = QtCore.pyqtSignal(object)
 
     def __init__(self, longtask, parent = None):
         QtCore.QThread.__init__(self, parent)
