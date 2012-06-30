@@ -25,7 +25,7 @@ class Main(QtGui.QMainWindow):
 
         self.progress = QtGui.QProgressDialog(None)
         self.progress.setRange(0,0)
-        self.progress.setWindowTitle("Title")
+        self.progress.setWindowTitle("Working...")
 
     def startup(self):
         self.ui = Ui_MainWindow()
@@ -164,7 +164,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             table.setItem(index, 0, QtGui.QTableWidgetItem(title))
             table.setItem(index, 1, QtGui.QTableWidgetItem(author))
             checkout_button = QtGui.QPushButton(buttontext)
-            checkout_button.clicked.connect(lambda a = id, b = title: onclick(a,b))
+            checkout_button.clicked.connect(lambda c, a = id, b = title: onclick(a,b))
             table.setCellWidget(index, 2, checkout_button)
 
         horizontal_header = table.horizontalHeader()

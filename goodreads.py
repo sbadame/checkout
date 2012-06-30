@@ -7,6 +7,8 @@ import xml.etree.ElementTree as ET
 #PROGRAM CONSTANTS
 HTTP_OK = '200'
 HTTP_CREATED = '201'
+HTTP_NOT_FOUND = '404'
+HTTP_BAD_GATEWAY = '502'
 
 SITE = "http://www.goodreads.com"
 REQUEST_TOKEN_URL = "%s/oauth/request_token" % SITE
@@ -79,22 +81,34 @@ class GoodReads:
         self.user()
 
     def _request(self, methodname, params={}, method='GET', success=HTTP_OK):
+        MAX_ATTEMPTS = 5
         self.log("Accessing: " + methodname)
         client  = oauth.Client(self.consumer, self.access_token)
         body = urllib.urlencode(params)
         headers = {'content-type': 'application/x-www-form-urlencoded'}
+        url = SITE + '/' + methodname
 
         try_again = True
-        while try_again:
-            resp, content = client.request(SITE + '/' + methodname, method, body, headers)
-            if resp['status'] != '502':
+        time.sleep(1)
+        attempt_count = 0
+        while try_again and attempt_count < MAX_ATTEMPTS:
+            resp, content = client.request(url, method, body, headers)
+            if resp['status'] != HTTP_BAD_GATEWAY:
                 try_again = False
-                self.log("Accessing: " + methodname + " failed. Trying again")
             else:
                 time.sleep(1)
+                attempt_count += 1
+                self.log("Accessing: " + methodname + " failed. Trying again: " + attempt_count)
+
+        if attempt_count >= MAX_ATTEMPTS:
+            self.log("Giving up on %s after %d attempts." % (url, MAX_ATTEMPTS))
+
 
         if resp['status'] != success:
-            raise Exception('Did not get expected HTTP status: %s' % resp['status'])
+            if resp['status'] == HTTP_NOT_FOUND:
+                raise Exception("URL: \"%s\" not found. %s" % (url, params))
+            else:
+                raise Exception('Did not get expected HTTP status: %s' % resp['status'])
 
         return content
 
