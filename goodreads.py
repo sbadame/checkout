@@ -154,6 +154,7 @@ class GoodReads:
                             review.findtext("book/authors/author/name")
                         ))
                 params["page"] += 1
+                self.log("Grabbing page %d" % params["page"])
             else:
                 load_next_page = False
         return results
