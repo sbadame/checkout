@@ -98,7 +98,7 @@ class GoodReads:
             else:
                 time.sleep(1)
                 attempt_count += 1
-                self.log("Accessing: " + methodname + " failed. Trying again: " + attempt_count)
+                self.log("Accessing: " + methodname + " failed. Trying again: " + str(attempt_count))
 
         if attempt_count >= MAX_ATTEMPTS:
             self.log("Giving up on %s after %d attempts." % (url, MAX_ATTEMPTS))

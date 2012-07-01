@@ -278,34 +278,38 @@ class RefreshWorker(QtCore.QThread):
     def available(self):
         self.progress("Reloading the available books")
         checkedin_books = self.main.goodreads.listbooks(self.main.goodreads.checkedin_shelf)
-        self.checkedin_books_arrived.emit(checkedin_books)
+        return (self.checkedin_books_arrived, checkedin_books)
 
     def checkedout(self):
         self.progress("Reloading the checked out books")
         checkedout_books = self.main.goodreads.listbooks(self.main.goodreads.checkedout_shelf)
-        self.checkedout_books_arrived.emit(checkedout_books)
+        return (self.checkedout_books_arrived, checkedout_books)
 
     def current_user(self):
         self.progress("Reloading the current user")
-        self.newUserSignal.emit(USER_LABEL_TEXT % self.main.goodreads.user()[1])
+        return (self.newUserSignal, USER_LABEL_TEXT % self.main.goodreads.user()[1])
 
     def checkedout_shelf(self):
         self.progress("Reloading the checked out shelf")
-        self.checkedout_shelf_arrived.emit(CHECKEDOUT_SHELF_LABEL_TEXT % self.main.goodreads.checkedout_shelf)
+        return (self.checkedout_shelf_arrived, CHECKEDOUT_SHELF_LABEL_TEXT % self.main.goodreads.checkedout_shelf)
 
     def available_shelf(self):
         self.progress("Reloading the available shelf")
-        self.checkedin_shelf_arrived.emit(CHECKEDIN_SHELF_LABEL_TEXT % self.main.goodreads.checkedin_shelf)
+        return (self.checkedin_shelf_arrived, CHECKEDIN_SHELF_LABEL_TEXT % self.main.goodreads.checkedin_shelf)
 
     def log_file(self):
         self.progress("Reloading the log file")
-        self.log_file_arrived.emit(LOG_LABEL_TEXT % self.main.goodreads.config[_LOG_PATH_KEY])
-
+        return (self.log_file_arrived, LOG_LABEL_TEXT % self.main.goodreads.config[_LOG_PATH_KEY])
 
     ALL = [available, checkedout, current_user, checkedout_shelf, available_shelf, log_file]
 
     def run(self):
-        for r in self.refresh: r(self)
+        results = []
+        for r in self.refresh:
+            results.append(r(self))
+
+        for (signal, value) in results:
+            signal.emit(value)
 
 def main():
     app = QtGui.QApplication(sys.argv)
