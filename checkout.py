@@ -138,6 +138,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         if not refresh:
             refresh = RefreshWorker.ALL
         self.refresher = RefreshWorker(self, refresh)
+        self.progress.canceled.connect(self.refresher.cancel)
         self.refresher.progress_signal.connect(self.update_progress)
         self.refresher.finished.connect(self.progress.hide)
 
@@ -274,6 +275,9 @@ class RefreshWorker(QtCore.QThread):
 
     def progress(self, description):
         self.progress_signal.emit(description)
+
+    def cancel(self, *args):
+        print(args)
 
     def available(self):
         self.progress("Reloading the available books")

@@ -103,7 +103,6 @@ class GoodReads:
         if attempt_count >= MAX_ATTEMPTS:
             self.log("Giving up on %s after %d attempts." % (url, MAX_ATTEMPTS))
 
-
         if resp['status'] != success:
             if resp['status'] == HTTP_NOT_FOUND:
                 raise Exception("URL: \"%s\" not found. %s" % (url, params))
