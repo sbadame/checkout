@@ -277,7 +277,7 @@ class RefreshWorker(QtCore.QThread):
     def progress(self, description):
         self.progress_signal.emit(description)
 
-    def cancel(self, *args):
+    def cancel(self):
         self.canceled = True
 
     def available(self):
