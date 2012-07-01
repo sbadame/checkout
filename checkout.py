@@ -267,6 +267,7 @@ class RefreshWorker(QtCore.QThread):
 
     def __init__(self, main, refresh=None, parent = None):
         QtCore.QThread.__init__(self, parent)
+        self.canceled = False
         self.main = main
         if refresh:
             self.refresh = refresh
@@ -277,7 +278,7 @@ class RefreshWorker(QtCore.QThread):
         self.progress_signal.emit(description)
 
     def cancel(self, *args):
-        print(args)
+        self.canceled = True
 
     def available(self):
         self.progress("Reloading the available books")
@@ -310,6 +311,8 @@ class RefreshWorker(QtCore.QThread):
     def run(self):
         results = []
         for r in self.refresh:
+            if self.canceled:
+                return
             results.append(r(self))
 
         for (signal, value) in results:
