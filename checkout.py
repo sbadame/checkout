@@ -49,6 +49,7 @@ class Main(QtGui.QMainWindow):
         long_task = lambda: self.goodreads.search(search_query, self.goodreads.checkedin_shelf)
         self.checkout_searcher = BookPasser(long_task)
         self.checkout_searcher.books_arrived.connect(self.refresh_checkedin)
+        self.checkout_searcher.finished.connect(self.progress.hide)
         self.checkout_searcher.start()
 
     def on_checkin_search_pressed(self):
@@ -58,6 +59,7 @@ class Main(QtGui.QMainWindow):
         long_task = lambda: self.goodreads.search(search_query, self.goodreads.checkedout_shelf)
         self.checkin_searcher = BookPasser(long_task)
         self.checkin_searcher.books_arrived.connect(self.refresh_checkedout)
+        self.checkin_searcher.finished.connect(self.progress.hide)
         self.checkin_searcher.start()
 
     def wait_for_user(self):
