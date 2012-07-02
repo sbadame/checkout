@@ -25,6 +25,7 @@ class Main(QtGui.QMainWindow):
         self.progress = QtGui.QProgressDialog(None)
         self.progress.setRange(0,0)
         self.progress.setWindowTitle("Working...")
+        self.asyncs = []
 
     def startup(self):
         self.ui = Ui_MainWindow()
@@ -92,7 +93,7 @@ class Main(QtGui.QMainWindow):
         async.finished.connect(self.progress.hide)
         async.terminated.connect(self.progress.hide)
         async.start()
-        self.async = async
+        self.asyncs.append(async)
 
     def wait_for_user(self):
         QtGui.QMessageBox.question(self, "Hold up!",
