@@ -142,7 +142,13 @@ class GoodReads:
         while load_next_page:
             response = self._request("review/list/%d.xml" % self._cached_user_id(), params)
 
-            xml = ET.fromstring(response)
+            try:
+                xml = ET.fromstring(response)
+            except ET.ParseError:
+                time.sleep(1)
+                self.log("Got malformed XML, retrying")
+                continue
+
             reviews = xml.findall("reviews/review")
             if reviews:
                 for review in reviews:

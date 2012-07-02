@@ -39,18 +39,23 @@ class Main(QtGui.QMainWindow):
         self.configthread.start()
 
     def update_progress(self, text):
-        self.progress.show()
         self.progress.setLabelText(text)
 
     def on_checkout_search_pressed(self):
         """ Connected to signal through AutoConnect """
-        search_query = self.ui.checkout_query.text()
 
-        long_task = lambda: self.goodreads.search(search_query, self.goodreads.checkedin_shelf)
-        self.checkout_searcher = BookPasser(long_task)
-        self.checkout_searcher.books_arrived.connect(self.refresh_checkedin)
-        self.checkout_searcher.finished.connect(self.progress.hide)
-        self.checkout_searcher.start()
+        search_query = self.ui.checkout_query.text()
+        def search():
+            return self.goodreads.search(search_query, self.goodreads.checkedin_shelf)
+        self.longtask(self.refresh_checkedin, search)
+
+    def longtask(self, slot, task):
+        async = ASyncWorker(slot, task)
+        async.started.connect(self.progress.show)
+        async.finished.connect(self.progress.hide)
+        async.terminated.connect(self.progress.hide)
+        async.start()
+        self.async = async
 
     def on_checkin_search_pressed(self):
         """ Connected to signal through AutoConnect """
@@ -247,6 +252,19 @@ class Worker(QtCore.QThread):
 
         if _LOG_PATH_KEY not in self.main.goodreads.config:
             self.main.goodreads.config[_LOG_PATH_KEY] = path.normpath(path.expanduser("~/checkout.csv"))
+
+class ASyncWorker(QtCore.QThread):
+    signal = QtCore.pyqtSignal(object)
+
+    def __init__(self, slot, task, parent=None):
+        QtCore.QThread.__init__(self, parent)
+        self.task = task
+        self.main = main
+        self.signal.connect(slot)
+
+    def run(self):
+        self.signal.emit(self.task())
+
 
 class BookPasser(QtCore.QThread):
     books_arrived = QtCore.pyqtSignal(object)
