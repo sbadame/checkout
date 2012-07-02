@@ -262,17 +262,6 @@ class ASyncWorker(QtCore.QThread):
     def run(self):
         self.signal.emit(self.task())
 
-
-class BookPasser(QtCore.QThread):
-    books_arrived = QtCore.pyqtSignal(object)
-
-    def __init__(self, longtask, parent = None):
-        QtCore.QThread.__init__(self, parent)
-        self.longtask = longtask
-
-    def run(self):
-        self.books_arrived.emit(self.longtask())
-
 class RefreshWorker(QtCore.QThread):
     progress_signal = QtCore.pyqtSignal(str)
     checkedout_shelf_arrived = QtCore.pyqtSignal(str)
