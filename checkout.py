@@ -37,6 +37,7 @@ class Main(QtGui.QMainWindow):
 
         self.progress.show()
         self.configthread.start()
+        print(self.initialize)
 
     def update_progress(self, text):
         self.progress.setLabelText(text)
