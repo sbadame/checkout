@@ -49,6 +49,13 @@ class Main(QtGui.QMainWindow):
             return self.goodreads.search(search_query, self.goodreads.checkedin_shelf)
         self.longtask(self.refresh_checkedin, search)
 
+    def on_checkin_search_pressed(self):
+        """ Connected to signal through AutoConnect """
+        search_query = self.ui.checkin_query.text()
+        def search():
+            return self.goodreads.search(search_query, self.goodreads.checkedout_shelf)
+        self.longtask(self.refresh_checkedout, search)
+
     def longtask(self, slot, task):
         async = ASyncWorker(slot, task)
         async.started.connect(self.progress.show)
@@ -56,16 +63,6 @@ class Main(QtGui.QMainWindow):
         async.terminated.connect(self.progress.hide)
         async.start()
         self.async = async
-
-    def on_checkin_search_pressed(self):
-        """ Connected to signal through AutoConnect """
-        search_query = self.ui.checkin_query.text()
-
-        long_task = lambda: self.goodreads.search(search_query, self.goodreads.checkedout_shelf)
-        self.checkin_searcher = BookPasser(long_task)
-        self.checkin_searcher.books_arrived.connect(self.refresh_checkedout)
-        self.checkin_searcher.finished.connect(self.progress.hide)
-        self.checkin_searcher.start()
 
     def wait_for_user(self):
         QtGui.QMessageBox.question(self, "Hold up!",
