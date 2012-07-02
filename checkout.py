@@ -65,7 +65,7 @@ class Main(QtGui.QMainWindow):
             if _LOG_PATH_KEY not in self.goodreads.config:
                 self.goodreads.config[_LOG_PATH_KEY] = path.normpath(path.expanduser("~/checkout.csv"))
 
-        self.longtask(self.refresh, initialize)
+        self.longtask((self.refresh, initialize))
 
     def update_progress(self, text):
         self.progress.show()
@@ -75,25 +75,28 @@ class Main(QtGui.QMainWindow):
         """ Connected to signal through AutoConnect """
 
         search_query = self.ui.checkout_query.text()
-        def search():
+        def search(log):
+            log("Searching for \"%s\"" % search_query)
             return self.goodreads.search(search_query, self.goodreads.checkedin_shelf)
-        self.longtask(self.refresh_checkedin, search)
+        self.longtask((self.refresh_checkedin, search))
 
     def on_checkin_search_pressed(self):
         """ Connected to signal through AutoConnect """
         search_query = self.ui.checkin_query.text()
-        def search():
+        def search(log):
+            log("Searching for \"%s\"" % search_query)
             return self.goodreads.search(search_query, self.goodreads.checkedout_shelf)
-        self.longtask(self.refresh_checkedout, search)
+        self.longtask((self.refresh_checkedout, search))
 
-    def longtask(self, slot, task):
-        async = ASyncWorker(slot, task)
-        async.started.connect(self.progress.show)
-        async.progress.connect(self.update_progress)
-        async.finished.connect(self.progress.hide)
-        async.terminated.connect(self.progress.hide)
-        async.start()
-        self.asyncs.append(async)
+    def longtask(self, *args):
+        for slot, task in args:
+            async = ASyncWorker(slot, task)
+            async.started.connect(self.progress.show)
+            async.progress.connect(self.update_progress)
+            async.finished.connect(self.progress.hide)
+            async.terminated.connect(self.progress.hide)
+            async.start()
+            self.asyncs.append(async)
 
     def wait_for_user(self):
         QtGui.QMessageBox.question(self, "Hold up!",
@@ -169,23 +172,56 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             self.refresh([RefreshWorker.available, RefreshWorker.checkedout])
 
     def refresh(self, refresh=None):
-        self.progress.show()
-        if not refresh:
-            refresh = RefreshWorker.ALL
-        self.refresher = RefreshWorker(self, refresh)
-        self.progress.canceled.connect(self.refresher.cancel)
-        self.refresher.progress_signal.connect(self.update_progress)
-        self.refresher.finished.connect(self.progress.hide)
+        #self.progress.show()
+        #if not refresh:
+            #refresh = RefreshWorker.ALL
 
-        self.refresher.checkedin_books_arrived.connect(self.refresh_checkedin)
-        self.refresher.checkedout_books_arrived.connect(self.refresh_checkedout)
-        self.refresher.newUserSignal.connect(self.ui.user_label.setText)
-        self.refresher.checkedout_shelf_arrived.connect(self.ui.checkedout_shelf_label.setText)
-        self.refresher.checkedin_shelf_arrived.connect(self.ui.checkedin_shelf_label.setText)
-        self.refresher.log_file_arrived.connect(self.ui.log_label.setText)
-        self.refresher.newUserSignal.connect(self.ui.user_label.setText)
+        def available(log):
+            log("Reloading the available books")
+            return self.goodreads.listbooks(self.goodreads.checkedin_shelf)
 
-        self.refresher.start()
+        def checkedout(log):
+            log("Reloading the checked out books")
+            return self.goodreads.listbooks(self.goodreads.checkedout_shelf)
+
+        def current_user(log):
+            log("Reloading the current user")
+            return USER_LABEL_TEXT % self.goodreads.user()[1]
+
+        def checkedout_shelf(log):
+            log("Reloading the checked out shelf")
+            return CHECKEDOUT_SHELF_LABEL_TEXT % self.goodreads.checkedout_shelf
+
+        def available_shelf(log):
+            log("Reloading the available shelf")
+            return CHECKEDIN_SHELF_LABEL_TEXT % self.goodreads.checkedin_shelf
+
+        def log_file(log):
+            log("Reloading the log file")
+            return LOG_LABEL_TEXT % self.goodreads.config[_LOG_PATH_KEY]
+
+        self.longtask(
+            (self.refresh_checkedin, available),
+            (self.refresh_checkedout, checkedout),
+            (self.ui.user_label.setText, current_user),
+            (self.ui.checkedout_shelf_label.setText, checkedout_shelf),
+            (self.ui.log_label.setText, log_file),
+            (self.ui.checkedin_shelf_label.setText, available_shelf))
+
+        #self.refresher = RefreshWorker(self, refresh)
+        #self.progress.canceled.connect(self.refresher.cancel)
+        #self.refresher.progress_signal.connect(self.update_progress)
+        #self.refresher.finished.connect(self.progress.hide)
+
+        #self.refresher.checkedin_books_arrived.connect(self.refresh_checkedin)
+        #self.refresher.checkedout_books_arrived.connect(self.refresh_checkedout)
+        #self.refresher.newUserSignal.connect(self.ui.user_label.setText)
+        #self.refresher.checkedout_shelf_arrived.connect(self.ui.checkedout_shelf_label.setText)
+        #self.refresher.checkedin_shelf_arrived.connect(self.ui.checkedin_shelf_label.setText)
+        #self.refresher.log_file_arrived.connect(self.ui.log_label.setText)
+        #self.refresher.newUserSignal.connect(self.ui.user_label.setText)
+
+        #self.refresher.start()
 
     def refresh_checkedin(self, books):
         self.populate_table(books, self.ui.checkedin_books, "Check this book out!", self.checkout_pressed)
