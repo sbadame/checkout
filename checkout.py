@@ -116,7 +116,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 self.goodreads.config['CHECKEDOUT_SHELF'] = shelf
                 self.goodreads.checkedout_shelf = shelf
                 if refresh:
-                    self.refresh([RefreshWorker.checkedout_shelf, RefreshWorker.checkedout])
+                    self.refresh(self.checkedout_shelf, self.checkedout)
 
     def on_switch_checkedin_button_pressed(self, refresh=True):
         dialog = ShelfDialog(self, "the available books", self.goodreads)
@@ -126,7 +126,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 self.goodreads.config['CHECKEDIN_SHELF'] = shelf
                 self.goodreads.checkedin_shelf = shelf
                 if refresh:
-                    self.refresh([RefreshWorker.available_shelf, RefreshWorker.available])
+                    self.refresh(self.available_shelf, self.available)
 
     def on_view_log_button_pressed(self):
         config_file = self.goodreads.config[_LOG_PATH_KEY]
@@ -141,7 +141,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
     def on_switch_log_button_pressed(self):
         file = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
         self.goodreads.config[_LOG_PATH_KEY] = str(file)
-        self.refresh([RefreshWorker.logfile])
+        self.refresh(self.logfile)
 
 
     def checkout_pressed(self, id, title):
@@ -156,7 +156,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             with open(self.goodreads.config[_LOG_PATH_KEY], 'ab') as logfile:
                 writer = csv.writer(logfile)
                 writer.writerow([date, str(name), "checked out", title])
-            self.refresh([RefreshWorker.available, RefreshWorker.checkedout])
+            self.refresh(self.available, self.checkedout)
 
     def checkin_pressed(self, id, title):
         """ Connected to signal in populate_table """
@@ -169,59 +169,49 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             with open(self.goodreads.config[_LOG_PATH_KEY], 'ab') as logfile:
                 writer = csv.writer(logfile)
                 writer.writerow([date, "", "checked in", title])
-            self.refresh([RefreshWorker.available, RefreshWorker.checkedout])
+            self.refresh([self.available, self.checkedout])
 
-    def refresh(self, refresh=None):
-        #self.progress.show()
-        #if not refresh:
-            #refresh = RefreshWorker.ALL
+    def available(self, log):
+        log("Reloading the available books")
+        return self.goodreads.listbooks(self.goodreads.checkedin_shelf)
 
-        def available(log):
-            log("Reloading the available books")
-            return self.goodreads.listbooks(self.goodreads.checkedin_shelf)
+    def checkedout(self, log):
+        log("Reloading the checked out books")
+        return self.goodreads.listbooks(self.goodreads.checkedout_shelf)
 
-        def checkedout(log):
-            log("Reloading the checked out books")
-            return self.goodreads.listbooks(self.goodreads.checkedout_shelf)
+    def current_user(self, log):
+        log("Reloading the current user")
+        return USER_LABEL_TEXT % self.goodreads.user()[1]
 
-        def current_user(log):
-            log("Reloading the current user")
-            return USER_LABEL_TEXT % self.goodreads.user()[1]
+    def checkedout_shelf(self, log):
+        log("Reloading the checked out shelf")
+        return CHECKEDOUT_SHELF_LABEL_TEXT % self.goodreads.checkedout_shelf
 
-        def checkedout_shelf(log):
-            log("Reloading the checked out shelf")
-            return CHECKEDOUT_SHELF_LABEL_TEXT % self.goodreads.checkedout_shelf
+    def available_shelf(self, log):
+        log("Reloading the available shelf")
+        return CHECKEDIN_SHELF_LABEL_TEXT % self.goodreads.checkedin_shelf
 
-        def available_shelf(log):
-            log("Reloading the available shelf")
-            return CHECKEDIN_SHELF_LABEL_TEXT % self.goodreads.checkedin_shelf
+    def log_file(self, log):
+        log("Reloading the log file")
+        return LOG_LABEL_TEXT % self.goodreads.config[_LOG_PATH_KEY]
 
-        def log_file(log):
-            log("Reloading the log file")
-            return LOG_LABEL_TEXT % self.goodreads.config[_LOG_PATH_KEY]
+    def refresh(self, *refresh):
 
-        self.longtask(
-            (self.refresh_checkedin, available),
-            (self.refresh_checkedout, checkedout),
-            (self.ui.user_label.setText, current_user),
-            (self.ui.checkedout_shelf_label.setText, checkedout_shelf),
-            (self.ui.log_label.setText, log_file),
-            (self.ui.checkedin_shelf_label.setText, available_shelf))
+        all_tasks = [(self.refresh_checkedin, self.available),
+            (self.refresh_checkedout, self.checkedout),
+            (self.ui.user_label.setText, self.current_user),
+            (self.ui.checkedout_shelf_label.setText, self.checkedout_shelf),
+            (self.ui.log_label.setText, self.log_file),
+            (self.ui.checkedin_shelf_label.setText, self.available_shelf)]
 
-        #self.refresher = RefreshWorker(self, refresh)
-        #self.progress.canceled.connect(self.refresher.cancel)
-        #self.refresher.progress_signal.connect(self.update_progress)
-        #self.refresher.finished.connect(self.progress.hide)
+        slots, tasks = zip(*all_tasks) #unzip in python
 
-        #self.refresher.checkedin_books_arrived.connect(self.refresh_checkedin)
-        #self.refresher.checkedout_books_arrived.connect(self.refresh_checkedout)
-        #self.refresher.newUserSignal.connect(self.ui.user_label.setText)
-        #self.refresher.checkedout_shelf_arrived.connect(self.ui.checkedout_shelf_label.setText)
-        #self.refresher.checkedin_shelf_arrived.connect(self.ui.checkedin_shelf_label.setText)
-        #self.refresher.log_file_arrived.connect(self.ui.log_label.setText)
-        #self.refresher.newUserSignal.connect(self.ui.user_label.setText)
+        if not refresh or refresh == (None,):
+            tasks = all_tasks
+        else:
+            tasks = [all_tasks[tasks.index(task)] for task in refresh]
 
-        #self.refresher.start()
+        self.longtask(*tasks)
 
     def refresh_checkedin(self, books):
         self.populate_table(books, self.ui.checkedin_books, "Check this book out!", self.checkout_pressed)
@@ -256,7 +246,7 @@ class ShelfDialog(QtGui.QDialog, BaseShelfDialog):
             QtCore.SIGNAL("clicked()"),
             self.create_new_shelf)
         self.goodreads = goodreads
-        self.refresh([RefreshWorker.available_shelf, RefreshWorker.checkedout_shelf])
+        self.refresh()
 
     def create_new_shelf(self):
         name, success = QtGui.QInputDialog.getText(self,
@@ -289,68 +279,6 @@ class ASyncWorker(QtCore.QThread):
 
     def run(self):
         self.signal.emit(self.task(self.log))
-
-class RefreshWorker(QtCore.QThread):
-    progress_signal = QtCore.pyqtSignal(str)
-    checkedout_shelf_arrived = QtCore.pyqtSignal(str)
-    checkedin_shelf_arrived = QtCore.pyqtSignal(str)
-    log_file_arrived = QtCore.pyqtSignal(str)
-    newUserSignal = QtCore.pyqtSignal(QtCore.QString)
-    checkedin_books_arrived = QtCore.pyqtSignal(list)
-    checkedout_books_arrived = QtCore.pyqtSignal(list)
-
-    def __init__(self, main, refresh=None, parent = None):
-        QtCore.QThread.__init__(self, parent)
-        self.canceled = False
-        self.main = main
-        if refresh:
-            self.refresh = refresh
-        else:
-            self.refresh = RefreshWorker.ALL
-
-    def progress(self, description):
-        self.progress_signal.emit(description)
-
-    def cancel(self):
-        self.canceled = True
-
-    def available(self):
-        self.progress("Reloading the available books")
-        checkedin_books = self.main.goodreads.listbooks(self.main.goodreads.checkedin_shelf)
-        return (self.checkedin_books_arrived, checkedin_books)
-
-    def checkedout(self):
-        self.progress("Reloading the checked out books")
-        checkedout_books = self.main.goodreads.listbooks(self.main.goodreads.checkedout_shelf)
-        return (self.checkedout_books_arrived, checkedout_books)
-
-    def current_user(self):
-        self.progress("Reloading the current user")
-        return (self.newUserSignal, USER_LABEL_TEXT % self.main.goodreads.user()[1])
-
-    def checkedout_shelf(self):
-        self.progress("Reloading the checked out shelf")
-        return (self.checkedout_shelf_arrived, CHECKEDOUT_SHELF_LABEL_TEXT % self.main.goodreads.checkedout_shelf)
-
-    def available_shelf(self):
-        self.progress("Reloading the available shelf")
-        return (self.checkedin_shelf_arrived, CHECKEDIN_SHELF_LABEL_TEXT % self.main.goodreads.checkedin_shelf)
-
-    def log_file(self):
-        self.progress("Reloading the log file")
-        return (self.log_file_arrived, LOG_LABEL_TEXT % self.main.goodreads.config[_LOG_PATH_KEY])
-
-    ALL = [available, checkedout, current_user, checkedout_shelf, available_shelf, log_file]
-
-    def run(self):
-        results = []
-        for r in self.refresh:
-            if self.canceled:
-                return
-            results.append(r(self))
-
-        for (signal, value) in results:
-            signal.emit(value)
 
 def main():
     app = QtGui.QApplication(sys.argv)
