@@ -30,16 +30,44 @@ class Main(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.configthread = Worker(self)
-        self.configthread.progress_signal.connect(self.update_progress)
-        self.configthread.finished.connect(self.progress.hide)
-        self.configthread.finished.connect(self.refresh)
+        def initialize(log):
+            log("Loading: " + CONFIG_FILE_PATH)
+            try:
+                with open(CONFIG_FILE_PATH, "r") as configfile:
+                    config = Config.load_from_file(configfile)
+            except IOError as e:
+                    print("Error loading: %s (%s). (This is normal for a first run)" % (CONFIG_FILE_PATH, e))
+                    config = Config(CONFIG_FILE_PATH)
 
-        self.progress.show()
-        self.configthread.start()
-        print(self.initialize)
+            log("Loading Keys for Goodreads")
+            if "DEVELOPER_KEY" not in config or "DEVELOPER_SECRET" not in config:
+                key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
+                        'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
+                if not success: exit()
+
+                config["DEVELOPER_KEY"] = str(key)
+
+                secret, success = QtGui.QInputDialog.getText(None, "Developer Secret?",
+                        'What is the developer secret for the key that you just gave?\n(It\'s also on that page with the key: http://www.goodreads.com/api/keys)')
+                if not success: exit()
+                config["DEVELOPER_SECRET"] = str(secret)
+
+            log("Setting up a GoodReads Connection")
+            self.goodreads = GoodReads(config, waitfunction=self.wait_for_user, log=log)
+
+            if "CHECKEDOUT_SHELF" not in config:
+                self.on_switch_checkedout_button_pressed(refresh=False)
+
+            if "CHECKEDIN_SHELF" not in config:
+                self.on_switch_checkedin_button_pressed(refresh=False)
+
+            if _LOG_PATH_KEY not in self.goodreads.config:
+                self.goodreads.config[_LOG_PATH_KEY] = path.normpath(path.expanduser("~/checkout.csv"))
+
+        self.longtask(self.refresh, initialize)
 
     def update_progress(self, text):
+        self.progress.show()
         self.progress.setLabelText(text)
 
     def on_checkout_search_pressed(self):
@@ -60,6 +88,7 @@ class Main(QtGui.QMainWindow):
     def longtask(self, slot, task):
         async = ASyncWorker(slot, task)
         async.started.connect(self.progress.show)
+        async.progress.connect(self.update_progress)
         async.finished.connect(self.progress.hide)
         async.terminated.connect(self.progress.hide)
         async.start()
@@ -208,51 +237,9 @@ class ShelfDialog(QtGui.QDialog, BaseShelfDialog):
     def shelf(self):
         return str(self.list.currentItem().text())
 
-class Worker(QtCore.QThread):
-
-    progress_signal = QtCore.pyqtSignal(str)
-
-    def __init__(self, main, parent = None):
-        QtCore.QThread.__init__(self, parent)
-        self.main = main
-
-    def progress(self, description):
-        self.progress_signal.emit(description)
-
-    def run(self):
-        self.progress("Loading local config file")
-        try:
-            with open(CONFIG_FILE_PATH, "r") as configfile:
-                config = Config.load_from_file(configfile)
-        except IOError as e:
-                print("Error loading: %s (%s). (This is normal for a first run)" % (CONFIG_FILE_PATH, e))
-                config = Config(CONFIG_FILE_PATH)
-
-        if "DEVELOPER_KEY" not in config or "DEVELOPER_SECRET" not in config:
-            key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
-                    'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
-            if not success: exit()
-
-            config["DEVELOPER_KEY"] = str(key)
-
-            secret, success = QtGui.QInputDialog.getText(None, "Developer Secret?",
-                    'What is the developer secret for the key that you just gave?\n(It\'s also on that page with the key: http://www.goodreads.com/api/keys)')
-            if not success: exit()
-            config["DEVELOPER_SECRET"] = str(secret)
-
-        self.main.goodreads = GoodReads(config, waitfunction=self.main.wait_for_user, log=self.progress)
-
-        if "CHECKEDOUT_SHELF" not in config:
-            self.main.on_switch_checkedout_button_pressed(refresh=False)
-
-        if "CHECKEDIN_SHELF" not in config:
-            self.main.on_switch_checkedin_button_pressed(refresh=False)
-
-        if _LOG_PATH_KEY not in self.main.goodreads.config:
-            self.main.goodreads.config[_LOG_PATH_KEY] = path.normpath(path.expanduser("~/checkout.csv"))
-
 class ASyncWorker(QtCore.QThread):
     signal = QtCore.pyqtSignal(object)
+    progress = QtCore.pyqtSignal(str)
 
     def __init__(self, slot, task, parent=None):
         QtCore.QThread.__init__(self, parent)
@@ -260,8 +247,11 @@ class ASyncWorker(QtCore.QThread):
         self.main = main
         self.signal.connect(slot)
 
+    def log(self, message):
+        self.progress.emit(message)
+
     def run(self):
-        self.signal.emit(self.task())
+        self.signal.emit(self.task(self.log))
 
 class RefreshWorker(QtCore.QThread):
     progress_signal = QtCore.pyqtSignal(str)
