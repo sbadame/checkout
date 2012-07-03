@@ -91,12 +91,22 @@ class Main(QtGui.QMainWindow):
     def longtask(self, *args):
         for slot, task in args:
             async = ASyncWorker(slot, task)
-            async.started.connect(self.progress.show)
             async.progress.connect(self.update_progress)
-            async.finished.connect(self.progress.hide)
-            async.terminated.connect(self.progress.hide)
             async.start()
             self.asyncs.append(async)
+
+        asyncs = self.asyncs
+        def wait_for_death():
+            for async in asyncs:
+                async.wait()
+            del asyncs[:]
+
+        self.progress_thread = QtCore.QThread()
+        self.progress_thread.run = wait_for_death
+        self.progress_thread.started.connect(self.progress.show)
+        self.progress_thread.finished.connect(self.progress.hide)
+        self.progress_thread.terminated.connect(self.progress.hide)
+        self.progress_thread.start()
 
     def wait_for_user(self):
         QtGui.QMessageBox.question(self, "Hold up!",
