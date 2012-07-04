@@ -99,6 +99,8 @@ class Main(QtGui.QMainWindow):
         def wait_for_death():
             for async in asyncs:
                 async.wait()
+            for async in asyncs:
+                async.commit()
             del asyncs[:]
 
         self.progress_thread = QtCore.QThread()
@@ -283,12 +285,19 @@ class ASyncWorker(QtCore.QThread):
         self.task = task
         self.main = main
         self.signal.connect(slot)
+        self.finished = False
+        self.result = None
 
     def log(self, message):
         self.progress.emit(message)
 
     def run(self):
-        self.signal.emit(self.task(self.log))
+        self.result = self.task(self.log)
+        self.finished = True
+
+    def commit(self):
+        if self.finished:
+            self.signal.emit(self.result)
 
 def main():
     app = QtGui.QApplication(sys.argv)
