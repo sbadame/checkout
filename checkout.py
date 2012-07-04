@@ -31,6 +31,10 @@ class Main(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        self.ui.checkout_reset.hide()
+        self.ui.checkin_reset.hide()
+
+
         def initialize(log):
             log("Loading: " + CONFIG_FILE_PATH)
             try:

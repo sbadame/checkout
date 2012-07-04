@@ -21,7 +21,7 @@
        <item>
         <widget class="QTabWidget" name="tabWidget">
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="checkout_tab">
           <attribute name="title">
@@ -121,7 +121,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="checking_reset">
+               <widget class="QPushButton" name="checkin_reset">
                 <property name="text">
                  <string>Reset</string>
                 </property>
