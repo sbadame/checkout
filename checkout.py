@@ -95,12 +95,22 @@ class Main(QtGui.QMainWindow):
             async.start()
             self.asyncs.append(async)
 
+
+        canceled = False
+        def on_cancel():
+            global canceled
+            canceled = True
+
         asyncs = self.asyncs
         def wait_for_death():
             for async in asyncs:
                 async.wait()
-            for async in asyncs:
-                async.commit()
+            if not canceled:
+                print("not canceled")
+                for async in asyncs:
+                    async.commit()
+            else:
+                print("canceled")
             del asyncs[:]
 
         self.progress_thread = QtCore.QThread()
