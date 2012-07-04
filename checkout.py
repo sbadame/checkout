@@ -95,22 +95,19 @@ class Main(QtGui.QMainWindow):
             async.start()
             self.asyncs.append(async)
 
-
-        canceled = False
-        def on_cancel():
-            global canceled
-            canceled = True
-
         asyncs = self.asyncs
-        def wait_for_death():
+
+        def on_cancel():
             for async in asyncs:
-                async.wait()
-            if not canceled:
-                print("not canceled")
-                for async in asyncs:
-                    async.commit()
-            else:
-                print("canceled")
+                async.terminate()
+
+        def wait_for_death():
+            for async in asyncs: async.wait()
+
+            #Update the UI only if everything finished correctly.
+            if all(async.finished for async in asyncs):
+                for async in asyncs: async.commit()
+
             del asyncs[:]
 
         self.progress_thread = QtCore.QThread()
@@ -118,6 +115,8 @@ class Main(QtGui.QMainWindow):
         self.progress_thread.started.connect(self.progress.show)
         self.progress_thread.finished.connect(self.progress.hide)
         self.progress_thread.terminated.connect(self.progress.hide)
+        self.progress.canceled.connect(on_cancel)
+
         self.progress_thread.start()
 
     def wait_for_user(self):
