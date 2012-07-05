@@ -230,7 +230,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             with open(self.goodreads.config[_LOG_PATH_KEY], 'ab') as logfile:
                 writer = csv.writer(logfile)
                 writer.writerow([date, "", "checked in", title])
-            self.refresh([self.available, self.checkedout])
+            self.refresh(self.available, self.checkedout)
 
     def available(self, log):
         log("Reloading the available books")
@@ -270,7 +270,11 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         if not refresh or refresh == (None,):
             tasks = all_tasks
         else:
-            tasks = [all_tasks[tasks.index(task)] for task in refresh]
+            not_allowed = filter(lambda t: t not in tasks, refresh)
+            if not_allowed:
+                raise ValueError("'%s' are not an available for refresh" % not_allowed)
+            else:
+                tasks = [all_tasks[tasks.index(task)] for task in refresh]
 
         self.longtask(*tasks)
 
