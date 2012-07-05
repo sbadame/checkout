@@ -276,5 +276,38 @@
   </widget>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>checkout_query</sender>
+   <signal>returnPressed()</signal>
+   <receiver>checkout_search</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>263</x>
+     <y>86</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>538</x>
+     <y>86</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkin_query</sender>
+   <signal>returnPressed()</signal>
+   <receiver>checkin_search</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>263</x>
+     <y>86</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>538</x>
+     <y>86</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
