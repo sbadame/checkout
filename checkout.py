@@ -82,7 +82,25 @@ class Main(QtGui.QMainWindow):
         def search(log):
             log("Searching for \"%s\"" % search_query)
             return self.goodreads.search(search_query, self.goodreads.checkedin_shelf)
-        self.longtask((self.refresh_checkedin, search))
+
+        def updateUI(books):
+            self.refresh_checkedin(books)
+            self.ui.checkout_reset.show()
+
+        self.longtask((updateUI, search))
+
+    def on_checkout_reset_pressed(self):
+        """ Connected to signal through AutoConnect """
+        def getallbooks(log):
+            log("Retreving all checkedout books")
+            return self.goodreads.listbooks(self.goodreads.checkedin_shelf)
+
+        def updateUI(books):
+            self.refresh_checkedin(books)
+            self.ui.checkout_query.setText("")
+            self.ui.checkout_reset.hide()
+
+        self.longtask((updateUI, getallbooks))
 
     def on_checkin_search_pressed(self):
         """ Connected to signal through AutoConnect """
@@ -90,7 +108,25 @@ class Main(QtGui.QMainWindow):
         def search(log):
             log("Searching for \"%s\"" % search_query)
             return self.goodreads.search(search_query, self.goodreads.checkedout_shelf)
-        self.longtask((self.refresh_checkedout, search))
+
+        def updateUI(books):
+            self.refresh_checkedout(books)
+            self.ui.checkin_reset.show()
+
+        self.longtask((updateUI, search))
+
+    def on_checkin_reset_pressed(self):
+        """ Connected to signal through AutoConnect """
+        def getallbooks(log):
+            log("Retreving all checkedout books")
+            return self.goodreads.listbooks(self.goodreads.checkedout_shelf)
+
+        def updateUI(books):
+            self.refresh_checkedout(books)
+            self.ui.checkin_query.setText("")
+            self.ui.checkin_reset.hide()
+
+        self.longtask((updateUI, getallbooks))
 
     def longtask(self, *args):
         for slot, task in args:
