@@ -16,6 +16,7 @@ CHECKEDOUT_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books 
 CHECKEDIN_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are available.'
 LOG_LABEL_TEXT = 'The log is recorded at "%s".'
 _LOG_PATH_KEY = 'LOG_PATH'
+_INVENTORY_PATH_KEY = 'INVENTORY_PATH'
 
 """ To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
@@ -68,6 +69,11 @@ class Main(QtGui.QMainWindow):
 
             if _LOG_PATH_KEY not in self.goodreads.config:
                 self.goodreads.config[_LOG_PATH_KEY] = path.normpath(path.expanduser("~/checkout.csv"))
+
+            log("Loading your inventory")
+            if _INVENTORY_PATH_KEY not in self.goodreads.config:
+                self.goodreads.config[_INVENTORY_PATH_KEY] = path.normpath(path.expanduser("~/inventory.csv"))
+
 
         self.longtask((self.refresh, initialize))
 
