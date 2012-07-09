@@ -17,6 +17,7 @@ CHECKEDIN_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books t
 LOG_LABEL_TEXT = 'The log is recorded at "%s".'
 _LOG_PATH_KEY = 'LOG_PATH'
 _INVENTORY_PATH_KEY = 'INVENTORY_PATH'
+inventory = {}
 
 """ To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
@@ -72,8 +73,27 @@ class Main(QtGui.QMainWindow):
 
             log("Loading your inventory")
             if _INVENTORY_PATH_KEY not in self.goodreads.config:
-                self.goodreads.config[_INVENTORY_PATH_KEY] = path.normpath(path.expanduser("~/inventory.csv"))
+                config[_INVENTORY_PATH_KEY] = path.normpath(path.expanduser("~/inventory.csv"))
 
+            try:
+                with open(config[_INVENTORY_PATH_KEY], 'rb') as inventoryfile:
+                    for (id, title, author, num_in, num_out) in csv.reader(inventoryfile):
+                        inventory[id] = (num_in, num_out)
+            except IOError as e:
+                try:
+                    log("Creating a new inventory file")
+                    with open(config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
+                        log("Creating a new inventory file")
+                        writer = csv.writer(inventoryfile)
+                        for book in self.goodreads.listbooks(self.goodreads.checkedin_shelf):
+                            writer.writerow(list(book) + [1, 0])
+                            inventory[book[0]] = (1, 0)
+                        for book in self.goodreads.listbooks(self.goodreads.checkedout_shelf):
+                            writer.writerow(list(book) + [0, 1])
+                            inventory[book[0]] = (0, 1)
+                    print("Created a new inventory file")
+                except IOError as e:
+                    print("Couldn't create a new inventory file: " + str(e))
 
         self.longtask((self.refresh, initialize))
 
