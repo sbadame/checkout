@@ -289,12 +289,20 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         log("Reloading the available books")
         books = self.goodreads.listbooks(self.goodreads.checkedin_shelf)
         books.sort(key=BOOKSORT)
+        for (id, title, author) in books:
+            if id not in self.inventory:
+                self.inventory[int(id)]= {TITLE: title, AUTHOR: author, CHECKED_IN: 1, CHECKED_OUT: 0}
+        self.persist_inventory()
         return books
 
     def checkedout(self, log):
         log("Reloading the checked out books")
         books = self.goodreads.listbooks(self.goodreads.checkedout_shelf)
         books.sort(key=BOOKSORT)
+        for (id, title, author) in books:
+            if id not in self.inventory:
+                self.inventory[int(id)]= {TITLE: title, AUTHOR: author, CHECKED_IN: 0, CHECKED_OUT: 1}
+        self.persist_inventory()
         return books
 
     def current_user(self, log):
