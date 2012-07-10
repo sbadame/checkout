@@ -288,6 +288,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
     def available(self, log):
         log("Reloading the available books")
         books = self.goodreads.listbooks(self.goodreads.checkedin_shelf)
+        books += self.goodreads.listbooks(self.goodreads.checkedout_shelf)
         books.sort(key=BOOKSORT)
         for (id, title, author) in books:
             if id not in self.inventory:
@@ -344,12 +345,13 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         self.longtask(*tasks)
 
     def refresh_checkedin(self, books):
-        self.populate_table(books, self.ui.checkedin_books, "Check this book out!", self.checkout_pressed)
+        isavailable = lambda id : self.inventory[id][CHECKED_IN] > 0
+        self.populate_table( books, self.ui.checkedin_books, "Check this book out!", self.checkout_pressed, isavailable)
 
     def refresh_checkedout(self, books):
-        self.populate_table(books, self.ui.checkedout_books, "Return this book", self.checkin_pressed)
+        self.populate_table(books, self.ui.checkedout_books, "Return this book", self.checkin_pressed, lambda x : True)
 
-    def populate_table(self, books, table, buttontext, onclick):
+    def populate_table(self, books, table, buttontext, onclick, rowfilter):
         table.clearContents()
         table.setRowCount(0)
         for (index, (id, title, author)) in enumerate(books):
@@ -360,9 +362,10 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             authorwidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
             table.setItem(index, 0, titlewidget)
             table.setItem(index, 1, authorwidget)
-            checkout_button = QtGui.QPushButton(buttontext)
-            checkout_button.clicked.connect(lambda c, a = id, b = title: onclick(a,b))
-            table.setCellWidget(index, 2, checkout_button)
+            if rowfilter(id):
+                checkout_button = QtGui.QPushButton(buttontext)
+                checkout_button.clicked.connect(lambda c, a = id, b = title: onclick(a,b))
+                table.setCellWidget(index, 2, checkout_button)
 
         horizontal_header = table.horizontalHeader()
         horizontal_header.setResizeMode(0, QtGui.QHeaderView.Stretch)
