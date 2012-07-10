@@ -16,28 +16,34 @@
   <property name="styleSheet">
    <string notr="true">QWidget {
   font-family: 'Calibri';
+  font-size: 16px;
 }
 
 QLineEdit {
   font-size: 20px;
   font-family: 'Calibri';
   font-style: italic;
+  border: 1px solid gray;
 }
 
 QPushButton {
-  color: white;
-  background-color: #3AA6D0;
   padding: 3px 10px 3px 10px;
   font-size: 20px;
   border: none;
-  
+}
+
+QPushButton:hover {
+  color: white;
+  background-color: #3AA6D0;
+  border: 1px solid blue;
 }
 
 QTableWidget {
   font-size: 16px;
   font-family: 'Gisha';
-  background-color: #3AA6D0;
-  alternate-background-color: #62B1D0;
+  background-color: #6CBAE8;
+  alternate-background-color: #8DC6E8;
+  border: none;
 }
 
 QTableWidget::item {
@@ -47,7 +53,9 @@ QTableWidget::item {
 }
 
 QTableWidget::item:selected:active {
-   border: none;
+   background-color: #145D88;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
 }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -73,9 +81,16 @@ QTableWidget::item:selected:active {
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
             <widget class="QWidget" name="widget_2" native="true">
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
-               <widget class="QLineEdit" name="checkout_query"/>
+               <widget class="QLineEdit" name="checkout_query">
+                <property name="text">
+                 <string>What are you looking for?</string>
+                </property>
+               </widget>
               </item>
               <item>
                <widget class="QPushButton" name="checkout_search">
@@ -238,7 +253,11 @@ QTableWidget::item:selected:active {
             <widget class="QWidget" name="widget_4" native="true">
              <layout class="QHBoxLayout" name="horizontalLayout_4">
               <item>
-               <widget class="QLineEdit" name="checkin_query"/>
+               <widget class="QLineEdit" name="checkin_query">
+                <property name="text">
+                 <string>What are you looking for?</string>
+                </property>
+               </widget>
               </item>
               <item>
                <widget class="QPushButton" name="checkin_search">
