@@ -13,13 +13,56 @@
   <property name="windowTitle">
    <string>Checkout</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget {
+  font-family: 'Calibri';
+}
+
+QLineEdit {
+  font-size: 20px;
+  font-family: 'Calibri';
+  font-style: italic;
+}
+
+QPushButton {
+  color: white;
+  background-color: #3AA6D0;
+  padding: 3px 10px 3px 10px;
+  font-size: 20px;
+  border: none;
+  
+}
+
+QTableWidget {
+  font-size: 16px;
+  font-family: 'Gisha';
+  background-color: #3AA6D0;
+  alternate-background-color: #62B1D0;
+}
+
+QTableWidget::item {
+  padding: 10px 0px 10px 10px;
+  margin: 10px 0px 0px 0px;
+  border-bottom: 0.5px solid white;
+}
+
+QTableWidget::item:selected:active {
+   border: none;
+}</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
    <layout class="QHBoxLayout" name="horizontalLayout_3">
     <item>
      <widget class="QWidget" name="widget" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QTabWidget" name="tabWidget">
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
          <property name="currentIndex">
           <number>0</number>
          </property>
@@ -37,7 +80,7 @@
               <item>
                <widget class="QPushButton" name="checkout_search">
                 <property name="text">
-                 <string>Search!</string>
+                 <string>Search</string>
                 </property>
                </widget>
               </item>
@@ -53,14 +96,26 @@
            </item>
            <item>
             <widget class="QTableWidget" name="checkedin_books">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="maximumSize">
               <size>
                <width>16777215</width>
                <height>16777215</height>
               </size>
              </property>
+             <property name="focusPolicy">
+              <enum>Qt::WheelFocus</enum>
+             </property>
              <property name="horizontalScrollBarPolicy">
               <enum>Qt::ScrollBarAlwaysOff</enum>
+             </property>
+             <property name="alternatingRowColors">
+              <bool>true</bool>
              </property>
              <property name="selectionMode">
               <enum>QAbstractItemView::SingleSelection</enum>
@@ -68,11 +123,20 @@
              <property name="selectionBehavior">
               <enum>QAbstractItemView::SelectRows</enum>
              </property>
+             <property name="showGrid">
+              <bool>false</bool>
+             </property>
+             <attribute name="horizontalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>false</bool>
              </attribute>
              <attribute name="horizontalHeaderDefaultSectionSize">
               <number>200</number>
+             </attribute>
+             <attribute name="horizontalHeaderMinimumSectionSize">
+              <number>27</number>
              </attribute>
              <attribute name="horizontalHeaderStretchLastSection">
               <bool>true</bool>
@@ -80,9 +144,27 @@
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
              </attribute>
+             <attribute name="verticalHeaderDefaultSectionSize">
+              <number>40</number>
+             </attribute>
              <attribute name="verticalHeaderStretchLastSection">
               <bool>false</bool>
              </attribute>
+             <row>
+              <property name="text">
+               <string>a</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>c</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>b</string>
+              </property>
+             </row>
              <column>
               <property name="text">
                <string>Title</string>
@@ -98,6 +180,51 @@
                <string>Checked In/Out</string>
               </property>
              </column>
+             <item row="0" column="0">
+              <property name="text">
+               <string>Game of Thrones</string>
+              </property>
+             </item>
+             <item row="0" column="1">
+              <property name="text">
+               <string>Dr Sues</string>
+              </property>
+             </item>
+             <item row="0" column="2">
+              <property name="text">
+               <string>Checkout!</string>
+              </property>
+             </item>
+             <item row="1" column="0">
+              <property name="text">
+               <string>A happy worl</string>
+              </property>
+             </item>
+             <item row="1" column="1">
+              <property name="text">
+               <string>sandro</string>
+              </property>
+             </item>
+             <item row="1" column="2">
+              <property name="text">
+               <string>Checkout!</string>
+              </property>
+             </item>
+             <item row="2" column="0">
+              <property name="text">
+               <string>Wassup Homie?</string>
+              </property>
+             </item>
+             <item row="2" column="1">
+              <property name="text">
+               <string>Marcy</string>
+              </property>
+             </item>
+             <item row="2" column="2">
+              <property name="text">
+               <string>Checkout!</string>
+              </property>
+             </item>
             </widget>
            </item>
           </layout>
@@ -116,7 +243,7 @@
               <item>
                <widget class="QPushButton" name="checkin_search">
                 <property name="text">
-                 <string>Search!</string>
+                 <string>Search</string>
                 </property>
                </widget>
               </item>
@@ -147,6 +274,9 @@
              <property name="selectionBehavior">
               <enum>QAbstractItemView::SelectRows</enum>
              </property>
+             <attribute name="horizontalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>true</bool>
              </attribute>
@@ -306,6 +436,70 @@
     <hint type="destinationlabel">
      <x>538</x>
      <y>86</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkout_search</sender>
+   <signal>pressed()</signal>
+   <receiver>checkout_reset</receiver>
+   <slot>show()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>551</x>
+     <y>72</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>632</x>
+     <y>72</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkout_reset</sender>
+   <signal>pressed()</signal>
+   <receiver>checkout_reset</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>632</x>
+     <y>72</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>632</x>
+     <y>72</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkin_reset</sender>
+   <signal>pressed()</signal>
+   <receiver>checkin_reset</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>632</x>
+     <y>69</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>632</x>
+     <y>69</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkin_search</sender>
+   <signal>pressed()</signal>
+   <receiver>checkin_reset</receiver>
+   <slot>show()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>551</x>
+     <y>69</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>632</x>
+     <y>69</y>
     </hint>
    </hints>
   </connection>
