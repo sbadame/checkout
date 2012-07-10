@@ -22,6 +22,7 @@ CHECKED_IN = "CHECKED_IN"
 CHECKED_OUT = "CHECKED_OUT"
 TITLE = "TITLE"
 AUTHOR = "AUTHOR"
+BOOKSORT = lambda (id, title, author): (author, title)
 
 """ To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
@@ -92,10 +93,9 @@ class Main(QtGui.QMainWindow):
                         for id, title, author in self.goodreads.listbooks(self.goodreads.checkedin_shelf):
                             writer.writerow([id, title, author, 1, 0])
                             self.inventory[int(id)] = {TITLE: title, AUTHOR: author, CHECKED_IN: 1, CHECKED_OUT: 0}
-                        for id, title, author in self.goodreads.listbooks(self.goodreads.checkedin_shelf):
-                            writer.writerow([id, title, author, 1, 0])
+                        for id, title, author in self.goodreads.listbooks(self.goodreads.checkedout_shelf):
+                            writer.writerow([id, title, author, 0, 1])
                             self.inventory[int(id)] = {TITLE: title, AUTHOR: author, CHECKED_IN: 0, CHECKED_OUT: 1}
-                    print("Created a new inventory file")
                 except IOError as e:
                     print("Couldn't create a new inventory file: " + str(e))
 
@@ -237,14 +237,10 @@ If this is your first time, you will have to give 'Checkout' permission to acces
     def persist_inventory(self):
         with open(self.goodreads.config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
             writer = csv.writer(inventoryfile)
-            for id in self.inventory.keys():
-                writer.writerow(
-                    [id,
-                     self.inventory[id][TITLE],
-                     self.inventory[id][AUTHOR],
-                     self.inventory[id][CHECKED_IN],
-                     self.inventory[id][CHECKED_OUT]])
-        print("Inventory updated")
+            data = [(id, book[TITLE], book[AUTHOR], book[CHECKED_IN], book[CHECKED_OUT]) for id, book in self.inventory.items()]
+            data.sort(key = lambda (id, title, author, checked_in, checked_out): (author, title))
+            for id, title, author, checked_in, checked_out in data:
+                writer.writerow([id, title, author, checked_in, checked_out])
 
     def checkout_pressed(self, id, title):
         """ Connected to signal in populate_table """
@@ -263,7 +259,6 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 self.inventory[id][CHECKED_IN] -= 1
                 self.inventory[id][CHECKED_OUT] += 1
                 self.persist_inventory()
-                print(self.inventory[id][TITLE])
             else:
                 print("couldn't find %d: %s" % (id, title))
 
@@ -281,22 +276,25 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 writer = csv.writer(logfile)
                 writer.writerow([date, "", "checked in", title])
 
-            self.inventory[id][CHECKED_IN] += 1
-            self.inventory[id][CHECKED_OUT] -= 1
-            self.persist_inventory()
+            if id in self.inventory:
+                self.inventory[id][CHECKED_IN] += 1
+                self.inventory[id][CHECKED_OUT] -= 1
+                self.persist_inventory()
+            else:
+                print("Couldn't find ID: %d, title: %s" % (id, title))
 
             self.refresh(self.available, self.checkedout)
 
     def available(self, log):
         log("Reloading the available books")
         books = self.goodreads.listbooks(self.goodreads.checkedin_shelf)
-        books.sort(key = lambda (id, title, author): (author, title))
+        books.sort(key=BOOKSORT)
         return books
 
     def checkedout(self, log):
         log("Reloading the checked out books")
         books = self.goodreads.listbooks(self.goodreads.checkedout_shelf)
-        books.sort(key = lambda (id, title, author): (author, title))
+        books.sort(key=BOOKSORT)
         return books
 
     def current_user(self, log):
