@@ -22,7 +22,7 @@ CHECKED_IN = "CHECKED_IN"
 CHECKED_OUT = "CHECKED_OUT"
 TITLE = "TITLE"
 AUTHOR = "AUTHOR"
-BOOKSORT = lambda (id, title, author): (author, title)
+BOOKSORT = lambda (id, title, author): (list(reversed(author.split())), title)
 
 """ To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
