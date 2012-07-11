@@ -21,9 +21,24 @@
     <string notr="true"/>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <property name="leftMargin">
+     <number>5</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>5</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item>
      <widget class="QWidget" name="widget" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="margin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QStackedWidget" name="uistack">
          <property name="styleSheet">
@@ -32,14 +47,29 @@
          <property name="currentIndex">
           <number>0</number>
          </property>
-         <widget class="QWidget" name="stackedWidgetPage1">
+         <widget class="QWidget" name="bookpage">
           <layout class="QVBoxLayout" name="verticalLayout_2">
+           <property name="leftMargin">
+            <number>3</number>
+           </property>
+           <property name="topMargin">
+            <number>3</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item>
             <widget class="QWidget" name="widget_2" native="true">
              <property name="styleSheet">
               <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <property name="margin">
+               <number>0</number>
+              </property>
               <item>
                <widget class="CustomLineEdit" name="search_query">
                 <property name="text">
@@ -87,6 +117,11 @@
              </property>
              <property name="focusPolicy">
               <enum>Qt::WheelFocus</enum>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">margin-top: 3px;
+margin-left: 6px;
+</string>
              </property>
              <property name="horizontalScrollBarPolicy">
               <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -146,7 +181,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="stackedWidgetPage2">
+         <widget class="QWidget" name="optionspage">
           <layout class="QFormLayout" name="formLayout_2">
            <property name="fieldGrowthPolicy">
             <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
@@ -228,7 +263,7 @@
             </widget>
            </item>
            <item row="0" column="0">
-            <widget class="QPushButton" name="back_to_main">
+            <widget class="QPushButton" name="back_to_books">
              <property name="text">
               <string>&lt;&lt; Back to getting books!</string>
              </property>
