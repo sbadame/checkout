@@ -14,55 +14,7 @@
    <string>Checkout</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget {
-  font-family: 'Calibri';
-  font-size: 16px;
-}
-
-QLineEdit {
-  font-size: 20px;
-  font-family: 'Calibri';
-  font-style: italic;
-  border: 1px solid gray;
-}
-
-QPushButton {
-  padding: 3px 10px 3px 10px;
-  font-size: 20px;
-  border: none;
-}
-
-QPushButton:hover {
-  color: white;
-  background-color: #3AA6D0;
-  border: 1px solid blue;
-}
-
-QTableWidget QPushButton {
-  margin: 12px 20px 12px 20px;
-  padding: 12px 20px 12px 20px;
-  font-size: 12px;
-}
-
-QTableWidget {
-  font-size: 16px;
-  font-family: 'Gisha';
-  background-color: #6CBAE8;
-  alternate-background-color: #8DC6E8;
-  border: none;
-}
-
-QTableWidget::item {
- /*  padding: 10px 0px 10px 10px; */
-  margin: 10px 0px 0px 0px;
-  border-bottom: 0.5px solid white;
-}
-
-QTableWidget::item:selected:active {
-   background-color: #145D88;
-    border-top: 1px solid black;
-    border-bottom: 1px solid black;
-}</string>
+   <string notr="true"/>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
@@ -77,7 +29,7 @@ QTableWidget::item:selected:active {
          <property name="styleSheet">
           <string notr="true"/>
          </property>
-         <widget class="QWidget" name="stackedWidgetPage1" native="true">
+         <widget class="QWidget" name="stackedWidgetPage1">
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
             <widget class="QWidget" name="widget_2" native="true">
@@ -184,7 +136,7 @@ QTableWidget::item:selected:active {
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="stackedWidgetPage2" native="true">
+         <widget class="QWidget" name="stackedWidgetPage2">
           <layout class="QFormLayout" name="formLayout_2">
            <property name="fieldGrowthPolicy">
             <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
