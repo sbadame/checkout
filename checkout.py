@@ -111,10 +111,12 @@ class Main(QtGui.QMainWindow):
         search_query = self.ui.checkout_query.text()
         def search(log):
             log("Searching for \"%s\"" % search_query)
-            return self.goodreads.search(search_query, self.goodreads.checkedin_shelf)
+            return self.goodreads.search(search_query,
+                self.goodreads.checkedin_shelf,
+                self.goodreads.checkedout_shelf)
 
         def updateUI(books):
-            self.refresh_checkedin(books)
+            self.populate_table(books)
             self.ui.checkout_reset.show()
 
         self.longtask((updateUI, search))
@@ -129,32 +131,6 @@ class Main(QtGui.QMainWindow):
             self.refresh_checkedin(books)
             self.ui.checkout_query.setText("")
             self.ui.checkout_reset.hide()
-
-        self.longtask((updateUI, getallbooks))
-
-    def on_checkin_search_pressed(self):
-        """ Connected to signal through AutoConnect """
-        search_query = self.ui.checkin_query.text()
-        def search(log):
-            log("Searching for \"%s\"" % search_query)
-            return self.goodreads.search(search_query, self.goodreads.checkedout_shelf)
-
-        def updateUI(books):
-            self.refresh_checkedout(books)
-            self.ui.checkin_reset.show()
-
-        self.longtask((updateUI, search))
-
-    def on_checkin_reset_pressed(self):
-        """ Connected to signal through AutoConnect """
-        def getallbooks(log):
-            log("Retreving all checkedout books")
-            return self.goodreads.listbooks(self.goodreads.checkedout_shelf)
-
-        def updateUI(books):
-            self.refresh_checkedout(books)
-            self.ui.checkin_query.setText("")
-            self.ui.checkin_reset.hide()
 
         self.longtask((updateUI, getallbooks))
 
@@ -296,16 +272,6 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         self.persist_inventory()
         return books
 
-    def checkedout(self, log):
-        log("Reloading the checked out books")
-        books = self.goodreads.listbooks(self.goodreads.checkedout_shelf)
-        books.sort(key=BOOKSORT)
-        for (id, title, author) in books:
-            if id not in self.inventory:
-                self.inventory[int(id)]= {TITLE: title, AUTHOR: author, CHECKED_IN: 0, CHECKED_OUT: 1}
-        self.persist_inventory()
-        return books
-
     def current_user(self, log):
         log("Reloading the current user")
         return USER_LABEL_TEXT % self.goodreads.user()[1]
@@ -324,8 +290,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
     def refresh(self, *refresh):
 
-        all_tasks = [(self.refresh_checkedin, self.available),
-            (self.refresh_checkedout, self.checkedout),
+        all_tasks = [(self.populate_table, self.available),
             (self.ui.user_label.setText, self.current_user),
             (self.ui.checkedout_shelf_label.setText, self.checkedout_shelf),
             (self.ui.log_label.setText, self.log_file),
@@ -344,14 +309,8 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
         self.longtask(*tasks)
 
-    def refresh_checkedin(self, books):
-        isavailable = lambda id : self.inventory[id][CHECKED_IN] > 0
-        self.populate_table( books, self.ui.checkedin_books, "Check this book out!", self.checkout_pressed, isavailable)
-
-    def refresh_checkedout(self, books):
-        self.populate_table(books, self.ui.checkedout_books, "Return this book", self.checkin_pressed, lambda x : True)
-
-    def populate_table(self, books, table, buttontext, onclick, rowfilter):
+    def populate_table(self, books):
+        table = self.ui.checkedin_books
         table.clearContents()
         table.setRowCount(0)
         for (index, (id, title, author)) in enumerate(books):
@@ -362,10 +321,14 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             authorwidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
             table.setItem(index, 0, titlewidget)
             table.setItem(index, 1, authorwidget)
-            if rowfilter(id):
-                checkout_button = QtGui.QPushButton(buttontext)
-                checkout_button.clicked.connect(lambda c, a = id, b = title: onclick(a,b))
-                table.setCellWidget(index, 2, checkout_button)
+
+            if self.inventory[id][CHECKED_IN] > 0:
+                checkout_button = QtGui.QPushButton("Check this book out!")
+                checkout_button.clicked.connect(lambda c, a = id, b = title: self.checkout_pressed(a,b))
+            else:
+                checkout_button = QtGui.QPushButton("Return this book")
+                checkout_button.clicked.connect(lambda c, a = id, b = title: self.checkin_pressed(a,b))
+            table.setCellWidget(index, 2, checkout_button)
 
         horizontal_header = table.horizontalHeader()
         horizontal_header.setResizeMode(0, QtGui.QHeaderView.Stretch)

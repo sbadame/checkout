@@ -123,49 +123,54 @@ class GoodReads:
             self.user()
         return self._user_id
 
-    def search(self, query, shelf, page=1):
-        params = {
-            "v":2,
-            "shelf": shelf,
-            "key": self.config["DEVELOPER_KEY"],
-            "page": page,
-            "per_page": 200
-        }
-
-        if query:
-            params["search[query]"] = query
-
+    def search(self, query, *shelves):
         results = []
 
-        #We may need to load multiple pages of reponse we only get a max of 200 books per page
-        load_next_page = True
-        while load_next_page:
-            response = self._request("review/list/%d.xml" % self._cached_user_id(), params)
+        for shelf in shelves:
+            page = 1
+            params = {
+                "v":2,
+                "shelf": shelf,
+                "key": self.config["DEVELOPER_KEY"],
+                "page": page,
+                "per_page": 200
+            }
 
-            try:
-                xml = ET.fromstring(response)
-            except ET.ParseError:
-                time.sleep(1)
-                self.log("Got malformed XML, retrying")
-                continue
+            if query:
+                params["search[query]"] = query
 
-            reviews = xml.findall("reviews/review")
-            if reviews:
-                for review in reviews:
-                    if any([s.get("name") == shelf for s in review.findall("shelves/shelf")]):
-                        results.append((
-                            int(review.findtext("book/id")),
-                            review.findtext("book/title"),
-                            review.findtext("book/authors/author/name")
-                        ))
-                params["page"] += 1
-                self.log("Grabbing page %d" % params["page"])
-            else:
-                load_next_page = False
+            #We may need to load multiple pages of reponse we only get a max of 200 books per page
+            load_next_page = True
+            while load_next_page:
+                response = self._request("review/list/%d.xml" % self._cached_user_id(), params)
+
+                try:
+                    xml = ET.fromstring(response)
+                except ET.ParseError:
+                    time.sleep(1)
+                    self.log("Got malformed XML, retrying")
+                    continue
+
+                reviews = xml.findall("reviews/review")
+                if reviews:
+                    for review in reviews:
+                        if any([s.get("name") == shelf for s in review.findall("shelves/shelf")]):
+                            results.append((
+                                int(review.findtext("book/id")),
+                                review.findtext("book/title"),
+                                review.findtext("book/authors/author/name")
+                            ))
+                    params["page"] += 1
+                    self.log("Grabbing page %d" % params["page"])
+                else:
+                    load_next_page = False
         return results
 
-    def listbooks(self, shelf):
-        return self.search(None, shelf)
+    def listbooks(self, shelf, *shelves):
+        books =  self.search(None, shelf)
+        for s in shelves:
+            books += self.search(None, s)
+        return books
 
     def add_to_shelf(self, shelf, book_id):
         params = {
