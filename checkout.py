@@ -38,7 +38,7 @@ class Main(QtGui.QMainWindow):
     def startup(self):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.ui.checkout_reset.hide()
+        self.ui.search_reset.hide()
 
         def initialize(log):
             log("Loading: " + CONFIG_FILE_PATH)
@@ -103,10 +103,10 @@ class Main(QtGui.QMainWindow):
         self.progress.show()
         self.progress.setLabelText(text)
 
-    def on_checkout_search_pressed(self):
+    def on_search_pressed(self):
         """ Connected to signal through AutoConnect """
 
-        search_query = self.ui.checkout_query.text()
+        search_query = self.ui.search_query.text()
         def search(log):
             log("Searching for \"%s\"" % search_query)
             return self.goodreads.search(search_query,
@@ -118,12 +118,12 @@ class Main(QtGui.QMainWindow):
 
         self.longtask((updateUI, search))
 
-    def on_checkout_reset_pressed(self):
+    def on_search_reset_pressed(self):
         """ Connected to signal through AutoConnect """
 
         def updateUI(books):
             self.populate_table(books)
-            self.ui.checkout_query.setText("")
+            self.ui.search_query.setText("")
 
         self.longtask((updateUI, self.available))
 
@@ -303,7 +303,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         self.longtask(*tasks)
 
     def populate_table(self, books):
-        table = self.ui.checkedin_books
+        table = self.ui.books
         table.clearContents()
         table.setRowCount(0)
         for (index, (id, title, author)) in enumerate(books):

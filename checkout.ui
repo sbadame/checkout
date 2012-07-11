@@ -86,21 +86,21 @@ QTableWidget::item:selected:active {
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
-               <widget class="QLineEdit" name="checkout_query">
+               <widget class="QLineEdit" name="search_query">
                 <property name="text">
                  <string>What are you looking for?</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="checkout_search">
+               <widget class="QPushButton" name="search">
                 <property name="text">
                  <string>Search</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="checkout_reset">
+               <widget class="QPushButton" name="search_reset">
                 <property name="text">
                  <string>Reset</string>
                 </property>
@@ -110,7 +110,7 @@ QTableWidget::item:selected:active {
             </widget>
            </item>
            <item>
-            <widget class="QTableWidget" name="checkedin_books">
+            <widget class="QTableWidget" name="books">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                <horstretch>0</horstretch>
@@ -341,9 +341,9 @@ QTableWidget::item:selected:active {
  <resources/>
  <connections>
   <connection>
-   <sender>checkout_query</sender>
+   <sender>search_query</sender>
    <signal>returnPressed()</signal>
-   <receiver>checkout_search</receiver>
+   <receiver>search</receiver>
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -357,9 +357,9 @@ QTableWidget::item:selected:active {
    </hints>
   </connection>
   <connection>
-   <sender>checkout_search</sender>
+   <sender>search</sender>
    <signal>pressed()</signal>
-   <receiver>checkout_reset</receiver>
+   <receiver>search_reset</receiver>
    <slot>show()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -373,9 +373,9 @@ QTableWidget::item:selected:active {
    </hints>
   </connection>
   <connection>
-   <sender>checkout_reset</sender>
+   <sender>search_reset</sender>
    <signal>pressed()</signal>
-   <receiver>checkout_reset</receiver>
+   <receiver>search_reset</receiver>
    <slot>hide()</slot>
    <hints>
     <hint type="sourcelabel">
