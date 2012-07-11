@@ -38,9 +38,7 @@ class Main(QtGui.QMainWindow):
     def startup(self):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
         self.ui.checkout_reset.hide()
-        self.ui.checkin_reset.hide()
 
         def initialize(log):
             log("Loading: " + CONFIG_FILE_PATH)
@@ -117,7 +115,6 @@ class Main(QtGui.QMainWindow):
 
         def updateUI(books):
             self.populate_table(books)
-            self.ui.checkout_reset.show()
 
         self.longtask((updateUI, search))
 
@@ -130,7 +127,6 @@ class Main(QtGui.QMainWindow):
         def updateUI(books):
             self.refresh_checkedin(books)
             self.ui.checkout_query.setText("")
-            self.ui.checkout_reset.hide()
 
         self.longtask((updateUI, getallbooks))
 
