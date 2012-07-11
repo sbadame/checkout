@@ -42,6 +42,8 @@ class Main(QtGui.QMainWindow):
         self.ui.books.setFocus()
 
         self.ui.search_query.setDefaultText()
+        self.ui.options.clicked.connect(lambda : self.ui.uistack.setCurrentIndex(1))
+        self.ui.back_to_main.clicked.connect(lambda : self.ui.uistack.setCurrentIndex(0))
 
         def initialize(log):
             log("Loading: " + CONFIG_FILE_PATH)
