@@ -38,6 +38,12 @@ QPushButton:hover {
   border: 1px solid blue;
 }
 
+QTableWidget QPushButton {
+  margin: 12px 20px 12px 20px;
+  padding: 12px 20px 12px 20px;
+  font-size: 12px;
+}
+
 QTableWidget {
   font-size: 16px;
   font-family: 'Gisha';
@@ -67,17 +73,11 @@ QTableWidget::item:selected:active {
      <widget class="QWidget" name="widget" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QTabWidget" name="tabWidget">
+        <widget class="QStackedWidget" name="stackedWidget">
          <property name="styleSheet">
           <string notr="true"/>
          </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <widget class="QWidget" name="checkout_tab">
-          <attribute name="title">
-           <string>Available Books</string>
-          </attribute>
+         <widget class="QWidget" name="stackedWidgetPage1" native="true">
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
             <widget class="QWidget" name="widget_2" native="true">
@@ -244,10 +244,7 @@ QTableWidget::item:selected:active {
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="tab">
-          <attribute name="title">
-           <string>Options</string>
-          </attribute>
+         <widget class="QWidget" name="stackedWidgetPage2" native="true">
           <layout class="QFormLayout" name="formLayout_2">
            <property name="fieldGrowthPolicy">
             <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
@@ -339,54 +336,5 @@ QTableWidget::item:selected:active {
   </widget>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>search_query</sender>
-   <signal>returnPressed()</signal>
-   <receiver>search</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>263</x>
-     <y>86</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>538</x>
-     <y>86</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>search</sender>
-   <signal>pressed()</signal>
-   <receiver>search_reset</receiver>
-   <slot>show()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>551</x>
-     <y>72</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>632</x>
-     <y>72</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>search_reset</sender>
-   <signal>pressed()</signal>
-   <receiver>search_reset</receiver>
-   <slot>hide()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>632</x>
-     <y>72</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>632</x>
-     <y>72</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
