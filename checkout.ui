@@ -38,7 +38,7 @@
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
-               <widget class="QLineEdit" name="search_query">
+               <widget class="CustomLineEdit" name="search_query">
                 <property name="text">
                  <string>What are you looking for?</string>
                 </property>
@@ -227,6 +227,13 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CustomLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>customgui</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

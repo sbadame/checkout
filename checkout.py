@@ -41,6 +41,8 @@ class Main(QtGui.QMainWindow):
         self.ui.search_reset.hide()
         self.ui.books.setFocus()
 
+        self.ui.search_query.setDefaultText()
+
         def initialize(log):
             log("Loading: " + CONFIG_FILE_PATH)
             try:
