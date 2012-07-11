@@ -39,6 +39,7 @@ class Main(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.search_reset.hide()
+        self.ui.books.setFocus()
 
         def initialize(log):
             log("Loading: " + CONFIG_FILE_PATH)
