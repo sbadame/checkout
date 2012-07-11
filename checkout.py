@@ -29,7 +29,7 @@ class Main(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
 
-        self.progress = QtGui.QProgressDialog(None)
+        self.progress = QtGui.QProgressDialog(self)
         self.progress.setRange(0,0)
         self.progress.setWindowTitle("Working...")
         self.asyncs = []
