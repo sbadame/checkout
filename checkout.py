@@ -120,15 +120,12 @@ class Main(QtGui.QMainWindow):
 
     def on_checkout_reset_pressed(self):
         """ Connected to signal through AutoConnect """
-        def getallbooks(log):
-            log("Retreving all checkedout books")
-            return self.goodreads.listbooks(self.goodreads.checkedin_shelf)
 
         def updateUI(books):
-            self.refresh_checkedin(books)
+            self.populate_table(books)
             self.ui.checkout_query.setText("")
 
-        self.longtask((updateUI, getallbooks))
+        self.longtask((updateUI, self.available))
 
     def longtask(self, *args):
         for slot, task in args:
