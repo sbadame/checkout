@@ -118,10 +118,7 @@ class Main(QtGui.QMainWindow):
                 self.goodreads.checkedin_shelf,
                 self.goodreads.checkedout_shelf)
 
-        def updateUI(books):
-            self.populate_table(books)
-
-        self.longtask((updateUI, search))
+        self.longtask((self.populate_table, search))
 
     def on_search_reset_pressed(self):
         """ Connected to signal through AutoConnect """
