@@ -129,7 +129,7 @@ class Main(QtGui.QMainWindow):
             self.populate_table(books)
             self.ui.search_query.setText("")
 
-        self.longtask((updateUI, self.available))
+        self.longtask((updateUI, self.load_available))
 
     def longtask(self, *args):
         for slot, task in args:
@@ -190,7 +190,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 self.goodreads.config['CHECKEDIN_SHELF'] = shelf
                 self.goodreads.checkedin_shelf = shelf
                 if refresh:
-                    self.refresh(self.available_shelf, self.available)
+                    self.refresh(self.available_shelf, self.load_available)
 
     def on_view_log_button_pressed(self):
         config_file = self.goodreads.config[_LOG_PATH_KEY]
@@ -235,7 +235,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             else:
                 print("couldn't find %d: %s" % (id, title))
 
-            self.refresh(self.available, self.checkedout)
+            self.refresh(self.load_available, self.checkedout)
 
     def checkin_pressed(self, id, title):
         """ Connected to signal in populate_table """
@@ -256,9 +256,9 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             else:
                 print("Couldn't find ID: %d, title: %s" % (id, title))
 
-            self.refresh(self.available, self.checkedout)
+            self.refresh(self.load_available, self.checkedout)
 
-    def available(self, log):
+    def load_available(self, log):
         log("Reloading the available books")
         books = self.goodreads.listbooks(self.goodreads.checkedin_shelf)
         books += self.goodreads.listbooks(self.goodreads.checkedout_shelf)
@@ -287,7 +287,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
     def refresh(self, *refresh):
 
-        all_tasks = [(self.populate_table, self.available),
+        all_tasks = [(self.populate_table, self.load_available),
             (self.ui.user_label.setText, self.current_user),
             (self.ui.checkedout_shelf_label.setText, self.checkedout_shelf),
             (self.ui.log_label.setText, self.log_file),
@@ -309,6 +309,9 @@ If this is your first time, you will have to give 'Checkout' permission to acces
     def on_books_currentCellChanged(self, prow, pcolumn, row, column):
         print("prow = %d, pcol = %d, row = %d, col = %d" % (prow, pcolumn, row, column))
 
+    def available(self, book_id):
+        return self.inventory[book_id][CHECKED_IN] > 0
+
     def populate_table(self, books):
         table = self.ui.books
         table.clearContents()
@@ -329,7 +332,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             button_widget = QtGui.QWidget()
             layout = QtGui.QVBoxLayout()
             button_widget.setLayout(layout)
-            if self.inventory[id][CHECKED_IN] > 0:
+            if self.available(id) > 0:
                 checkout_button = QtGui.QPushButton("Check this book out!")
                 checkout_button.clicked.connect(lambda c, a = id, b = title: self.checkout_pressed(a,b))
             else:
