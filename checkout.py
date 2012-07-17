@@ -325,6 +325,10 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             authorwidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
             table.setItem(index, 1, authorwidget)
 
+
+            button_widget = QtGui.QWidget()
+            layout = QtGui.QVBoxLayout()
+            button_widget.setLayout(layout)
             if self.inventory[id][CHECKED_IN] > 0:
                 checkout_button = QtGui.QPushButton("Check this book out!")
                 checkout_button.clicked.connect(lambda c, a = id, b = title: self.checkout_pressed(a,b))
@@ -332,9 +336,12 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 checkout_button = QtGui.QPushButton("Return this book")
                 checkout_button.clicked.connect(lambda c, a = id, b = title: self.checkin_pressed(a,b))
                 checkout_button.setStyleSheet('background-color: "%s"' % CHECKOUT_COLOR )
+                button_widget.setStyleSheet('margin:0px; background-color: "%s"' % CHECKOUT_COLOR )
                 titlewidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
                 authorwidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
-            table.setCellWidget(index, 2, checkout_button)
+
+            layout.addWidget(checkout_button)
+            table.setCellWidget(index, 2, button_widget)
 
         horizontal_header = table.horizontalHeader()
         horizontal_header.setResizeMode(0, QtGui.QHeaderView.Stretch)
