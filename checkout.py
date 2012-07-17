@@ -25,6 +25,12 @@ TITLE = "TITLE"
 AUTHOR = "AUTHOR"
 BOOKSORT = lambda (id, title, author): (list(reversed(author.split())), title)
 
+CHECKOUT_COLOR = "#FF7373"
+CHECKOUT_COLOR_SELECTED = "#BF3030"
+
+AVAILABLE_COLOR = "#67E667"
+AVAILABLE_COLOR_SELECTED = "#269926"
+
 """ To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
     def __init__(self):
@@ -307,16 +313,19 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         self.longtask(*tasks)
 
     def on_books_currentCellChanged(self, prow, pcolumn, row, column):
-        print("prow = %d, pcol = %d, row = %d, col = %d" % (prow, pcolumn, row, column))
+        if self.books:
+            id, title, author = self.books[prow]
+            style = AVAILABLE_COLOR_SELECTED if self.available(id) else CHECKOUT_COLOR_SELECTED
+            self.ui.books.setStyleSheet('selection-background-color: "%s"' % style)
 
     def available(self, book_id):
         return self.inventory[book_id][CHECKED_IN] > 0
 
     def populate_table(self, books):
+        self.books = books
         table = self.ui.books
         table.clearContents()
         table.setRowCount(0)
-        CHECKOUT_COLOR = "#FF7373"
         for (index, (id, title, author)) in enumerate(books):
             table.insertRow(index)
 
@@ -327,7 +336,6 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             authorwidget = QtGui.QTableWidgetItem(author)
             authorwidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
             table.setItem(index, 1, authorwidget)
-
 
             button_widget = QtGui.QWidget()
             layout = QtGui.QVBoxLayout()
