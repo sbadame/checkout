@@ -3,6 +3,7 @@ import sys
 import os.path as path
 
 from config import Config
+from customgui import NoVisibleFocusItemDelegate
 from goodreads import GoodReads
 from checkoutgui import Ui_MainWindow
 from datetime import datetime
@@ -39,6 +40,7 @@ class Main(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.search_reset.hide()
+        self.ui.books.setItemDelegate(NoVisibleFocusItemDelegate())
         self.ui.books.setFocus()
 
         self.ui.search_query.setDefaultText()
@@ -304,17 +306,23 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
         self.longtask(*tasks)
 
+    def on_books_currentCellChanged(self, prow, pcolumn, row, column):
+        print("prow = %d, pcol = %d, row = %d, col = %d" % (prow, pcolumn, row, column))
+
     def populate_table(self, books):
         table = self.ui.books
         table.clearContents()
         table.setRowCount(0)
+        CHECKOUT_COLOR = "#FF7373"
         for (index, (id, title, author)) in enumerate(books):
             table.insertRow(index)
+
             titlewidget = QtGui.QTableWidgetItem(title)
             titlewidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+            table.setItem(index, 0, titlewidget)
+
             authorwidget = QtGui.QTableWidgetItem(author)
             authorwidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-            table.setItem(index, 0, titlewidget)
             table.setItem(index, 1, authorwidget)
 
             if self.inventory[id][CHECKED_IN] > 0:
@@ -323,6 +331,9 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             else:
                 checkout_button = QtGui.QPushButton("Return this book")
                 checkout_button.clicked.connect(lambda c, a = id, b = title: self.checkin_pressed(a,b))
+                checkout_button.setStyleSheet('background-color: "%s"' % CHECKOUT_COLOR )
+                titlewidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
+                authorwidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
             table.setCellWidget(index, 2, checkout_button)
 
         horizontal_header = table.horizontalHeader()
