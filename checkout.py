@@ -7,7 +7,7 @@ from customgui import NoVisibleFocusItemDelegate
 from goodreads import GoodReads
 from checkoutgui import Ui_MainWindow
 from datetime import datetime
-from PyQt4 import QtGui, QtCore
+from PySide import QtGui, QtCore
 from shelfdialog import Ui_Dialog as BaseShelfDialog
 
 CONFIG_FILE_PATH = path.normpath(path.expanduser("~/checkout.credentials"))
@@ -389,8 +389,8 @@ class ShelfDialog(QtGui.QDialog, BaseShelfDialog):
         return str(self.list.currentItem().text())
 
 class ASyncWorker(QtCore.QThread):
-    signal = QtCore.pyqtSignal(object)
-    progress = QtCore.pyqtSignal(str)
+    signal = QtCore.Signal(object)
+    progress = QtCore.Signal(str)
 
     def __init__(self, slot, task, parent=None):
         QtCore.QThread.__init__(self, parent)

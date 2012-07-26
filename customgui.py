@@ -1,5 +1,5 @@
-from PyQt4.QtGui import QLineEdit, QFocusEvent, QItemDelegate
-from PyQt4.QtCore import QEvent
+from PySide.QtGui import QLineEdit, QFocusEvent, QItemDelegate
+from PySide.QtCore import QEvent
 
 class CustomLineEdit(QLineEdit):
     def __init__(self, parent=None):
@@ -27,7 +27,8 @@ class CustomLineEdit(QLineEdit):
 
 class NoVisibleFocusItemDelegate(QItemDelegate):
     def __init__(self, parent=None):
-        super(QItemDelegate, self).__init__(parent)
+        QItemDelegate.__init__(self, parent)
+        #super(QItemDelegate, self).__init__(parent)
 
     def drawFocus(self, painter, option, rect):
         pass
