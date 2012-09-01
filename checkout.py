@@ -31,8 +31,16 @@ CHECKOUT_COLOR_SELECTED = "#BF3030"
 AVAILABLE_COLOR = "#67E667"
 AVAILABLE_COLOR_SELECTED = "#269926"
 
+class Communicate(QtCore.QObject):
+    signal = QtCore.Signal((str, str))
+
 """ To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
+
+    @QtCore.Slot(str, str, result=tuple)
+    def ask_user(self,title,text):
+        return QtGui.QInputDialog.getText(None, title, text)
+
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
 
@@ -64,8 +72,11 @@ class Main(QtGui.QMainWindow):
 
             log("Loading Keys for Goodreads")
             if "DEVELOPER_KEY" not in config or "DEVELOPER_SECRET" not in config:
-                key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
-                        'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
+                #key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
+                #        'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
+                x = Communicate()
+                x.signal.connect(self.ask_user)
+                x.signal.emit("Developer Key?", 'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
                 if not success: exit()
 
                 config["DEVELOPER_KEY"] = str(key)
@@ -111,6 +122,10 @@ class Main(QtGui.QMainWindow):
                     print("Couldn't create a new inventory file: " + str(e))
 
         self.longtask((self.refresh, initialize))
+
+    def developer_key(self):
+        return QtGui.QInputDialog.getText(None, "Developer Key?",
+                'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
 
     def update_progress(self, text):
         self.progress.show()
