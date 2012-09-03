@@ -31,9 +31,6 @@ CHECKOUT_COLOR_SELECTED = "#BF3030"
 AVAILABLE_COLOR = "#67E667"
 AVAILABLE_COLOR_SELECTED = "#269926"
 
-class Communicate(QtCore.QObject):
-    signal = QtCore.Signal((str, str))
-
 """ To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
 
