@@ -39,7 +39,59 @@ class Main(QtGui.QMainWindow):
 
     @QtCore.Slot(str, str, result=tuple)
     def ask_user(self,title,text):
+        import time; time.sleep(2)
         return QtGui.QInputDialog.getText(None, title, text)
+    signal = QtCore.Signal((str,str))
+
+    @QtCore.Slot(object)
+    def set_config(self, config):
+        self.config = config
+        if "DEVELOPER_KEY" not in config or "DEVELOPER_SECRET" not in config:
+            key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
+                    'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
+            if not success: exit()
+            self.config["DEVELOPER_KEY"] = str(key)
+
+            secret, success = QtGui.QInputDialog.getText(None, "Developer Secret?",
+                    'What is the developer secret for the key that you just gave?\n(It\'s also on that page with the key: http://www.goodreads.com/api/keys)')
+            if not success: exit()
+            config["DEVELOPER_SECRET"] = str(secret)
+
+        print("Setting up a GoodReads Connection")
+        self.goodreads = GoodReads(config, waitfunction=self.wait_for_user)
+
+        if "CHECKEDOUT_SHELF" not in config:
+            self.on_switch_checkedout_button_pressed(refresh=False)
+
+        if "CHECKEDIN_SHELF" not in config:
+            self.on_switch_checkedin_button_pressed(refresh=False)
+
+        if _LOG_PATH_KEY not in self.goodreads.config:
+            self.goodreads.config[_LOG_PATH_KEY] = path.normpath(path.expanduser("~/checkout.csv"))
+
+        print("Loading your inventory")
+        if _INVENTORY_PATH_KEY not in self.goodreads.config:
+            config[_INVENTORY_PATH_KEY] = path.normpath(path.expanduser("~/inventory.csv"))
+
+        try:
+            with open(config[_INVENTORY_PATH_KEY], 'rb') as inventoryfile:
+                for (id, title, author, num_in, num_out) in csv.reader(inventoryfile):
+                    self.inventory[int(id)] = {TITLE: title, AUTHOR: author, CHECKED_IN: int(num_in), CHECKED_OUT: int(num_out)}
+        except IOError as e:
+            try:
+                print("Creating a new inventory file")
+                with open(config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
+                    print("Creating a new inventory file")
+                    writer = csv.writer(inventoryfile)
+                    for id, title, author in self.goodreads.listbooks(self.goodreads.checkedin_shelf):
+                        writer.writerow([id, title, author, 1, 0])
+                        self.inventory[int(id)] = {TITLE: title, AUTHOR: author, CHECKED_IN: 1, CHECKED_OUT: 0}
+                    for id, title, author in self.goodreads.listbooks(self.goodreads.checkedout_shelf):
+                        writer.writerow([id, title, author, 0, 1])
+                        self.inventory[int(id)] = {TITLE: title, AUTHOR: author, CHECKED_IN: 0, CHECKED_OUT: 1}
+            except IOError as e:
+                print("Couldn't create a new inventory file: " + str(e))
+        self.refresh()
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
@@ -61,7 +113,7 @@ class Main(QtGui.QMainWindow):
         self.ui.options.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.optionspage))
         self.ui.back_to_books.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.bookpage))
 
-        def initialize(log):
+        def load_config(log):
             log("Loading: " + CONFIG_FILE_PATH)
             try:
                 with open(CONFIG_FILE_PATH, "r") as configfile:
@@ -69,59 +121,9 @@ class Main(QtGui.QMainWindow):
             except IOError as e:
                     print("Error loading: %s (%s). (This is normal for a first run)" % (CONFIG_FILE_PATH, e))
                     config = Config(CONFIG_FILE_PATH)
+            return config
 
-            log("Loading Keys for Goodreads")
-            if "DEVELOPER_KEY" not in config or "DEVELOPER_SECRET" not in config:
-                #key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
-                #        'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
-                x = Communicate()
-                x.signal.connect(self.ask_user)
-                x.signal.emit("Developer Key?", 'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
-                if not success: exit()
-
-                config["DEVELOPER_KEY"] = str(key)
-
-                secret, success = QtGui.QInputDialog.getText(None, "Developer Secret?",
-                        'What is the developer secret for the key that you just gave?\n(It\'s also on that page with the key: http://www.goodreads.com/api/keys)')
-                if not success: exit()
-                config["DEVELOPER_SECRET"] = str(secret)
-
-            log("Setting up a GoodReads Connection")
-            self.goodreads = GoodReads(config, waitfunction=self.wait_for_user, log=log)
-
-            if "CHECKEDOUT_SHELF" not in config:
-                self.on_switch_checkedout_button_pressed(refresh=False)
-
-            if "CHECKEDIN_SHELF" not in config:
-                self.on_switch_checkedin_button_pressed(refresh=False)
-
-            if _LOG_PATH_KEY not in self.goodreads.config:
-                self.goodreads.config[_LOG_PATH_KEY] = path.normpath(path.expanduser("~/checkout.csv"))
-
-            log("Loading your inventory")
-            if _INVENTORY_PATH_KEY not in self.goodreads.config:
-                config[_INVENTORY_PATH_KEY] = path.normpath(path.expanduser("~/inventory.csv"))
-
-            try:
-                with open(config[_INVENTORY_PATH_KEY], 'rb') as inventoryfile:
-                    for (id, title, author, num_in, num_out) in csv.reader(inventoryfile):
-                        self.inventory[int(id)] = {TITLE: title, AUTHOR: author, CHECKED_IN: int(num_in), CHECKED_OUT: int(num_out)}
-            except IOError as e:
-                try:
-                    log("Creating a new inventory file")
-                    with open(config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
-                        log("Creating a new inventory file")
-                        writer = csv.writer(inventoryfile)
-                        for id, title, author in self.goodreads.listbooks(self.goodreads.checkedin_shelf):
-                            writer.writerow([id, title, author, 1, 0])
-                            self.inventory[int(id)] = {TITLE: title, AUTHOR: author, CHECKED_IN: 1, CHECKED_OUT: 0}
-                        for id, title, author in self.goodreads.listbooks(self.goodreads.checkedout_shelf):
-                            writer.writerow([id, title, author, 0, 1])
-                            self.inventory[int(id)] = {TITLE: title, AUTHOR: author, CHECKED_IN: 0, CHECKED_OUT: 1}
-                except IOError as e:
-                    print("Couldn't create a new inventory file: " + str(e))
-
-        self.longtask((self.refresh, initialize))
+        self.longtask((self.set_config, load_config))
 
     def developer_key(self):
         return QtGui.QInputDialog.getText(None, "Developer Key?",
@@ -180,7 +182,6 @@ class Main(QtGui.QMainWindow):
         self.progress_thread.finished.connect(self.progress.hide)
         self.progress_thread.terminated.connect(self.progress.hide)
         self.progress.canceled.connect(on_cancel)
-
         self.progress_thread.start()
 
     def wait_for_user(self):
@@ -280,7 +281,6 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             self.refresh(self.load_available, self.checkedout)
 
     def load_available(self, log):
-        log("Reloading the available books")
         books = self.goodreads.listbooks(self.goodreads.checkedin_shelf)
         books += self.goodreads.listbooks(self.goodreads.checkedout_shelf)
         books.sort(key=BOOKSORT)
@@ -307,7 +307,6 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         return LOG_LABEL_TEXT % self.goodreads.config[_LOG_PATH_KEY]
 
     def refresh(self, *refresh):
-
         all_tasks = [(self.populate_table, self.load_available),
             (self.ui.user_label.setText, self.current_user),
             (self.ui.checkedout_shelf_label.setText, self.checkedout_shelf),
@@ -316,7 +315,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
         slots, tasks = zip(*all_tasks) #unzip in python
 
-        if not refresh or refresh == (None,):
+        if not refresh or refresh == ('',) or refresh == (None,):
             tasks = all_tasks
         else:
             not_allowed = filter(lambda t: t not in tasks, refresh)
@@ -417,6 +416,7 @@ class ASyncWorker(QtCore.QThread):
 
     def log(self, message):
         self.progress.emit(message)
+        print("[LOG] " + message)
 
     def run(self):
         self.result = self.task(self.log)
@@ -424,6 +424,8 @@ class ASyncWorker(QtCore.QThread):
 
     def commit(self):
         if self.finished:
+            if not self.result:
+                self.result = ""
             self.signal.emit(self.result)
 
 def main():
