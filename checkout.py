@@ -26,10 +26,10 @@ _LOG_PATH_KEY = 'LOG_PATH'
 _INVENTORY_PATH_KEY = 'INVENTORY_PATH'
 
 # UI Constants
-USER_LABEL_TEXT = 'Currently logged in as %s.'
-CHECKEDOUT_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are checked out.'
-CHECKEDIN_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are available.'
-LOG_LABEL_TEXT = 'The log is recorded at "%s".'
+USER_LABEL_TEXT = None
+LIBRARY_SHELF_LABEL_TEXT = None
+LOG_LABEL_TEXT = None
+INVENTORY_LABEL_TEXT = None
 
 # Colors
 CHECKOUT_COLOR = "#FF7373"
@@ -289,18 +289,47 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         self.persist_inventory()
         return books
 
-    def current_user(self, log):
-        log("Reloading the current user")
-        return USER_LABEL_TEXT % self.goodreads.user()[1]
-
-    def log_file(self, log):
-        log("Reloading the log file")
-        return LOG_LABEL_TEXT % self.config[_LOG_PATH_KEY]
+    # Update the user interface
 
     def refresh(self, *refresh):
-        all_tasks = [(self.populate_table, self.load_available),
-            (self.ui.user_label.setText, self.current_user),
-            (self.ui.log_label.setText, self.log_file)]
+        def current_user(log):
+            global USER_LABEL_TEXT
+            """ Returns the string used in the Options GUI for user name """
+            log("Finding out who your are")
+            if not USER_LABEL_TEXT:
+                USER_LABEL_TEXT = str(self.ui.user_label.text())
+            return USER_LABEL_TEXT % self.goodreads.user()[1]
+
+        def log_file(log):
+            global LOG_LABEL_TEXT
+            """ Returns the string used in the Options GUI for the log file """
+            log("Finding that log file")
+            if not LOG_LABEL_TEXT:
+                LOG_LABEL_TEXT = str(self.ui.log_label.text())
+            return LOG_LABEL_TEXT % self.config[_LOG_PATH_KEY]
+
+        def inventory_file(log):
+            global INVENTORY_LABEL_TEXT
+            """ Returns the string used in the Options GUI for the inventory file """
+            log("Figuring out where I keep track of your books")
+            if not INVENTORY_LABEL_TEXT:
+                INVENTORY_LABEL_TEXT = str(self.ui.inventory_label.text())
+            return INVENTORY_LABEL_TEXT % self.config[_INVENTORY_PATH_KEY]
+
+        def library_shelf(log):
+            global LIBRARY_SHELF_LABEL_TEXT
+            """ Returns the string used in the Options GUI for the shelf """
+            log("Figuring out where you keep your books")
+            if not LIBRARY_SHELF_LABEL_TEXT:
+                LIBRARY_SHELF_LABEL_TEXT = str(self.ui.library_shelf_label.text())
+            return LIBRARY_SHELF_LABEL_TEXT % self.shelf
+
+        all_tasks = [
+            (self.populate_table, self.load_available),
+            (self.ui.user_label.setText, current_user),
+            (self.ui.log_label.setText, log_file),
+            (self.ui.library_shelf_label.setText, library_shelf),
+            (self.ui.inventory_label.setText, inventory_file)]
 
         slots, tasks = zip(*all_tasks) #unzip in python
 

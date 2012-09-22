@@ -278,7 +278,7 @@ margin-left: 6px;
                </spacer>
               </item>
               <item row="7" column="0">
-               <widget class="QLabel" name="label">
+               <widget class="QLabel" name="inventory_label">
                 <property name="text">
                  <string>Your current inventory is recorded in: &quot;%s&quot;.</string>
                 </property>
