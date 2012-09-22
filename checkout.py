@@ -2,6 +2,7 @@ import csv
 import sys
 import os.path as path
 
+from collections import namedtuple
 from config import Config
 from customgui import NoVisibleFocusItemDelegate
 from goodreads import GoodReads
@@ -9,6 +10,10 @@ from checkoutgui import Ui_MainWindow
 from datetime import datetime
 from PySide import QtGui, QtCore
 from shelfdialog import Ui_Dialog as BaseShelfDialog
+
+# How we represent books stored in the inventory csv
+InventoryRecord = namedtuple('InventoryRecord',
+    ['title', 'author', 'checked_in', 'checked_out'])
 
 # Default file paths for configuration
 CONFIG_FILE_PATH = path.normpath(path.expanduser("~/checkout.credentials"))
@@ -26,17 +31,15 @@ CHECKEDOUT_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books 
 CHECKEDIN_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are available.'
 LOG_LABEL_TEXT = 'The log is recorded at "%s".'
 
-CHECKED_IN = "CHECKED_IN" 
-CHECKED_OUT = "CHECKED_OUT"
-TITLE = "TITLE"
-AUTHOR = "AUTHOR"
-BOOKSORT = lambda (id, title, author): (list(reversed(author.split())), title)
-
+# Colors
 CHECKOUT_COLOR = "#FF7373"
 CHECKOUT_COLOR_SELECTED = "#BF3030"
 
 AVAILABLE_COLOR = "#67E667"
 AVAILABLE_COLOR_SELECTED = "#269926"
+
+# How books in the UI are sorted
+BOOKSORT = lambda (id, title, author): (list(reversed(author.split())), title)
 
 DEVELOPER_KEY = "DEVELOPER_KEY"
 DEVELOPER_SECRET = "DEVELOPER_SECRET"
@@ -68,7 +71,7 @@ class Main(QtGui.QMainWindow):
         try:
             with open(self.config[_INVENTORY_PATH_KEY], 'rb') as inventoryfile:
                 for (id, title, author, num_in, num_out) in csv.reader(inventoryfile):
-                    self.inventory[int(id)] = {TITLE: title, AUTHOR: author, CHECKED_IN: int(num_in), CHECKED_OUT: int(num_out)}
+                    self.inventory[int(id)] = InventoryRecord(title, author, int(num_in), int(num_out))
         except IOError as e:
             try:
                 print("Creating a new inventory file")
@@ -77,7 +80,7 @@ class Main(QtGui.QMainWindow):
                     writer = csv.writer(inventoryfile)
                     for id, title, author in self.listbooks(self.shelf):
                         writer.writerow([id, title, author, 1, 0])
-                        self.inventory[int(id)] = {TITLE: title, AUTHOR: author, CHECKED_IN: 1, CHECKED_OUT: 0}
+                        self.inventory[int(id)] = InventoryRecord(title, author, 1, 0)
             except IOError as e:
                 print("Couldn't create a new inventory file: " + str(e))
 
@@ -146,9 +149,7 @@ class Main(QtGui.QMainWindow):
         print("Searching for: " + str(search_query))
         def search(log):
             log("Searching for \"%s\"" % search_query)
-            return self.goodreads.search(search_query,
-                self.checkedin_shelf,
-                self.checkedout_shelf)
+            return self.goodreads.search(search_query, self.shelf)
 
         self.longtask((self.populate_table, search))
 
@@ -211,7 +212,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                     pass
 
     def on_view_log_button_pressed(self):
-        config_file = self.goodreads.config[_LOG_PATH_KEY]
+        config_file = self.config[_LOG_PATH_KEY]
         import os
         if sys.platform.startswith('win'):
             os.startfile(config_file)
@@ -222,16 +223,16 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
     def on_switch_log_button_pressed(self):
         file = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
-        self.goodreads.config[_LOG_PATH_KEY] = str(file)
+        self.config[_LOG_PATH_KEY] = str(file)
         self.refresh(self.logfile)
 
     def persist_inventory(self):
         with open(self.config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
             writer = csv.writer(inventoryfile)
-            data = [(id, book[TITLE], book[AUTHOR], book[CHECKED_IN], book[CHECKED_OUT]) for id, book in self.inventory.items()]
-            data.sort(key = lambda (id, title, author, checked_in, checked_out): (author, title))
-            for id, title, author, checked_in, checked_out in data:
-                writer.writerow([id, title, author, checked_in, checked_out])
+            data = self.inventory.items()
+            data.sort(key = lambda (id, record): (record.author, record.title))
+            for id, record in data:
+                writer.writerow([id, record.title, record.author, record.checked_in, record.checked_out])
 
     def checkout_pressed(self, id, title):
         """ Connected to signal in populate_table """
@@ -239,7 +240,6 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             'Checking out %s' % title, 'What is your name?')
 
         if success:
-            self.goodreads.checkout(id)
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
 
             with open(self.config[_LOG_PATH_KEY], 'ab') as logfile:
@@ -247,8 +247,8 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 writer.writerow([date, str(name), "checked out", title])
 
             if id in self.inventory:
-                self.inventory[id][CHECKED_IN] -= 1
-                self.inventory[id][CHECKED_OUT] += 1
+                self.inventory[id].checked_in -= 1
+                self.inventory[id].checked_out += 1
                 self.persist_inventory()
             else:
                 print("couldn't find %d: %s" % (id, title))
@@ -261,15 +261,14 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 'Are you checking in: %s?' % title, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
         if reply == QtGui.QMessageBox.Yes:
-            self.goodreads.checkin(id)
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
             with open(self.config[_LOG_PATH_KEY], 'ab') as logfile:
                 writer = csv.writer(logfile)
                 writer.writerow([date, "", "checked in", title])
 
             if id in self.inventory:
-                self.inventory[id][CHECKED_IN] += 1
-                self.inventory[id][CHECKED_OUT] -= 1
+                self.inventory[id].checked_in += 1
+                self.inventory[id].checked_out -= 1
                 self.persist_inventory()
             else:
                 print("Couldn't find ID: %d, title: %s" % (id, title))
@@ -278,25 +277,16 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
     def load_available(self, log):
         books = self.goodreads.listbooks(self.shelf)
-        #books += self.goodreads.listbooks(self.goodreads.checkedout_shelf)
         books.sort(key=BOOKSORT)
         for (id, title, author) in books:
             if id not in self.inventory:
-                self.inventory[int(id)]= {TITLE: title, AUTHOR: author, CHECKED_IN: 1, CHECKED_OUT: 0}
+                self.inventory[int(id)]= InventoryRecord(title, author, 1, 0)
         self.persist_inventory()
         return books
 
     def current_user(self, log):
         log("Reloading the current user")
         return USER_LABEL_TEXT % self.goodreads.user()[1]
-
-    def checkedout_shelf(self, log):
-        log("Reloading the checked out shelf")
-        return CHECKEDOUT_SHELF_LABEL_TEXT % self.goodreads.checkedout_shelf
-
-    def available_shelf(self, log):
-        log("Reloading the available shelf")
-        return CHECKEDIN_SHELF_LABEL_TEXT % self.goodreads.checkedin_shelf
 
     def log_file(self, log):
         log("Reloading the log file")
@@ -305,9 +295,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
     def refresh(self, *refresh):
         all_tasks = [(self.populate_table, self.load_available),
             (self.ui.user_label.setText, self.current_user),
-            #(self.ui.checkedout_shelf_label.setText, self.checkedout_shelf),
             (self.ui.log_label.setText, self.log_file)]
-           #(self.ui.checkedin_shelf_label.setText, self.available_shelf)]
 
         slots, tasks = zip(*all_tasks) #unzip in python
 
@@ -316,7 +304,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         else:
             not_allowed = filter(lambda t: t not in tasks, refresh)
             if not_allowed:
-                raise ValueError("'%s' are not an available for refresh" % not_allowed)
+                raise ValueError("'%s' are not available for refresh" % not_allowed)
             else:
                 tasks = [all_tasks[tasks.index(task)] for task in refresh]
 
@@ -329,7 +317,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             self.ui.books.setStyleSheet('selection-background-color: "%s"' % style)
 
     def available(self, book_id):
-        return self.inventory[book_id][CHECKED_IN] > 0
+        return self.inventory[book_id].checked_in > 0
 
     def populate_table(self, books):
         self.books = books
@@ -352,10 +340,10 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             button_widget.setLayout(layout)
             if self.available(id) > 0:
                 checkout_button = QtGui.QPushButton("Check this book out!")
-                checkout_button.clicked.connect(lambda c, a = id, b = title: self.checkout_pressed(a,b))
+                checkout_button.clicked.connect(lambda a = id, b = title: self.checkout_pressed(a,b))
             else:
                 checkout_button = QtGui.QPushButton("Return this book")
-                checkout_button.clicked.connect(lambda c, a = id, b = title: self.checkin_pressed(a,b))
+                checkout_button.clicked.connect(lambda a = id, b = title: self.checkin_pressed(a,b))
                 checkout_button.setStyleSheet('background-color: "%s"' % CHECKOUT_COLOR )
                 button_widget.setStyleSheet('margin:0px; background-color: "%s"' % CHECKOUT_COLOR )
                 titlewidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))

@@ -157,29 +157,6 @@ class GoodReads:
             books += self.search(None, s)
         return books
 
-    def add_to_shelf(self, shelf, book_id):
-        params = {
-            "name": shelf,
-            "book_id": book_id
-        }
-        self._request("shelf/add_to_shelf.xml", params, 'POST', HTTP_CREATED)
-
-    def remove_from_shelf(self, shelf, book_id):
-        params = {
-            "name": shelf,
-            "book_id": book_id,
-            "a": "remove"
-        }
-        self._request("shelf/add_to_shelf.xml", params, method='POST')
-
-    def checkout(self, book_id):
-        self.add_to_shelf(self.checkedout_shelf, book_id)
-        self.remove_from_shelf(self.checkedin_shelf, book_id)
-
-    def checkin(self, book_id):
-        self.add_to_shelf(self.checkedin_shelf, book_id)
-        self.remove_from_shelf(self.checkedout_shelf, book_id)
-
     def shelves(self):
         params = {"key":self.dev_key, "user_id":self._cached_user_id()}
         xml = ET.fromstring(self._request("shelf/list.xml", params))
