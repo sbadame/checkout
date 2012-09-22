@@ -45,7 +45,7 @@
           <string notr="true"/>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="bookpage">
           <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -193,6 +193,9 @@ margin-left: 6px;
            <item>
             <widget class="QWidget" name="widget_3" native="true">
              <layout class="QFormLayout" name="formLayout">
+              <property name="fieldGrowthPolicy">
+               <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+              </property>
               <property name="leftMargin">
                <number>30</number>
               </property>
@@ -202,7 +205,7 @@ margin-left: 6px;
               <item row="0" column="0">
                <widget class="QLabel" name="user_label">
                 <property name="text">
-                 <string>Currently logged in as %s.</string>
+                 <string>Currently logged into goodreads as %s.</string>
                 </property>
                </widget>
               </item>
@@ -214,48 +217,20 @@ margin-left: 6px;
                </widget>
               </item>
               <item row="1" column="0">
-               <widget class="QLabel" name="checkedin_shelf_label">
+               <widget class="QLabel" name="library_shelf_label">
                 <property name="text">
-                 <string>Your &quot;%s&quot; shelf is being used to store the books that are available.</string>
+                 <string>The books in your &quot;%s&quot; shelf on goodreads represent your inventory.</string>
                 </property>
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QPushButton" name="switch_checkedin_button">
+               <widget class="QPushButton" name="switch_library_button">
                 <property name="text">
                  <string>Use a different shelf</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="checkedout_shelf_label">
-                <property name="text">
-                 <string>Your &quot;%s&quot; shelf is being used to store the books that are checked out.</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QPushButton" name="switch_checkedout_button">
-                <property name="text">
-                 <string>Use a different shelf</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="log_label">
-                <property name="text">
-                 <string>The log is recorded at: &quot;%s&quot;.</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="1">
-               <widget class="QPushButton" name="view_log_button">
-                <property name="text">
-                 <string>View the log file</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
+              <item row="3" column="0">
                <spacer name="horizontalSpacer">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
@@ -268,10 +243,58 @@ margin-left: 6px;
                 </property>
                </spacer>
               </item>
-              <item row="6" column="1">
+              <item row="4" column="1">
+               <widget class="QPushButton" name="view_log_button">
+                <property name="text">
+                 <string>View your log file</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
                <widget class="QPushButton" name="switch_log_button">
                 <property name="text">
-                 <string>Use a different log file</string>
+                 <string>Move your log file</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="QPushButton" name="pushButton">
+                <property name="text">
+                 <string>View your inventory file</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="7" column="0">
+               <widget class="QLabel" name="label">
+                <property name="text">
+                 <string>Your current inventory is recorded in: &quot;%s&quot;.</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="1">
+               <widget class="QPushButton" name="pushButton_2">
+                <property name="text">
+                 <string>Move your inventory file</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="log_label">
+                <property name="text">
+                 <string>The check-ins and check-outs are being recorded in: &quot;%s&quot;.</string>
                 </property>
                </widget>
               </item>
