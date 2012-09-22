@@ -12,6 +12,7 @@ from shelfdialog import Ui_Dialog as BaseShelfDialog
 
 CONFIG_FILE_PATH = path.normpath(path.expanduser("~/checkout.credentials"))
 
+LIBRARY_SHELF = "LIBRARY_SHELF"
 USER_LABEL_TEXT = 'Currently logged in as %s.'
 CHECKEDOUT_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are checked out.'
 CHECKEDIN_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are available.'
@@ -31,68 +32,65 @@ CHECKOUT_COLOR_SELECTED = "#BF3030"
 AVAILABLE_COLOR = "#67E667"
 AVAILABLE_COLOR_SELECTED = "#269926"
 
-""" To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
-class Main(QtGui.QMainWindow):
+DEVELOPER_KEY = "DEVELOPER_KEY"
+DEVELOPER_SECRET = "DEVELOPER_SECRET"
 
-    @QtCore.Slot(str, str, result=tuple)
-    def ask_user(self,title,text):
-        import time; time.sleep(2)
-        return QtGui.QInputDialog.getText(None, title, text)
-    signal = QtCore.Signal((str,str))
+""" To regenerate the gui from the design: pyside-uic checkout.ui -o checkoutgui.py"""
+class Main(QtGui.QMainWindow):
 
     @QtCore.Slot(object)
     def set_config(self, config):
         self.config = config
-        if "DEVELOPER_KEY" not in config or "DEVELOPER_SECRET" not in config:
+        self.shelf = self.config[LIBRARY_SHELF]
+
+        self.load_api_key()
+        self.goodreads = GoodReads(config[DEVELOPER_KEY], config[DEVELOPER_SECRET], waitfunction=self.wait_for_user)
+
+        if _LOG_PATH_KEY not in self.config:
+            self.config[_LOG_PATH_KEY] = path.normpath(path.expanduser("~/checkout.csv"))
+
+        self.load_inventory()
+        self.refresh()
+
+    def load_api_key(self):
+        if DEVELOPER_KEY not in self.config or DEVELOPER_SECRET not in self.config:
             key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
                     'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
             if not success: exit()
-            self.config["DEVELOPER_KEY"] = str(key)
+            self.config[DEVELOPER_KEY] = str(key)
 
             secret, success = QtGui.QInputDialog.getText(None, "Developer Secret?",
                     'What is the developer secret for the key that you just gave?\n(It\'s also on that page with the key: http://www.goodreads.com/api/keys)')
             if not success: exit()
-            config["DEVELOPER_SECRET"] = str(secret)
+            config[DEVELOPER_SECRET] = str(secret)
 
-        print("Setting up a GoodReads Connection")
-        self.goodreads = GoodReads(config, waitfunction=self.wait_for_user)
+    def load_inventory(self):
+        #Load up our inventory
 
-        if "CHECKEDOUT_SHELF" not in config:
-            self.on_switch_checkedout_button_pressed(refresh=False)
+        if LIBRARY_SHELF not in self.config:
+            self.on_switch_library_button_pressed(refresh=False)
 
-        if "CHECKEDIN_SHELF" not in config:
-            self.on_switch_checkedin_button_pressed(refresh=False)
-
-        if _LOG_PATH_KEY not in self.goodreads.config:
-            self.goodreads.config[_LOG_PATH_KEY] = path.normpath(path.expanduser("~/checkout.csv"))
-
-        print("Loading your inventory")
-        if _INVENTORY_PATH_KEY not in self.goodreads.config:
-            config[_INVENTORY_PATH_KEY] = path.normpath(path.expanduser("~/inventory.csv"))
+        if _INVENTORY_PATH_KEY not in self.config:
+            self.config[_INVENTORY_PATH_KEY] = path.normpath(path.expanduser("~/inventory.csv"))
 
         try:
-            with open(config[_INVENTORY_PATH_KEY], 'rb') as inventoryfile:
+            with open(self.config[_INVENTORY_PATH_KEY], 'rb') as inventoryfile:
                 for (id, title, author, num_in, num_out) in csv.reader(inventoryfile):
                     self.inventory[int(id)] = {TITLE: title, AUTHOR: author, CHECKED_IN: int(num_in), CHECKED_OUT: int(num_out)}
         except IOError as e:
             try:
                 print("Creating a new inventory file")
-                with open(config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
+                with open(self.config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
                     print("Creating a new inventory file")
                     writer = csv.writer(inventoryfile)
-                    for id, title, author in self.goodreads.listbooks(self.goodreads.checkedin_shelf):
+                    for id, title, author in self.listbooks(self.shelf):
                         writer.writerow([id, title, author, 1, 0])
                         self.inventory[int(id)] = {TITLE: title, AUTHOR: author, CHECKED_IN: 1, CHECKED_OUT: 0}
-                    for id, title, author in self.goodreads.listbooks(self.goodreads.checkedout_shelf):
-                        writer.writerow([id, title, author, 0, 1])
-                        self.inventory[int(id)] = {TITLE: title, AUTHOR: author, CHECKED_IN: 0, CHECKED_OUT: 1}
             except IOError as e:
                 print("Couldn't create a new inventory file: " + str(e))
-        self.refresh()
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-
         self.progress = QtGui.QProgressDialog(self)
         self.progress.setRange(0,0)
         self.progress.setWindowTitle("Working...")
@@ -107,6 +105,8 @@ class Main(QtGui.QMainWindow):
         self.ui.books.setFocus()
 
         self.ui.search_query.setDefaultText()
+        self.ui.search.clicked.connect(self.on_search_clicked)
+        self.ui.search_reset.pressed.connect(self.on_search_reset_clicked)
         self.ui.options.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.optionspage))
         self.ui.back_to_books.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.bookpage))
 
@@ -130,24 +130,24 @@ class Main(QtGui.QMainWindow):
         self.progress.show()
         self.progress.setLabelText(text)
 
-    def on_search_pressed(self):
+    def on_search_clicked(self):
         """ Connected to signal through AutoConnect """
-
         search_query = self.ui.search_query.text()
+        if search_query == self.ui.search_query.default_text():
+            search_query = ""
+        print("Searching for: " + str(search_query))
         def search(log):
             log("Searching for \"%s\"" % search_query)
             return self.goodreads.search(search_query,
-                self.goodreads.checkedin_shelf,
-                self.goodreads.checkedout_shelf)
+                self.checkedin_shelf,
+                self.checkedout_shelf)
 
         self.longtask((self.populate_table, search))
 
-    def on_search_reset_pressed(self):
-        """ Connected to signal through AutoConnect """
-
+    def on_search_reset_clicked(self):
         def updateUI(books):
-            self.populate_table(books)
             self.ui.search_query.setText("")
+            self.populate_table(books)
 
         self.longtask((updateUI, self.load_available))
 
@@ -189,27 +189,18 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
     def on_switch_user_button_pressed(self):
-        self.goodreads.authenticate(self.wait_for_user)
+        print("Look at switch user again")
 
-    def on_switch_checkedout_button_pressed(self, refresh=True):
-        dialog = ShelfDialog(self, "the checked out books", self.goodreads)
+    def on_switch_library_button_pressed(self, refresh=True):
+        dialog = ShelfDialog(self, "the library books", self.goodreads)
         if dialog.exec_():
             shelf = dialog.shelf()
             if shelf:
-                self.goodreads.config['CHECKEDOUT_SHELF'] = shelf
-                self.goodreads.checkedout_shelf = shelf
+                self.shelf = shelf
+                self.config[LIBRARY_SHELF] = shelf
                 if refresh:
-                    self.refresh(self.checkedout_shelf, self.checkedout)
-
-    def on_switch_checkedin_button_pressed(self, refresh=True):
-        dialog = ShelfDialog(self, "the available books", self.goodreads)
-        if dialog.exec_():
-            shelf = dialog.shelf()
-            if shelf:
-                self.goodreads.config['CHECKEDIN_SHELF'] = shelf
-                self.goodreads.checkedin_shelf = shelf
-                if refresh:
-                    self.refresh(self.available_shelf, self.load_available)
+                    #TODO: fix this in the options, add the library shelf option
+                    pass
 
     def on_view_log_button_pressed(self):
         config_file = self.goodreads.config[_LOG_PATH_KEY]
@@ -227,7 +218,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         self.refresh(self.logfile)
 
     def persist_inventory(self):
-        with open(self.goodreads.config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
+        with open(self.config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
             writer = csv.writer(inventoryfile)
             data = [(id, book[TITLE], book[AUTHOR], book[CHECKED_IN], book[CHECKED_OUT]) for id, book in self.inventory.items()]
             data.sort(key = lambda (id, title, author, checked_in, checked_out): (author, title))
@@ -243,7 +234,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             self.goodreads.checkout(id)
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
 
-            with open(self.goodreads.config[_LOG_PATH_KEY], 'ab') as logfile:
+            with open(self.config[_LOG_PATH_KEY], 'ab') as logfile:
                 writer = csv.writer(logfile)
                 writer.writerow([date, str(name), "checked out", title])
 
@@ -264,7 +255,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         if reply == QtGui.QMessageBox.Yes:
             self.goodreads.checkin(id)
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
-            with open(self.goodreads.config[_LOG_PATH_KEY], 'ab') as logfile:
+            with open(self.config[_LOG_PATH_KEY], 'ab') as logfile:
                 writer = csv.writer(logfile)
                 writer.writerow([date, "", "checked in", title])
 
@@ -278,8 +269,8 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             self.refresh(self.load_available, self.checkedout)
 
     def load_available(self, log):
-        books = self.goodreads.listbooks(self.goodreads.checkedin_shelf)
-        books += self.goodreads.listbooks(self.goodreads.checkedout_shelf)
+        books = self.goodreads.listbooks(self.shelf)
+        #books += self.goodreads.listbooks(self.goodreads.checkedout_shelf)
         books.sort(key=BOOKSORT)
         for (id, title, author) in books:
             if id not in self.inventory:
@@ -301,14 +292,14 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
     def log_file(self, log):
         log("Reloading the log file")
-        return LOG_LABEL_TEXT % self.goodreads.config[_LOG_PATH_KEY]
+        return LOG_LABEL_TEXT % self.config[_LOG_PATH_KEY]
 
     def refresh(self, *refresh):
         all_tasks = [(self.populate_table, self.load_available),
             (self.ui.user_label.setText, self.current_user),
-            (self.ui.checkedout_shelf_label.setText, self.checkedout_shelf),
-            (self.ui.log_label.setText, self.log_file),
-            (self.ui.checkedin_shelf_label.setText, self.available_shelf)]
+            #(self.ui.checkedout_shelf_label.setText, self.checkedout_shelf),
+            (self.ui.log_label.setText, self.log_file)]
+           #(self.ui.checkedin_shelf_label.setText, self.available_shelf)]
 
         slots, tasks = zip(*all_tasks) #unzip in python
 

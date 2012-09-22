@@ -25,6 +25,9 @@ class CustomLineEdit(QLineEdit):
             self.defaultText = self.displayText()
         self.setStyleSheet("color: gray; font-style: italic")
 
+    def default_text(self):
+        return self.defaultText
+
 class NoVisibleFocusItemDelegate(QItemDelegate):
     def __init__(self, parent=None):
         QItemDelegate.__init__(self, parent)

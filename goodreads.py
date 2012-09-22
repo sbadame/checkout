@@ -24,32 +24,19 @@ def NOOP_LOG(description):
     pass
 
 class GoodReads:
-    def __init__(self, config, waitfunction=DEFAULT_WAIT, log=NOOP_LOG):
-        self.config = config
+    def __init__(self, dev_key=None, dev_secret=None, waitfunction=DEFAULT_WAIT, log=NOOP_LOG):
         self.log = log
-
-        if 'CHECKEDOUT_SHELF' in config:
-            self.checkedout_shelf = config['CHECKEDOUT_SHELF']
-        if 'CHECKEDIN_SHELF' in config:
-            self.checkedin_shelf = config['CHECKEDIN_SHELF']
-
-        DEV_KEY = config["DEVELOPER_KEY"]
-        DEV_SECRET = config["DEVELOPER_SECRET"]
-        self.consumer = oauth.Consumer(key = DEV_KEY, secret = DEV_SECRET)
-
-        if "ACCESS_KEY" not in config or "ACCESS_SECRET" not in config:
-            self.authenticate(waitfunction)
-        else:
-            self.access_token = oauth.Token(config["ACCESS_KEY"], config["ACCESS_SECRET"])
-
-        self._user_id = None
+        self.dev_key = dev_key
+        self.consumer = oauth.Consumer(key = dev_key, secret = dev_secret)
+        self.access_token = self.authenticate(waitfunction)
+        self._user_id, self.user_name = self.user()
 
     def authenticate(self, waitfunction=DEFAULT_WAIT):
-        self.log("Authenticating")
         """ Grabs a new set of keys from goodreads.
             Opens the authorization link in a new browser window.
             Calls the waitfunction() once the browser is opened. 
             The waitfunction should return only when the user has authorized the app"""
+        self.log("Authenticating")
 
         client = oauth.Client(self.consumer)
         self.log("Getting request token")
@@ -76,9 +63,8 @@ class GoodReads:
             raise Exception("Something went wrong getting the access token: %s" % response['status'])
 
         access_dict = dict(urlparse.parse_qsl(content))
-        self.config["ACCESS_KEY"], self.config["ACCESS_SECRET"] = access_dict['oauth_token'], access_dict['oauth_token_secret']
-        self.access_token = oauth.Token(self.config["ACCESS_KEY"], self.config["ACCESS_SECRET"])
-        self.user()
+        token = oauth.Token(access_dict['oauth_token'], access_dict['oauth_token_secret'])
+        return token
 
     def _request(self, methodname, params={}, method='GET', success=HTTP_OK):
         MAX_ATTEMPTS = 5
@@ -115,8 +101,7 @@ class GoodReads:
         response = self._request("api/auth_user")
         xml = ET.fromstring(response)
         user = xml.find("user")
-        self._user_id, user_name = int(user.get("id")), user.findtext("name")
-        return self._user_id, user_name
+        return int(user.get("id")), user.findtext("name")
 
     def _cached_user_id(self):
         if not self._user_id:
@@ -131,7 +116,7 @@ class GoodReads:
             params = {
                 "v":2,
                 "shelf": shelf,
-                "key": self.config["DEVELOPER_KEY"],
+                "key": self.dev_key,
                 "page": page,
                 "per_page": 200
             }
@@ -196,7 +181,7 @@ class GoodReads:
         self.remove_from_shelf(self.checkedout_shelf, book_id)
 
     def shelves(self):
-        params = {"key":self.config["DEVELOPER_KEY"], "user_id":self._cached_user_id()}
+        params = {"key":self.dev_key, "user_id":self._cached_user_id()}
         xml = ET.fromstring(self._request("shelf/list.xml", params))
         return [name.text for name in xml.findall("shelves/user_shelf/name")]
 
