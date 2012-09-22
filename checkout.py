@@ -146,9 +146,9 @@ class Main(QtGui.QMainWindow):
         search_query = self.ui.search_query.text()
         if search_query == self.ui.search_query.default_text():
             search_query = ""
-        print("Searching for: " + str(search_query))
+
         def search(log):
-            log("Searching for \"%s\"" % search_query)
+            log("Searching for: \"%s\"" % search_query)
             return self.goodreads.search(search_query, self.shelf)
 
         self.longtask((self.populate_table, search))
@@ -280,6 +280,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             self.refresh(self.load_available)
 
     def load_available(self, log):
+        log("Reloading your books...")
         books = self.goodreads.listbooks(self.shelf)
         books.sort(key=BOOKSORT)
         for (id, title, author) in books:
