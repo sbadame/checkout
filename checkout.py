@@ -44,6 +44,15 @@ BOOKSORT = lambda (id, title, author): (list(reversed(author.split())), title)
 DEVELOPER_KEY = "DEVELOPER_KEY"
 DEVELOPER_SECRET = "DEVELOPER_SECRET"
 
+def openfile(filepath):
+    import os
+    if sys.platform.startswith('win'):
+        os.startfile(filepath)
+    elif sys.platform.startswith("darwin"):
+        os.system("open " + filepath)
+    else:
+        os.system("xdg-open " + filepath)
+
 """ To regenerate the gui from the design: pyside-uic checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
 
@@ -78,7 +87,7 @@ class Main(QtGui.QMainWindow):
                 with open(self.config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
                     print("Creating a new inventory file")
                     writer = csv.writer(inventoryfile)
-                    for id, title, author in self.listbooks(self.shelf):
+                    for id, title, author in self.goodreads.listbooks(self.shelf):
                         writer.writerow([id, title, author, 1, 0])
                         self.inventory[int(id)] = InventoryRecord(title, author, 1, 0)
             except IOError as e:
@@ -102,9 +111,13 @@ class Main(QtGui.QMainWindow):
         self.ui.search_query.setDefaultText()
         self.ui.search.clicked.connect(self.on_search_clicked)
         self.ui.search_reset.pressed.connect(self.on_search_reset_clicked)
+        self.ui.switch_library_button.clicked.connect(self.on_switch_library_button_pressed)
+        self.ui.view_log_button.clicked.connect(self.on_view_log_button_pressed)
+        self.ui.view_inventory_button.clicked.connect(self.on_view_inventory_button_pressed)
+        self.ui.switch_log_button.clicked.connect(self.on_switch_log_button_pressed)
+        self.ui.switch_inventory_button.clicked.connect(self.on_switch_inventory_button_pressed)
         self.ui.options.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.optionspage))
         self.ui.back_to_books.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.bookpage))
-
 
         def load_config(log):
             log("Loading: " + CONFIG_FILE_PATH)
@@ -212,19 +225,20 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                     pass
 
     def on_view_log_button_pressed(self):
-        config_file = self.config[_LOG_PATH_KEY]
-        import os
-        if sys.platform.startswith('win'):
-            os.startfile(config_file)
-        elif sys.platform.startswith("darwin"):
-            os.system("open " + config_file)
-        else:
-            os.system("xdg-open " + config_file)
+        openfile(self.config[_LOG_PATH_KEY])
 
     def on_switch_log_button_pressed(self):
         file = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
         self.config[_LOG_PATH_KEY] = str(file)
-        self.refresh(self.logfile)
+        self.refresh(self.log_file)
+
+    def on_view_inventory_button_pressed(self):
+        openfile(self.config[_INVENTORY_PATH_KEY])
+
+    def on_switch_inventory_button_pressed(self):
+        file = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
+        self.config[_INVENTORY_PATH_KEY] = str(file)
+        self.refresh(self.inventory_file)
 
     def persist_inventory(self):
         with open(self.config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
@@ -290,46 +304,46 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         return books
 
     # Update the user interface
+    def current_user(self, log):
+        global USER_LABEL_TEXT
+        """ Returns the string used in the Options GUI for user name """
+        log("Finding out who your are")
+        if not USER_LABEL_TEXT:
+            USER_LABEL_TEXT = str(self.ui.user_label.text())
+        return USER_LABEL_TEXT % self.goodreads.user()[1]
+
+    def log_file(self, log):
+        global LOG_LABEL_TEXT
+        """ Returns the string used in the Options GUI for the log file """
+        log("Finding that log file")
+        if not LOG_LABEL_TEXT:
+            LOG_LABEL_TEXT = str(self.ui.log_label.text())
+        return LOG_LABEL_TEXT % self.config[_LOG_PATH_KEY]
+
+    def inventory_file(self, log):
+        global INVENTORY_LABEL_TEXT
+        """ Returns the string used in the Options GUI for the inventory file """
+        log("Figuring out where I keep track of your books")
+        if not INVENTORY_LABEL_TEXT:
+            INVENTORY_LABEL_TEXT = str(self.ui.inventory_label.text())
+        return INVENTORY_LABEL_TEXT % self.config[_INVENTORY_PATH_KEY]
+
+    def library_shelf(self, log):
+        global LIBRARY_SHELF_LABEL_TEXT
+        """ Returns the string used in the Options GUI for the shelf """
+        log("Figuring out where you keep your books")
+        if not LIBRARY_SHELF_LABEL_TEXT:
+            LIBRARY_SHELF_LABEL_TEXT = str(self.ui.library_shelf_label.text())
+        return LIBRARY_SHELF_LABEL_TEXT % self.shelf
 
     def refresh(self, *refresh):
-        def current_user(log):
-            global USER_LABEL_TEXT
-            """ Returns the string used in the Options GUI for user name """
-            log("Finding out who your are")
-            if not USER_LABEL_TEXT:
-                USER_LABEL_TEXT = str(self.ui.user_label.text())
-            return USER_LABEL_TEXT % self.goodreads.user()[1]
-
-        def log_file(log):
-            global LOG_LABEL_TEXT
-            """ Returns the string used in the Options GUI for the log file """
-            log("Finding that log file")
-            if not LOG_LABEL_TEXT:
-                LOG_LABEL_TEXT = str(self.ui.log_label.text())
-            return LOG_LABEL_TEXT % self.config[_LOG_PATH_KEY]
-
-        def inventory_file(log):
-            global INVENTORY_LABEL_TEXT
-            """ Returns the string used in the Options GUI for the inventory file """
-            log("Figuring out where I keep track of your books")
-            if not INVENTORY_LABEL_TEXT:
-                INVENTORY_LABEL_TEXT = str(self.ui.inventory_label.text())
-            return INVENTORY_LABEL_TEXT % self.config[_INVENTORY_PATH_KEY]
-
-        def library_shelf(log):
-            global LIBRARY_SHELF_LABEL_TEXT
-            """ Returns the string used in the Options GUI for the shelf """
-            log("Figuring out where you keep your books")
-            if not LIBRARY_SHELF_LABEL_TEXT:
-                LIBRARY_SHELF_LABEL_TEXT = str(self.ui.library_shelf_label.text())
-            return LIBRARY_SHELF_LABEL_TEXT % self.shelf
 
         all_tasks = [
             (self.populate_table, self.load_available),
-            (self.ui.user_label.setText, current_user),
-            (self.ui.log_label.setText, log_file),
-            (self.ui.library_shelf_label.setText, library_shelf),
-            (self.ui.inventory_label.setText, inventory_file)]
+            (self.ui.user_label.setText, self.current_user),
+            (self.ui.log_label.setText, self.log_file),
+            (self.ui.library_shelf_label.setText, self.library_shelf),
+            (self.ui.inventory_label.setText, self.inventory_file)]
 
         slots, tasks = zip(*all_tasks) #unzip in python
 
