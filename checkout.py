@@ -248,14 +248,14 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
             if id in self.inventory:
                 old = self.inventory[id]
-                self.inventory[id] = old.replace(
+                self.inventory[id] = old._replace(
                     checked_in = old.checked_in - 1,
                     checked_out = old.checked_out + 1)
                 self.persist_inventory()
             else:
                 print("couldn't find %d: %s" % (id, title))
 
-            self.refresh(self.load_available, self.checkedout)
+            self.refresh(self.load_available)
 
     def checkin_pressed(self, id, title):
         """ Connected to signal in populate_table """
@@ -270,14 +270,14 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
             if id in self.inventory:
                 old = self.inventory[id]
-                self.inventory[id] = old.replace(
+                self.inventory[id] = old._replace(
                     checked_in = old.checked_in + 1,
                     checked_out = old.checked_out - 1)
                 self.persist_inventory()
             else:
                 print("Couldn't find ID: %d, title: %s" % (id, title))
 
-            self.refresh(self.load_available, self.checkedout)
+            self.refresh(self.load_available)
 
     def load_available(self, log):
         books = self.goodreads.listbooks(self.shelf)
