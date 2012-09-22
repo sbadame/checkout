@@ -10,15 +10,21 @@ from datetime import datetime
 from PySide import QtGui, QtCore
 from shelfdialog import Ui_Dialog as BaseShelfDialog
 
+# Default file paths for configuration
 CONFIG_FILE_PATH = path.normpath(path.expanduser("~/checkout.credentials"))
+DEFAULT_INVENTORY_FILE_PATH = path.normpath(path.expanduser("~/inventory.csv"))
+DEFAULT_LOG_PATH = path.normpath(path.expanduser("~/checkout.csv"))
 
-LIBRARY_SHELF = "LIBRARY_SHELF"
+# Keys for the configuration hash
+LIBRARY_SHELF = "LIBRARY_SHELF" # The name of the shelf where books are stored
+_LOG_PATH_KEY = 'LOG_PATH'
+_INVENTORY_PATH_KEY = 'INVENTORY_PATH'
+
+# UI Constants
 USER_LABEL_TEXT = 'Currently logged in as %s.'
 CHECKEDOUT_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are checked out.'
 CHECKEDIN_SHELF_LABEL_TEXT = 'Your "%s" shelf is being used to store the books that are available.'
 LOG_LABEL_TEXT = 'The log is recorded at "%s".'
-_LOG_PATH_KEY = 'LOG_PATH'
-_INVENTORY_PATH_KEY = 'INVENTORY_PATH'
 
 CHECKED_IN = "CHECKED_IN" 
 CHECKED_OUT = "CHECKED_OUT"
@@ -42,37 +48,23 @@ class Main(QtGui.QMainWindow):
     def set_config(self, config):
         self.config = config
         self.shelf = self.config[LIBRARY_SHELF]
-
-        self.load_api_key()
         self.goodreads = GoodReads(config[DEVELOPER_KEY], config[DEVELOPER_SECRET], waitfunction=self.wait_for_user)
-
-        if _LOG_PATH_KEY not in self.config:
-            self.config[_LOG_PATH_KEY] = path.normpath(path.expanduser("~/checkout.csv"))
-
         self.load_inventory()
         self.refresh()
 
-    def load_api_key(self):
-        if DEVELOPER_KEY not in self.config or DEVELOPER_SECRET not in self.config:
-            key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
-                    'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
-            if not success: exit()
-            self.config[DEVELOPER_KEY] = str(key)
+    def load_dev_key(self):
+        key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
+                'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
+        if not success: exit()
+        return str(key)
 
-            secret, success = QtGui.QInputDialog.getText(None, "Developer Secret?",
-                    'What is the developer secret for the key that you just gave?\n(It\'s also on that page with the key: http://www.goodreads.com/api/keys)')
-            if not success: exit()
-            config[DEVELOPER_SECRET] = str(secret)
+    def load_dev_secret(self):
+        secret, success = QtGui.QInputDialog.getText(None, "Developer Secret?",
+                'What is the developer secret for the key that you just gave?\n(It\'s also on that page with the key: http://www.goodreads.com/api/keys)')
+        if not success: exit()
+        return str(secret)
 
     def load_inventory(self):
-        #Load up our inventory
-
-        if LIBRARY_SHELF not in self.config:
-            self.on_switch_library_button_pressed(refresh=False)
-
-        if _INVENTORY_PATH_KEY not in self.config:
-            self.config[_INVENTORY_PATH_KEY] = path.normpath(path.expanduser("~/inventory.csv"))
-
         try:
             with open(self.config[_INVENTORY_PATH_KEY], 'rb') as inventoryfile:
                 for (id, title, author, num_in, num_out) in csv.reader(inventoryfile):
@@ -110,14 +102,30 @@ class Main(QtGui.QMainWindow):
         self.ui.options.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.optionspage))
         self.ui.back_to_books.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.bookpage))
 
+
         def load_config(log):
             log("Loading: " + CONFIG_FILE_PATH)
             try:
                 with open(CONFIG_FILE_PATH, "r") as configfile:
+                    # How to populate the configuration if it isn't set yet...
+                    # Note that these are function calls and order maters!
                     config = Config.load_from_file(configfile)
             except IOError as e:
                     print("Error loading: %s (%s). (This is normal for a first run)" % (CONFIG_FILE_PATH, e))
                     config = Config(CONFIG_FILE_PATH)
+
+            default_configuration = [
+                (_LOG_PATH_KEY, lambda: DEFAULT_LOG_PATH),
+                (_INVENTORY_PATH_KEY, lambda: DEFAULT_INVENTORY_FILE_PATH),
+                (DEVELOPER_KEY, self.load_dev_key),
+                (DEVELOPER_SECRET, self.load_dev_secret),
+                (LIBRARY_SHELF, lambda: self.on_switch_library_button_pressed(refresh=False)),
+            ]
+
+            for key, loader in default_configuration:
+                if key not in config:
+                    config[key] = loader()
+
             return config
 
         self.longtask((self.set_config, load_config))
