@@ -247,8 +247,10 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 writer.writerow([date, str(name), "checked out", title])
 
             if id in self.inventory:
-                self.inventory[id].checked_in -= 1
-                self.inventory[id].checked_out += 1
+                old = self.inventory[id]
+                self.inventory[id] = old.replace(
+                    checked_in = old.checked_in - 1,
+                    checked_out = old.checked_out + 1)
                 self.persist_inventory()
             else:
                 print("couldn't find %d: %s" % (id, title))
@@ -267,8 +269,10 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 writer.writerow([date, "", "checked in", title])
 
             if id in self.inventory:
-                self.inventory[id].checked_in += 1
-                self.inventory[id].checked_out -= 1
+                old = self.inventory[id]
+                self.inventory[id] = old.replace(
+                    checked_in = old.checked_in + 1,
+                    checked_out = old.checked_out - 1)
                 self.persist_inventory()
             else:
                 print("Couldn't find ID: %d, title: %s" % (id, title))
