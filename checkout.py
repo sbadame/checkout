@@ -231,13 +231,13 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         openfile(self.config[_INVENTORY_PATH_KEY])
 
     def on_switch_log_button_pressed(self):
-        file, filter = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
+        file = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
         if file:
             self.config[_LOG_PATH_KEY] = str(file)
             self.refresh(self.log_file)
 
     def on_switch_inventory_button_pressed(self):
-        file, filter = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
+        file = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
         if file:
             self.config[_INVENTORY_PATH_KEY] = str(file)
             self.refresh(self.inventory_file)
