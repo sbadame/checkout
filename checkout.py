@@ -389,7 +389,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             button_widget = QtGui.QWidget()
             layout = QtGui.QVBoxLayout()
             layout.setSpacing(0)
-            layout.setContentsMargins(0,0,0,0)
+            layout.setContentsMargins(0,0,3,0)
             button_widget.setLayout(layout)
 
             show_checkout_button = self.inventory[id].checked_in > 0
