@@ -391,10 +391,10 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             button_widget.setLayout(layout)
             if self.available(id) > 0:
                 checkout_button = QtGui.QPushButton("Check this book out!")
-                checkout_button.clicked.connect(lambda a = id, b = title: self.checkout_pressed(a,b))
+                checkout_button.clicked.connect(lambda c, a = id, b = title: self.checkout_pressed(a,b))
             else:
                 checkout_button = QtGui.QPushButton("Return this book")
-                checkout_button.clicked.connect(lambda a = id, b = title: self.checkin_pressed(a,b))
+                checkout_button.clicked.connect(lambda c, a = id, b = title: self.checkin_pressed(a,b))
                 checkout_button.setStyleSheet('background-color: "%s"' % CHECKOUT_COLOR )
                 button_widget.setStyleSheet('margin:0px; background-color: "%s"' % CHECKOUT_COLOR )
                 titlewidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
