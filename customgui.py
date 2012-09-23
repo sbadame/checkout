@@ -1,5 +1,5 @@
-from PySide.QtGui import QLineEdit, QFocusEvent, QItemDelegate
-from PySide.QtCore import QEvent
+from PyQt4.QtGui import QLineEdit, QFocusEvent, QItemDelegate
+from PyQt4.QtCore import QEvent
 
 class CustomLineEdit(QLineEdit):
     def __init__(self, parent=None):

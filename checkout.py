@@ -1,3 +1,4 @@
+from PyQt4 import QtGui, QtCore
 import csv
 import sys
 import os.path as path
@@ -8,7 +9,6 @@ from customgui import NoVisibleFocusItemDelegate
 from goodreads import GoodReads
 from checkoutgui import Ui_MainWindow
 from datetime import datetime
-from PyQt4 import QtGui, QtCore
 from shelfdialog import Ui_Dialog as BaseShelfDialog
 
 # How we represent books stored in the inventory csv
@@ -56,7 +56,7 @@ def openfile(filepath):
 """ To regenerate the gui from the design: pyside-uic checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
 
-    @QtCore.Slot(object)
+    @QtCore.pyqtSlot(object)
     def set_config(self, config):
         self.config = config
         self.shelf = self.config[LIBRARY_SHELF]
@@ -438,8 +438,8 @@ class ShelfDialog(QtGui.QDialog, BaseShelfDialog):
         return str(self.list.currentItem().text())
 
 class ASyncWorker(QtCore.QThread):
-    signal = QtCore.Signal(object)
-    progress = QtCore.Signal(str)
+    signal = QtCore.pyqtSignal(object)
+    progress = QtCore.pyqtSignal(str)
 
     def __init__(self, slot, task, parent=None):
         QtCore.QThread.__init__(self, parent)
