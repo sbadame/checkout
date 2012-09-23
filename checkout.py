@@ -1,3 +1,4 @@
+from __future__ import print_function
 from PyQt4 import QtGui, QtCore
 import csv
 import sys
@@ -56,15 +57,10 @@ def openfile(filepath):
 """ To regenerate the gui from the design: pyside-uic checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
 
-    @QtCore.pyqtSlot(object)
-    def set_config(self, config):
-        self.config = config
-        self.shelf = self.config[LIBRARY_SHELF]
-        self.goodreads = GoodReads(config[DEVELOPER_KEY], config[DEVELOPER_SECRET], waitfunction=self.wait_for_user)
-        self.load_inventory()
-        self.refresh()
+    def shelf(self):
+        return self.config[LIBRARY_SHELF]
 
-    def load_dev_key(self):
+    def request_dev_key(self, log=print):
         key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
                 'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
         if not success: exit()
@@ -79,6 +75,7 @@ class Main(QtGui.QMainWindow):
     def load_inventory(self):
         try:
             with open(self.config[_INVENTORY_PATH_KEY], 'rb') as inventoryfile:
+                print("Opened: " + self.config[_INVENTORY_PATH_KEY])
                 for (id, title, author, num_in, num_out) in csv.reader(inventoryfile):
                     self.inventory[int(id)] = InventoryRecord(title, author, int(num_in), int(num_out))
         except IOError as e:
@@ -87,7 +84,7 @@ class Main(QtGui.QMainWindow):
                 with open(self.config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
                     print("Creating a new inventory file")
                     writer = csv.writer(inventoryfile)
-                    for id, title, author in self.goodreads.listbooks(self.shelf):
+                    for id, title, author in self.goodreads.listbooks(self.shelf()):
                         writer.writerow([id, title, author, 1, 0])
                         self.inventory[int(id)] = InventoryRecord(title, author, 1, 0)
             except IOError as e:
@@ -119,35 +116,34 @@ class Main(QtGui.QMainWindow):
         self.ui.options.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.optionspage))
         self.ui.back_to_books.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.bookpage))
 
-        def load_config(log):
-            log("Loading: " + CONFIG_FILE_PATH)
-            try:
-                with open(CONFIG_FILE_PATH, "r") as configfile:
-                    # How to populate the configuration if it isn't set yet...
-                    # Note that these are function calls and order maters!
-                    config = Config.load_from_file(configfile)
-            except IOError as e:
-                    print("Error loading: %s (%s). (This is normal for a first run)" % (CONFIG_FILE_PATH, e))
-                    config = Config(CONFIG_FILE_PATH)
+        try:
+            with open(CONFIG_FILE_PATH, "r") as configfile:
+                print("Loading: " + CONFIG_FILE_PATH)
+                # How to populate the configuration if it isn't set yet...
+                # Note that these are function calls and order maters!
+                config = Config.load_from_file(configfile)
+        except IOError as e:
+                print("Error loading: %s (%s). (This is normal for a first run)" % (CONFIG_FILE_PATH, e))
+                config = Config(CONFIG_FILE_PATH)
 
-            log("Got a file, checking if we need anything")
-            default_configuration = [
-                (_LOG_PATH_KEY, lambda: DEFAULT_LOG_PATH),
-                (_INVENTORY_PATH_KEY, lambda: DEFAULT_INVENTORY_FILE_PATH),
-                (DEVELOPER_KEY, self.load_dev_key),
-                (DEVELOPER_SECRET, self.load_dev_secret),
-                (LIBRARY_SHELF, lambda: self.on_switch_library_button_pressed(refresh=False)),
-            ]
+        self.config = config
+        default_configuration = [
+            (_LOG_PATH_KEY, lambda: DEFAULT_LOG_PATH),
+            (_INVENTORY_PATH_KEY, lambda: DEFAULT_INVENTORY_FILE_PATH),
+            (DEVELOPER_KEY, self.request_dev_key),
+            (DEVELOPER_SECRET, self.load_dev_secret),
+        ]
 
-            for key, loader in default_configuration:
-                if key not in config:
-                    log("Missing a value for your %s property, lets get one!" % key)
-                    config[key] = loader()
-            log("Done loading config")
+        for key, loader in default_configuration:
+            if key not in config:
+                log("Missing a value for your %s property, lets get one!" % key)
+                config[key] = loader()
+        self.goodreads = GoodReads(self.config[DEVELOPER_KEY], self.config[DEVELOPER_SECRET], waitfunction=self.wait_for_user)
+        if LIBRARY_SHELF not in self.config:
+            self.on_switch_library_button_pressed(refresh=False)
 
-            return config
-
-        self.longtask((self.set_config, load_config))
+        self.load_inventory()
+        self.refresh()
 
     def developer_key(self):
         return QtGui.QInputDialog.getText(None, "Developer Key?",
@@ -165,7 +161,7 @@ class Main(QtGui.QMainWindow):
 
         def search(log):
             log("Searching for: \"%s\"" % search_query)
-            return self.goodreads.search(search_query, self.shelf)
+            return self.goodreads.search(search_query, self.shelf())
 
         self.longtask((self.populate_table, search))
 
@@ -190,7 +186,9 @@ class Main(QtGui.QMainWindow):
                 async.terminate()
 
         def wait_for_death():
+            print("Waiting for all tasks to finish...")
             for async in asyncs: async.wait()
+            print("All done!")
 
             #Update the UI only if everything finished correctly.
             if all(async.finished for async in asyncs):
@@ -221,7 +219,6 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         if dialog.exec_():
             shelf = dialog.shelf()
             if shelf:
-                self.shelf = shelf
                 self.config[LIBRARY_SHELF] = shelf
                 if refresh:
                     #TODO: fix this in the options, add the library shelf option
@@ -301,7 +298,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
     def load_available(self, log):
         log("Reloading your books...")
-        books = self.goodreads.listbooks(self.shelf)
+        books = self.goodreads.listbooks(self.shelf())
         books.sort(key=BOOKSORT)
         for (id, title, author) in books:
             if id not in self.inventory:
@@ -340,7 +337,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         log("Figuring out where you keep your books")
         if not LIBRARY_SHELF_LABEL_TEXT:
             LIBRARY_SHELF_LABEL_TEXT = str(self.ui.library_shelf_label.text())
-        return LIBRARY_SHELF_LABEL_TEXT % self.shelf
+        return LIBRARY_SHELF_LABEL_TEXT % self.shelf()
 
     def refresh(self, *refresh):
 
@@ -391,19 +388,30 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
             button_widget = QtGui.QWidget()
             layout = QtGui.QVBoxLayout()
+            layout.setSpacing(0)
+            layout.setContentsMargins(0,0,0,0)
             button_widget.setLayout(layout)
-            if self.available(id) > 0:
+
+            show_checkout_button = self.inventory[id].checked_in > 0
+            show_checkin_button = self.inventory[id].checked_out > 0
+
+            if show_checkout_button:
                 checkout_button = QtGui.QPushButton("Check this book out!")
                 checkout_button.clicked.connect(lambda c, a = id, b = title: self.checkout_pressed(a,b))
-            else:
-                checkout_button = QtGui.QPushButton("Return this book")
-                checkout_button.clicked.connect(lambda c, a = id, b = title: self.checkin_pressed(a,b))
-                checkout_button.setStyleSheet('background-color: "%s"' % CHECKOUT_COLOR )
-                button_widget.setStyleSheet('margin:0px; background-color: "%s"' % CHECKOUT_COLOR )
-                titlewidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
-                authorwidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
+                layout.addWidget(checkout_button)
 
-            layout.addWidget(checkout_button)
+            if show_checkin_button:
+                checkin_button = QtGui.QPushButton("Return this book")
+                checkin_button.clicked.connect(lambda c, a = id, b = title: self.checkin_pressed(a,b))
+                layout.addWidget(checkin_button)
+
+            if show_checkout_button and show_checkin_button:
+                button_widget.setStyleSheet('margin:0px; padding:0px;')
+                # todo: remove these styles?
+                # checkin_button.setStyleSheet('background-color: "%s"' % CHECKOUT_COLOR )
+                # titlewidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
+                # authorwidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
+
             table.setCellWidget(index, 2, button_widget)
 
         horizontal_header = table.horizontalHeader()
