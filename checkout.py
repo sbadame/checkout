@@ -8,7 +8,7 @@ from customgui import NoVisibleFocusItemDelegate
 from goodreads import GoodReads
 from checkoutgui import Ui_MainWindow
 from datetime import datetime
-from PySide import QtGui, QtCore
+from PyQt4 import QtGui, QtCore
 from shelfdialog import Ui_Dialog as BaseShelfDialog
 
 # How we represent books stored in the inventory csv
