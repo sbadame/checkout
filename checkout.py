@@ -36,8 +36,8 @@ INVENTORY_LABEL_TEXT = None
 CHECKOUT_COLOR = "#FF7373"
 CHECKOUT_COLOR_SELECTED = "#BF3030"
 
-AVAILABLE_COLOR = "#67E667"
-AVAILABLE_COLOR_SELECTED = "#269926"
+AVAILABLE_COLOR = "#0000FF"
+AVAILABLE_COLOR_SELECTED = "#0000FF"
 
 # How books in the UI are sorted
 BOOKSORT = lambda (id, title, author): (list(reversed(author.split())), title)
@@ -364,8 +364,10 @@ If this is your first time, you will have to give 'Checkout' permission to acces
     def on_books_currentCellChanged(self, prow, pcolumn, row, column):
         if self.books:
             id, title, author = self.books[prow]
-            style = AVAILABLE_COLOR_SELECTED if self.available(id) else CHECKOUT_COLOR_SELECTED
-            self.ui.books.setStyleSheet('selection-background-color: "%s"' % style)
+            if self.available(id):
+                self.ui.books.setStyleSheet('')
+            else:
+                self.ui.books.setStyleSheet('selection-background-color: "%s"' % CHECKOUT_COLOR_SELECTED)
 
     def available(self, book_id):
         return self.inventory[book_id].checked_in > 0
@@ -411,6 +413,11 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 # checkin_button.setStyleSheet('background-color: "%s"' % CHECKOUT_COLOR )
                 # titlewidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
                 # authorwidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
+
+            if not show_checkout_button:
+                titlewidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
+                authorwidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
+                button_widget.setStyleSheet('background-color: "%s";' % CHECKOUT_COLOR);
 
             table.setCellWidget(index, 2, button_widget)
 

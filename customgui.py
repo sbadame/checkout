@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QLineEdit, QFocusEvent, QItemDelegate
+from PyQt4.QtGui import QLineEdit, QFocusEvent, QItemDelegate, QTableWidget
 from PyQt4.QtCore import QEvent
 
 class CustomLineEdit(QLineEdit):
