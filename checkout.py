@@ -130,6 +130,7 @@ class Main(QtGui.QMainWindow):
                     print("Error loading: %s (%s). (This is normal for a first run)" % (CONFIG_FILE_PATH, e))
                     config = Config(CONFIG_FILE_PATH)
 
+            log("Got a file, checking if we need anything")
             default_configuration = [
                 (_LOG_PATH_KEY, lambda: DEFAULT_LOG_PATH),
                 (_INVENTORY_PATH_KEY, lambda: DEFAULT_INVENTORY_FILE_PATH),
@@ -140,7 +141,9 @@ class Main(QtGui.QMainWindow):
 
             for key, loader in default_configuration:
                 if key not in config:
+                    log("Missing a value for your %s property, lets get one!" % key)
                     config[key] = loader()
+            log("Done loading config")
 
             return config
 
