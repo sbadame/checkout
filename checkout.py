@@ -1,6 +1,6 @@
 from __future__ import print_function
 from PyQt4 import QtGui, QtCore
-import csv
+import unicodecsv as csv
 import sys
 import os.path as path
 
@@ -54,6 +54,10 @@ def openfile(filepath):
     else:
         os.system("xdg-open " + filepath)
 
+def sanitize(listofstuff):
+    return listofstuff
+    #return [str(s).encode('utf8') for s in listofstuff]
+
 """ To regenerate the gui from the design: pyside-uic checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
 
@@ -80,12 +84,11 @@ class Main(QtGui.QMainWindow):
                     self.inventory[int(id)] = InventoryRecord(title, author, int(num_in), int(num_out))
         except IOError as e:
             try:
-                print("Creating a new inventory file")
                 with open(self.config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
                     print("Creating a new inventory file")
                     writer = csv.writer(inventoryfile)
                     for id, title, author in self.goodreads.listbooks(self.shelf()):
-                        writer.writerow([id, title, author, 1, 0])
+                        writer.writerow(sanitize([id, title, author, 1, 0]))
                         self.inventory[int(id)] = InventoryRecord(title, author, 1, 0)
             except IOError as e:
                 print("Couldn't create a new inventory file: " + str(e))
@@ -99,6 +102,7 @@ class Main(QtGui.QMainWindow):
         self.inventory = {}
 
     def startup(self):
+        print("Starting up!")
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.search_reset.hide()
@@ -106,13 +110,13 @@ class Main(QtGui.QMainWindow):
         self.ui.books.setFocus()
 
         self.ui.search_query.setDefaultText()
-        self.ui.search.clicked.connect(self.on_search_clicked)
-        self.ui.search_reset.pressed.connect(self.on_search_reset_clicked)
-        self.ui.switch_library_button.clicked.connect(self.on_switch_library_button_pressed)
-        self.ui.view_log_button.clicked.connect(self.on_view_log_button_pressed)
-        self.ui.view_inventory_button.clicked.connect(self.on_view_inventory_button_pressed)
-        self.ui.switch_log_button.clicked.connect(self.on_switch_log_button_pressed)
-        self.ui.switch_inventory_button.clicked.connect(self.on_switch_inventory_button_pressed)
+        #self.ui.search.clicked.connect(self.on_search_clicked)
+        #self.ui.search_reset.pressed.connect(self.on_search_reset_clicked)
+        #self.ui.switch_library_button.clicked.connect(self.on_switch_library_button_pressed)
+        #self.ui.view_log_button.clicked.connect(self.on_view_log_button_pressed)
+        #self.ui.view_inventory_button.clicked.connect(self.on_view_inventory_button_pressed)
+        #self.ui.switch_log_button.clicked.connect(self.on_switch_log_button_pressed)
+        #self.ui.switch_inventory_button.clicked.connect(self.on_switch_inventory_button_pressed)
         self.ui.options.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.optionspage))
         self.ui.back_to_books.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.bookpage))
 
@@ -153,7 +157,9 @@ class Main(QtGui.QMainWindow):
         self.progress.show()
         self.progress.setLabelText(text)
 
-    def on_search_clicked(self):
+    def on_search_pressed(self):
+        print("About to search")
+        import traceback; traceback.print_exc()
         """ Connected to signal through AutoConnect """
         search_query = self.ui.search_query.text()
         if search_query == self.ui.search_query.default_text():
@@ -163,9 +169,10 @@ class Main(QtGui.QMainWindow):
             log("Searching for: \"%s\"" % search_query)
             return self.goodreads.search(search_query, self.shelf())
 
+        print("Firing search for: " + search_query)
         self.longtask((self.populate_table, search))
 
-    def on_search_reset_clicked(self):
+    def on_search_reset_pressed(self):
         def updateUI(books):
             self.ui.search_query.setText("")
             self.populate_table(books)
@@ -231,13 +238,13 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         openfile(self.config[_INVENTORY_PATH_KEY])
 
     def on_switch_log_button_pressed(self):
-        file, filter = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
+        file = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
         if file:
             self.config[_LOG_PATH_KEY] = str(file)
             self.refresh(self.log_file)
 
     def on_switch_inventory_button_pressed(self):
-        file, filter = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
+        file = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
         if file:
             self.config[_INVENTORY_PATH_KEY] = str(file)
             self.refresh(self.inventory_file)
@@ -249,7 +256,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             data = self.inventory.items()
             data.sort(key = lambda (id, record): (record.author, record.title))
             for id, record in data:
-                writer.writerow([id, record.title, record.author, record.checked_in, record.checked_out])
+                writer.writerow(sanitize([id, record.title, record.author, record.checked_in, record.checked_out]))
 
     def checkout_pressed(self, id, title):
         """ Connected to signal in populate_table """
@@ -261,7 +268,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
             with open(self.config[_LOG_PATH_KEY], 'ab') as logfile:
                 writer = csv.writer(logfile)
-                writer.writerow([date, str(name), "checked out", title])
+                writer.writerow(sanitize([date, str(name), "checked out", title]))
 
             if id in self.inventory:
                 old = self.inventory[id]
@@ -283,7 +290,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
             with open(self.config[_LOG_PATH_KEY], 'ab') as logfile:
                 writer = csv.writer(logfile)
-                writer.writerow([date, "", "checked in", title])
+                writer.writerow(sanitize([date, "", "checked in", title]))
 
             if id in self.inventory:
                 old = self.inventory[id]
@@ -432,10 +439,6 @@ class ShelfDialog(QtGui.QDialog, BaseShelfDialog):
         QtGui.QDialog.__init__(self, parent)
         self.setupUi(self)
         self.label.setText(str(self.label.text()) % use)
-        QtCore.QObject.connect(
-            self.new_shelf_button,
-            QtCore.SIGNAL("clicked()"),
-            self.create_new_shelf)
         self.goodreads = goodreads
         self.refresh()
 
