@@ -80,7 +80,7 @@ class Main(QtGui.QMainWindow):
         try:
             with open(self.config[_INVENTORY_PATH_KEY], 'rb') as inventoryfile:
                 print("Opened: " + self.config[_INVENTORY_PATH_KEY])
-                for (id, title, author, num_in, num_out) in csv.reader(inventoryfile):
+                for (id, title, author, num_in, num_out) in csv.reader(inventoryfile)[0:len(InventoryRecord._fields)]:
                     self.inventory[int(id)] = InventoryRecord(title, author, int(num_in), int(num_out))
         except IOError as e:
             try:

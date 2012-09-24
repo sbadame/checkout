@@ -60,6 +60,7 @@ class GoodReads:
         response, content = client.request(ACCESS_TOKEN_URL, 'POST')
         time.sleep(1)
         if response['status'] != HTTP_OK:
+            # This happens if we're not authenticated (ie, the user doesn't load the URL for the token)
             raise Exception("Something went wrong getting the access token: %s" % response['status'])
 
         access_dict = dict(urlparse.parse_qsl(content))
