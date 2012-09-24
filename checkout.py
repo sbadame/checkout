@@ -169,8 +169,12 @@ class Main(QtGui.QMainWindow):
             log("Searching for: \"%s\"" % search_query)
             return self.goodreads.search(search_query, self.shelf())
 
+        def on_search_complete(*data):
+            self.ui.search_reset.show()
+            self.populate_table(*data)
+
         print("Firing search for: " + search_query)
-        self.longtask((self.populate_table, search))
+        self.longtask((on_search_complete, search))
 
     def on_search_reset_pressed(self):
         def updateUI(books):
