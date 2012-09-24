@@ -140,7 +140,7 @@ class Main(QtGui.QMainWindow):
 
         for key, loader in default_configuration:
             if key not in config:
-                log("Missing a value for your %s property, lets get one!" % key)
+                print("Missing a value for your %s property, lets get one!" % key)
                 config[key] = loader()
         self.goodreads = GoodReads(self.config[DEVELOPER_KEY], self.config[DEVELOPER_SECRET], waitfunction=self.wait_for_user)
         if LIBRARY_SHELF not in self.config:
