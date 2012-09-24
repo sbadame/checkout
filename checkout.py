@@ -232,8 +232,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             if shelf:
                 self.config[LIBRARY_SHELF] = shelf
                 if refresh:
-                    #TODO: fix this in the options, add the library shelf option
-                    pass
+                    self.refresh(self.load_available)
 
     def on_view_log_button_pressed(self):
         openfile(self.config[_LOG_PATH_KEY])
