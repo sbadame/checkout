@@ -1,4 +1,5 @@
 import json
+from safewriter import SafeWrite
 
 class Config(dict):
     def __init__(self, filepath, *args):
@@ -17,5 +18,5 @@ class Config(dict):
 
     def __setitem__(self, key, val):
         super(Config, self).__setitem__(key, val)
-        with open(self.filepath, "w") as configfile:
+        with SafeWrite(self.filepath) as configfile, _:
             json.dump(self, configfile)

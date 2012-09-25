@@ -11,6 +11,7 @@ from goodreads import GoodReads
 from checkoutgui import Ui_MainWindow
 from datetime import datetime
 from shelfdialog import Ui_Dialog as BaseShelfDialog
+from safewriter import SafeWrite
 
 # How we represent books stored in the inventory csv
 InventoryRecord = namedtuple('InventoryRecord',
@@ -80,11 +81,15 @@ class Main(QtGui.QMainWindow):
         try:
             with open(self.config[_INVENTORY_PATH_KEY], 'rb') as inventoryfile:
                 print("Opened: " + self.config[_INVENTORY_PATH_KEY])
-                for (id, title, author, num_in, num_out) in csv.reader(inventoryfile)[0:len(InventoryRecord._fields)]:
+                # The book id is the key in the dictionary, but is
+                # not stored in the InventoryRecord, so we need to add one for it.
+                number_of_fields = len(InventoryRecord._fields) + 1
+                for row in csv.reader(inventoryfile):
+                    id, title, author, num_in, num_out = row[0:number_of_fields]
                     self.inventory[int(id)] = InventoryRecord(title, author, int(num_in), int(num_out))
         except IOError as e:
             try:
-                with open(self.config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
+                with SafeWrite(self.config[_INVENTORY_PATH_KEY], 'b') as inventoryfile, _:
                     print("Creating a new inventory file")
                     writer = csv.writer(inventoryfile)
                     for id, title, author in self.goodreads.listbooks(self.shelf()):
