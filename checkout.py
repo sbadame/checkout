@@ -7,10 +7,10 @@ import os.path as path
 from collections import namedtuple
 from config import Config
 from customgui import NoVisibleFocusItemDelegate
+from dialogs import ShelfDialog
 from goodreads import GoodReads
 from checkoutgui import Ui_MainWindow
 from datetime import datetime
-from shelfdialog import Ui_Dialog as BaseShelfDialog
 from safewriter import SafeWrite
 
 # How we represent books stored in the inventory csv
@@ -446,29 +446,6 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         horizontal_header.setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
         horizontal_header.setStretchLastSection(False)
 
-class ShelfDialog(QtGui.QDialog, BaseShelfDialog):
-    def __init__(self, parent, use, goodreads):
-        QtGui.QDialog.__init__(self, parent)
-        self.setupUi(self)
-        self.label.setText(str(self.label.text()) % use)
-        self.goodreads = goodreads
-        self.refresh()
-
-    def create_new_shelf(self):
-        name, success = QtGui.QInputDialog.getText(self,
-            'Adding a new shelf',
-            'What would you like to name the new shelf?')
-
-        if success:
-            self.goodreads.add_shelf(str(name))
-            self.refresh()
-
-    def refresh(self):
-        self.list.clear()
-        self.list.insertItems(0, self.goodreads.shelves())
-
-    def shelf(self):
-        return str(self.list.currentItem().text())
 
 class ASyncWorker(QtCore.QThread):
     signal = QtCore.pyqtSignal(object)
