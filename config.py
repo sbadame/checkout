@@ -18,5 +18,5 @@ class Config(dict):
 
     def __setitem__(self, key, val):
         super(Config, self).__setitem__(key, val)
-        with SafeWrite(self.filepath) as configfile, _:
+        with SafeWrite(self.filepath) as (configfile, oldfile):
             json.dump(self, configfile)

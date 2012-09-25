@@ -15,7 +15,7 @@ from safewriter import SafeWrite
 
 # How we represent books stored in the inventory csv
 InventoryRecord = namedtuple('InventoryRecord',
-    ['title', 'author', 'checked_in', 'checked_out'])
+    ['title', 'author', 'checked_in', 'checked_out', 'extra_data'])
 
 # Default file paths for configuration
 CONFIG_FILE_PATH = path.normpath(path.expanduser("~/checkout.credentials"))
@@ -83,18 +83,21 @@ class Main(QtGui.QMainWindow):
                 print("Opened: " + self.config[_INVENTORY_PATH_KEY])
                 # The book id is the key in the dictionary, but is
                 # not stored in the InventoryRecord, so we need to add one for it.
-                number_of_fields = len(InventoryRecord._fields) + 1
+                # buuut we have an extra field "extra_data" that stores the extra stuff
+                # so it all works out in the end
+                number_of_fields = len(InventoryRecord._fields)
                 for row in csv.reader(inventoryfile):
                     id, title, author, num_in, num_out = row[0:number_of_fields]
-                    self.inventory[int(id)] = InventoryRecord(title, author, int(num_in), int(num_out))
+                    self.inventory[int(id)] = InventoryRecord(
+                        title, author, int(num_in), int(num_out), row[number_of_fields:])
         except IOError as e:
             try:
-                with SafeWrite(self.config[_INVENTORY_PATH_KEY], 'b') as inventoryfile, _:
+                with SafeWrite(self.config[_INVENTORY_PATH_KEY], 'b') as (inventoryfile, oldfile):
                     print("Creating a new inventory file")
                     writer = csv.writer(inventoryfile)
                     for id, title, author in self.goodreads.listbooks(self.shelf()):
                         writer.writerow(sanitize([id, title, author, 1, 0]))
-                        self.inventory[int(id)] = InventoryRecord(title, author, 1, 0)
+                        self.inventory[int(id)] = InventoryRecord(title, author, 1, 0, [])
             except IOError as e:
                 print("Couldn't create a new inventory file: " + str(e))
 
@@ -264,7 +267,8 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             data = self.inventory.items()
             data.sort(key = lambda (id, record): (record.author, record.title))
             for id, record in data:
-                writer.writerow(sanitize([id, record.title, record.author, record.checked_in, record.checked_out]))
+                writer.writerow(sanitize([id, record.title, record.author, record.checked_in, record.checked_out] +
+                    record.extra_data))
 
     def checkout_pressed(self, id, title):
         """ Connected to signal in populate_table """
@@ -317,7 +321,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         books.sort(key=BOOKSORT)
         for (id, title, author) in books:
             if id not in self.inventory:
-                self.inventory[int(id)]= InventoryRecord(title, author, 1, 0)
+                self.inventory[int(id)]= InventoryRecord(title, author, 1, 0, [])
         self.persist_inventory()
         return books
 
