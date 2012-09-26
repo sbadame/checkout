@@ -234,7 +234,21 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         print("Look at switch user again")
 
     def on_switch_library_button_pressed(self, refresh=True):
-        dialog = ShelfDialog(self, "the library books", self.goodreads)
+        dialog = ShelfDialog(self, self.goodreads.shelves())
+
+        def create_new_shelf(dialog):
+            print("button pressed2!")
+            name, success = QtGui.QInputDialog.getText(dialog,
+                'Adding a new shelf',
+                'What would you like to name the new shelf?')
+
+            if success:
+                dialog.goodreads.add_shelf(str(name))
+                dialog.refresh()
+
+        dialog.on_button_press = create_new_shelf
+        dialog.button.setText(str("Create a new shelf"))
+
         if dialog.exec_():
             shelf = dialog.shelf()
             if shelf:

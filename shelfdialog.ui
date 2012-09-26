@@ -42,7 +42,7 @@
     <item>
      <widget class="QLabel" name="label">
       <property name="text">
-       <string>Which shelf should be used for %s?</string>
+       <string/>
       </property>
      </widget>
     </item>
@@ -50,9 +50,9 @@
      <widget class="QListWidget" name="list"/>
     </item>
     <item>
-     <widget class="QPushButton" name="new_shelf_button">
+     <widget class="QPushButton" name="button">
       <property name="text">
-       <string>Create a new shelf</string>
+       <string/>
       </property>
      </widget>
     </item>
