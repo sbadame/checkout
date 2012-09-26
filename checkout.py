@@ -337,6 +337,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             name = str(name).strip()
             if success and name:
                 dialog.forced_result = name
+                dialog.accept()
 
         dialog.button.setText("I'm not on the list!")
         dialog.button.pressed.connect(not_on_list)
