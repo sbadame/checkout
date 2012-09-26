@@ -8,13 +8,11 @@ class ShelfDialog(QtGui.QDialog, BaseShelfDialog):
         QtGui.QDialog.__init__(self, parent)
         self.setupUi(self)
         self.label.setText(SHELF_DIALOG_LABEL_TEXT)
+        self.setItems(items)
+
+    def setItems(self, items):
         self.list.clear()
         self.list.insertItems(0, items)
-
-    def on_button_pressed(self):
-        print("button pressed!")
-        pass
-
 
     def shelf(self):
         return str(self.list.currentItem().text())
