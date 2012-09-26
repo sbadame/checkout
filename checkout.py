@@ -7,7 +7,7 @@ import os.path as path
 from collections import namedtuple
 from config import Config
 from customgui import NoVisibleFocusItemDelegate
-from dialogs import ShelfDialog
+from dialogs import ListDialog
 from goodreads import GoodReads
 from checkoutgui import Ui_MainWindow
 from datetime import datetime
@@ -32,6 +32,7 @@ USER_LABEL_TEXT = None
 LIBRARY_SHELF_LABEL_TEXT = None
 LOG_LABEL_TEXT = None
 INVENTORY_LABEL_TEXT = None
+SHELF_DIALOG_LABEL_TEXT = "Which shelf should be used for the library books?"
 
 # Colors
 CHECKOUT_COLOR = "#FF7373"
@@ -234,7 +235,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         print("Look at switch user again")
 
     def on_switch_library_button_pressed(self, refresh=True):
-        dialog = ShelfDialog(self, self.goodreads.shelves())
+        dialog = ListDialog(self, SHELF_DIALOG_LABEL_TEXT, self.goodreads.shelves())
 
         def create_new_shelf():
             name, success = QtGui.QInputDialog.getText(dialog,
@@ -249,7 +250,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         dialog.button.setText(str("Create a new shelf"))
 
         if dialog.exec_():
-            shelf = dialog.shelf()
+            shelf = dialog.result()
             if shelf:
                 self.config[LIBRARY_SHELF] = shelf
                 if refresh:
