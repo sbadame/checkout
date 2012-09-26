@@ -11,7 +11,8 @@ class ShelfDialog(QtGui.QDialog, BaseShelfDialog):
         self.list.clear()
         self.list.insertItems(0, items)
 
-    def on_button_press(self):
+    def on_button_pressed(self):
+        print("button pressed!")
         pass
 
 

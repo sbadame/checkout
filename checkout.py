@@ -246,7 +246,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 dialog.goodreads.add_shelf(str(name))
                 dialog.refresh()
 
-        dialog.on_button_press = create_new_shelf
+        dialog.button.clicked.connect(create_new_shelf)
         dialog.button.setText(str("Create a new shelf"))
 
         if dialog.exec_():
