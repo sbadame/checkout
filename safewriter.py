@@ -5,6 +5,7 @@ import shutil
 
 def get_tmp_filename(*args, **kwargs):
     oshandle, filename = mkstemp(*args, **kwargs)
+    os.close(oshandle)
     os.remove(filename)
     return filename
 
