@@ -253,8 +253,10 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             shelf = dialog.result()
             if shelf:
                 self.config[LIBRARY_SHELF] = shelf
+                refresh_list = [self.library_shelf]
                 if refresh:
-                    self.refresh(self.load_available)
+                    refresh_list.append(self.load_available)
+                self.refresh(*refresh_list)
 
     def on_view_log_button_pressed(self):
         openfile(self.config[_LOG_PATH_KEY])
