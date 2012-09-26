@@ -7,10 +7,15 @@ class ListDialog(QtGui.QDialog, BaseShelfDialog):
         self.setupUi(self)
         self.label.setText(labeltext)
         self.setItems(items)
+        self.forced_result = None
 
     def setItems(self, items):
         self.list.clear()
         self.list.insertItems(0, items)
 
     def result(self):
-        return str(self.list.currentItem().text())
+        if not self.forced_result:
+            return str(self.list.currentItem().text())
+        else:
+            return self.forced_result
+

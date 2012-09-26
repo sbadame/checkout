@@ -247,7 +247,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 dialog.setItems(self.goodreads.shelves())
 
         dialog.button.pressed.connect(create_new_shelf)
-        dialog.button.setText(str("Create a new shelf"))
+        dialog.button.setText("Create a new shelf")
 
         if dialog.exec_():
             shelf = dialog.result()
@@ -288,15 +288,15 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
     def checkout_pressed(self, id, title):
         """ Connected to signal in populate_table """
+
         name, success = QtGui.QInputDialog.getText(self,
             'Checking out %s' % title, 'What is your name?')
-
         if success:
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
 
             with open(self.config[_LOG_PATH_KEY], 'ab') as logfile:
                 writer = csv.writer(logfile)
-                writer.writerow(sanitize([date, str(name), "checked out", title]))
+                writer.writerow(sanitize([date, str(name), "checked out", id, title]))
 
             if id in self.inventory:
                 old = self.inventory[id]
@@ -309,27 +309,56 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
             self.refresh(self.load_available)
 
+    def candidates_for_return(self, bookid):
+        possible_people = []
+        with open(self.config[_LOG_PATH_KEY], 'rb') as logfile:
+            for row in csv.reader(logfile):
+                try:
+                    if int(row[3]) == bookid:
+                        name = row[1].strip()
+                        if name not in possible_people:
+                            possible_people.append(name)
+                except ValueError as ve:
+                    # it's ok if there is a malformed cell/row
+                    print("Malformed row: " + str(row))
+                    pass
+        return possible_people
+
     def checkin_pressed(self, id, title):
         """ Connected to signal in populate_table """
-        reply = QtGui.QMessageBox.question(self, "Checking in",
-                'Are you checking in: %s?' % title, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        candidates_for_return = self.candidates_for_return(id)
 
-        if reply == QtGui.QMessageBox.Yes:
-            date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
-            with open(self.config[_LOG_PATH_KEY], 'ab') as logfile:
-                writer = csv.writer(logfile)
-                writer.writerow(sanitize([date, "", "checked in", title]))
+        dialog = ListDialog(self, "Who are you?", candidates_for_return)
 
-            if id in self.inventory:
-                old = self.inventory[id]
-                self.inventory[id] = old._replace(
-                    checked_in = old.checked_in + 1,
-                    checked_out = old.checked_out - 1)
-                self.persist_inventory()
-            else:
-                print("Couldn't find ID: %d, title: %s" % (id, title))
+        def not_on_list():
+            name, success = QtGui.QInputDialog.getText(self,
+                'Return %s' % title, 'What is your name?')
 
-            self.refresh(self.load_available)
+            name = str(name).strip()
+            if success and name:
+                dialog.forced_result = name
+
+        dialog.button.setText("I'm not on the list!")
+        dialog.button.pressed.connect(not_on_list)
+
+        if dialog.exec_():
+            name = dialog.result()
+            if name:
+                date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
+                with open(self.config[_LOG_PATH_KEY], 'ab') as logfile:
+                    writer = csv.writer(logfile)
+                    writer.writerow(sanitize([date, name, "checked in", id, title]))
+
+                if id in self.inventory:
+                    old = self.inventory[id]
+                    self.inventory[id] = old._replace(
+                        checked_in = old.checked_in + 1,
+                        checked_out = old.checked_out - 1)
+                    self.persist_inventory()
+                else:
+                    print("Couldn't find ID: %d, title: %s" % (id, title))
+
+                self.refresh(self.load_available)
 
     def load_available(self, log):
         log("Reloading your books...")
