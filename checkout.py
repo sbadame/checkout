@@ -358,7 +358,8 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
     def load_available(self, log):
         log("Reloading your books...")
-        books = self.goodreads.listbooks(self.shelf())
+        #books = self.goodreads.listbooks(self.shelf())
+        books = [ (id, book.title, book.author) for (id, book) in self.inventory.items() ]
         books.sort(key=BOOKSORT)
         for (id, title, author) in books:
             if id not in self.inventory:
