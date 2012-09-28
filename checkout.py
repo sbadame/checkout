@@ -4,6 +4,7 @@ import unicodecsv as csv
 import sys
 import os.path as path
 
+from bisect import bisect
 from collections import namedtuple
 from config import Config
 from customgui import NoVisibleFocusItemDelegate
@@ -109,6 +110,7 @@ class Main(QtGui.QMainWindow):
         self.progress.setWindowTitle("Working...")
         self.asyncs = []
         self.inventory = {}
+        self.books_in_table = []
 
     def startup(self):
         print("Starting up!")
@@ -430,54 +432,63 @@ If this is your first time, you will have to give 'Checkout' permission to acces
     def available(self, book_id):
         return self.inventory[book_id].checked_in > 0
 
+    def show_book_in_table(self, id):
+
+        if id not in self.inventory:
+            print("Trying to show book: %s but it's not in the inventory." % str(id))
+            return
+
+        table = self.ui.books
+        row = table.rowCount()
+        table.insertRow(row)
+        book = self.inventory[id]
+        table = self.ui.books
+
+        titlewidget = QtGui.QTableWidgetItem(book.title)
+        titlewidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        table.setItem(row, 0, titlewidget)
+
+        authorwidget = QtGui.QTableWidgetItem(book.author)
+        authorwidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        table.setItem(row, 1, authorwidget)
+
+        button_widget = QtGui.QWidget()
+        layout = QtGui.QVBoxLayout()
+        layout.setSpacing(0)
+        layout.setContentsMargins(0,0,3,0)
+        button_widget.setLayout(layout)
+
+        show_checkout_button = book.checked_in > 0
+        show_checkin_button = book.checked_out > 0
+
+        if show_checkout_button:
+            checkout_button = QtGui.QPushButton("Check this book out!")
+            checkout_button.clicked.connect(lambda c, a = id, b = book.title: self.checkout_pressed(a,b))
+            layout.addWidget(checkout_button)
+
+        if show_checkin_button:
+            checkin_button = QtGui.QPushButton("Return this book")
+            checkin_button.clicked.connect(lambda c, a = id, b = book.title: self.checkin_pressed(a,b))
+            layout.addWidget(checkin_button)
+
+        if show_checkout_button and show_checkin_button:
+            button_widget.setStyleSheet('margin:0px; padding:0px;')
+
+        if not show_checkout_button:
+            titlewidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
+            authorwidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
+            button_widget.setStyleSheet('background-color: "%s";' % CHECKOUT_COLOR);
+
+        table.setCellWidget(row, 2, button_widget)
+
+
     def populate_table(self, books):
         self.books = books
         table = self.ui.books
         table.clearContents()
         table.setRowCount(0)
         for (index, (id, title, author)) in enumerate(books):
-            table.insertRow(index)
-
-            titlewidget = QtGui.QTableWidgetItem(title)
-            titlewidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-            table.setItem(index, 0, titlewidget)
-
-            authorwidget = QtGui.QTableWidgetItem(author)
-            authorwidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-            table.setItem(index, 1, authorwidget)
-
-            button_widget = QtGui.QWidget()
-            layout = QtGui.QVBoxLayout()
-            layout.setSpacing(0)
-            layout.setContentsMargins(0,0,3,0)
-            button_widget.setLayout(layout)
-
-            show_checkout_button = self.inventory[id].checked_in > 0
-            show_checkin_button = self.inventory[id].checked_out > 0
-
-            if show_checkout_button:
-                checkout_button = QtGui.QPushButton("Check this book out!")
-                checkout_button.clicked.connect(lambda c, a = id, b = title: self.checkout_pressed(a,b))
-                layout.addWidget(checkout_button)
-
-            if show_checkin_button:
-                checkin_button = QtGui.QPushButton("Return this book")
-                checkin_button.clicked.connect(lambda c, a = id, b = title: self.checkin_pressed(a,b))
-                layout.addWidget(checkin_button)
-
-            if show_checkout_button and show_checkin_button:
-                button_widget.setStyleSheet('margin:0px; padding:0px;')
-                # todo: remove these styles?
-                # checkin_button.setStyleSheet('background-color: "%s"' % CHECKOUT_COLOR )
-                # titlewidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
-                # authorwidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
-
-            if not show_checkout_button:
-                titlewidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
-                authorwidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
-                button_widget.setStyleSheet('background-color: "%s";' % CHECKOUT_COLOR);
-
-            table.setCellWidget(index, 2, button_widget)
+            self.show_book_in_table(id)
 
         horizontal_header = table.horizontalHeader()
         horizontal_header.setResizeMode(0, QtGui.QHeaderView.Stretch)
