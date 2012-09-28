@@ -93,9 +93,10 @@ class Main(QtGui.QMainWindow):
                     self.inventory[int(id)] = InventoryRecord(
                         title, author, int(num_in), int(num_out), row[number_of_fields:])
         except IOError as e:
+            print("Didn't find an inventory file.")
             try:
                 with SafeWrite(self.config[_INVENTORY_PATH_KEY], 'b') as (inventoryfile, oldfile):
-                    print("Creating a new inventory file")
+                    print("Creating a new inventory file, grabbing your books from goodreads")
                     writer = csv.writer(inventoryfile)
                     for id, title, author in self.goodreads.listbooks(self.shelf()):
                         writer.writerow(sanitize([id, title, author, 1, 0]))
@@ -124,6 +125,13 @@ class Main(QtGui.QMainWindow):
         self.ui.options.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.optionspage))
         self.ui.back_to_books.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.bookpage))
 
+        self.all_tasks = [
+            (self.populate_table, self.local_inventory),
+            (self.ui.user_label.setText, self.current_user),
+            (self.ui.log_label.setText, self.log_file),
+            (self.ui.library_shelf_label.setText, self.library_shelf),
+            (self.ui.inventory_label.setText, self.inventory_file)]
+
         try:
             with open(CONFIG_FILE_PATH, "r") as configfile:
                 print("Loading: " + CONFIG_FILE_PATH)
@@ -151,7 +159,8 @@ class Main(QtGui.QMainWindow):
             self.on_switch_library_button_pressed(refresh=False)
 
         self.load_inventory()
-        self.refresh()
+        self.longtask(*(self.all_tasks + [(self.populate_table, self.update_from_goodreads)]))
+        #self.refresh()
 
     def developer_key(self):
         return QtGui.QInputDialog.getText(None, "Developer Key?",
@@ -185,7 +194,7 @@ class Main(QtGui.QMainWindow):
             self.ui.search_query.setText("")
             self.populate_table(books)
 
-        self.longtask((updateUI, self.load_available))
+        self.longtask((updateUI, self.local_inventory))
 
     def longtask(self, *args):
         for slot, task in args:
@@ -250,7 +259,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 self.config[LIBRARY_SHELF] = shelf
                 refresh_list = [self.library_shelf]
                 if refresh:
-                    refresh_list.append(self.load_available)
+                    refresh_list.append(self.local_inventory)
                 self.refresh(*refresh_list)
 
     def on_view_log_button_pressed(self):
@@ -302,7 +311,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             else:
                 print("couldn't find %d: %s" % (id, title))
 
-            self.refresh(self.load_available)
+            self.refresh(self.local_inventory)
 
     def candidates_for_return(self, bookid):
         possible_people = []
@@ -354,12 +363,17 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 else:
                     print("Couldn't find ID: %d, title: %s" % (id, title))
 
-                self.refresh(self.load_available)
+                self.refresh(self.local_inventory)
 
-    def load_available(self, log):
-        log("Reloading your books...")
-        #books = self.goodreads.listbooks(self.shelf())
+    def local_inventory(self, log):
+        log("Grabbing the local copy of your books.")
         books = [ (id, book.title, book.author) for (id, book) in self.inventory.items() ]
+        books.sort(key=BOOKSORT)
+        return books
+
+    def update_from_goodreads(self, log):
+        log("Reloading your books from goodreads...")
+        books = self.goodreads.listbooks(self.shelf())
         books.sort(key=BOOKSORT)
         for (id, title, author) in books:
             if id not in self.inventory:
@@ -402,23 +416,16 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
     def refresh(self, *refresh):
 
-        all_tasks = [
-            (self.populate_table, self.load_available),
-            (self.ui.user_label.setText, self.current_user),
-            (self.ui.log_label.setText, self.log_file),
-            (self.ui.library_shelf_label.setText, self.library_shelf),
-            (self.ui.inventory_label.setText, self.inventory_file)]
-
-        slots, tasks = zip(*all_tasks) #unzip in python
+        slots, tasks = zip(*self.all_tasks) #unzip in python
 
         if not refresh or refresh == ('',) or refresh == (None,):
-            tasks = all_tasks
+            tasks = self.all_tasks
         else:
             not_allowed = filter(lambda t: t not in tasks, refresh)
             if not_allowed:
                 raise ValueError("'%s' are not available for refresh" % not_allowed)
             else:
-                tasks = [all_tasks[tasks.index(task)] for task in refresh]
+                tasks = [self.all_tasks[tasks.index(task)] for task in refresh]
 
         self.longtask(*tasks)
 
