@@ -119,13 +119,6 @@ class Main(QtGui.QMainWindow):
         self.ui.books.setFocus()
 
         self.ui.search_query.setDefaultText()
-        #self.ui.search.clicked.connect(self.on_search_clicked)
-        #self.ui.search_reset.pressed.connect(self.on_search_reset_clicked)
-        #self.ui.switch_library_button.clicked.connect(self.on_switch_library_button_pressed)
-        #self.ui.view_log_button.clicked.connect(self.on_view_log_button_pressed)
-        #self.ui.view_inventory_button.clicked.connect(self.on_view_inventory_button_pressed)
-        #self.ui.switch_log_button.clicked.connect(self.on_switch_log_button_pressed)
-        #self.ui.switch_inventory_button.clicked.connect(self.on_switch_inventory_button_pressed)
         self.ui.options.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.optionspage))
         self.ui.back_to_books.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.bookpage))
 
