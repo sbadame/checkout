@@ -4,7 +4,6 @@ import inventory
 import sys
 import os.path as path
 
-from bisect import bisect
 from config import Config
 from customgui import NoVisibleFocusItemDelegate
 from dialogs import ListDialog
