@@ -13,6 +13,7 @@ from goodreads import GoodReads
 from checkoutgui import Ui_MainWindow
 from datetime import datetime
 from safewriter import SafeWrite
+from threading import longtask, cancel_longtask
 
 # How we represent books stored in the inventory csv
 InventoryRecord = namedtuple('InventoryRecord',
@@ -109,7 +110,7 @@ class Main(QtGui.QMainWindow):
         self.progress = QtGui.QProgressDialog(self)
         self.progress.setRange(0,0)
         self.progress.setWindowTitle("Working...")
-        self.asyncs = []
+        self.progress.canceled.connect(cancel_longtask)
         self.inventory = {}
         self.books_in_table = []
 
@@ -131,6 +132,12 @@ class Main(QtGui.QMainWindow):
             (self.ui.log_label.setText, self.log_file),
             (self.ui.library_shelf_label.setText, self.library_shelf),
             (self.ui.inventory_label.setText, self.inventory_file)]
+
+        self.task_args = {
+            "on_progress": self.update_progress,
+            "on_start" : self.progress.show,
+            "on_finish" : self.progress.hide,
+            "on_terminate" : self.progress.hide}
 
         try:
             with open(CONFIG_FILE_PATH, "r") as configfile:
@@ -159,8 +166,7 @@ class Main(QtGui.QMainWindow):
             self.on_switch_library_button_pressed(refresh=False)
 
         self.load_inventory()
-        self.longtask(*(self.all_tasks + [(self.populate_table, self.update_from_goodreads)]))
-        #self.refresh()
+        longtask(self.all_tasks + [(self.populate_table, self.update_from_goodreads)], **self.task_args)
 
     def developer_key(self):
         return QtGui.QInputDialog.getText(None, "Developer Key?",
@@ -187,46 +193,14 @@ class Main(QtGui.QMainWindow):
             self.populate_table(*data)
 
         print("Firing search for: " + search_query)
-        self.longtask((on_search_complete, search))
+        longtask([(on_search_complete, search)], **self.task_args)
 
     def on_search_reset_pressed(self):
         def updateUI(books):
             self.ui.search_query.setText("")
             self.populate_table(books)
 
-        self.longtask((updateUI, self.local_inventory))
-
-    def longtask(self, *args):
-        for slot, task in args:
-            async = ASyncWorker(slot, task)
-            async.progress.connect(self.update_progress)
-            async.start()
-            self.asyncs.append(async)
-
-        asyncs = self.asyncs
-
-        def on_cancel():
-            for async in asyncs:
-                async.terminate()
-
-        def wait_for_death():
-            print("Waiting for all tasks to finish...")
-            for async in asyncs: async.wait()
-            print("All done!")
-
-            #Update the UI only if everything finished correctly.
-            if all(async.finished for async in asyncs):
-                for async in asyncs: async.commit()
-
-            del asyncs[:]
-
-        self.progress_thread = QtCore.QThread()
-        self.progress_thread.run = wait_for_death
-        self.progress_thread.started.connect(self.progress.show)
-        self.progress_thread.finished.connect(self.progress.hide)
-        self.progress_thread.terminated.connect(self.progress.hide)
-        self.progress.canceled.connect(on_cancel)
-        self.progress_thread.start()
+        longtask([(updateUI, self.local_inventory)], **self.task_args)
 
     def wait_for_user(self):
         QtGui.QMessageBox.question(self, "Hold up!",
@@ -427,7 +401,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             else:
                 tasks = [self.all_tasks[tasks.index(task)] for task in refresh]
 
-        self.longtask(*tasks)
+        longtask(tasks, **self.task_args)
 
     def on_books_currentCellChanged(self, prow, pcolumn, row, column):
         if self.books:
@@ -505,31 +479,6 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         horizontal_header.setStretchLastSection(False)
 
 
-class ASyncWorker(QtCore.QThread):
-    signal = QtCore.pyqtSignal(object)
-    progress = QtCore.pyqtSignal(str)
-
-    def __init__(self, slot, task, parent=None):
-        QtCore.QThread.__init__(self, parent)
-        self.task = task
-        self.main = main
-        self.signal.connect(slot)
-        self.finished = False
-        self.result = None
-
-    def log(self, message):
-        self.progress.emit(message)
-        print("[LOG] " + message)
-
-    def run(self):
-        self.result = self.task(self.log)
-        self.finished = True
-
-    def commit(self):
-        if self.finished:
-            if not self.result:
-                self.result = ""
-            self.signal.emit(self.result)
 
 def main():
     app = QtGui.QApplication(sys.argv)
