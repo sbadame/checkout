@@ -1,23 +1,21 @@
 from __future__ import print_function
 from PyQt4 import QtGui, QtCore
-import unicodecsv as csv
+import inventory
 import sys
 import os.path as path
 
 from bisect import bisect
-from collections import namedtuple
 from config import Config
 from customgui import NoVisibleFocusItemDelegate
 from dialogs import ListDialog
 from goodreads import GoodReads
+from inventory import InventoryRecord
 from checkoutgui import Ui_MainWindow
 from datetime import datetime
 from safewriter import SafeWrite
 from tasks import longtask, cancel_longtask
+import unicodecsv as csv
 
-# How we represent books stored in the inventory csv
-InventoryRecord = namedtuple('InventoryRecord',
-    ['title', 'author', 'checked_in', 'checked_out', 'extra_data'])
 
 # Default file paths for configuration
 CONFIG_FILE_PATH = path.normpath(path.expanduser("~/checkout.credentials"))
@@ -80,38 +78,12 @@ class Main(QtGui.QMainWindow):
         if not success: exit()
         return str(secret)
 
-    def load_inventory(self):
-        try:
-            with open(self.config[_INVENTORY_PATH_KEY], 'rb') as inventoryfile:
-                print("Opened: " + self.config[_INVENTORY_PATH_KEY])
-                # The book id is the key in the dictionary, but is
-                # not stored in the InventoryRecord, so we need to add one for it.
-                # buuut we have an extra field "extra_data" that stores the extra stuff
-                # so it all works out in the end
-                number_of_fields = len(InventoryRecord._fields)
-                for row in csv.reader(inventoryfile):
-                    id, title, author, num_in, num_out = row[0:number_of_fields]
-                    self.inventory[int(id)] = InventoryRecord(
-                        title, author, int(num_in), int(num_out), row[number_of_fields:])
-        except IOError as e:
-            print("Didn't find an inventory file.")
-            try:
-                with SafeWrite(self.config[_INVENTORY_PATH_KEY], 'b') as (inventoryfile, oldfile):
-                    print("Creating a new inventory file, grabbing your books from goodreads")
-                    writer = csv.writer(inventoryfile)
-                    for id, title, author in self.goodreads.listbooks(self.shelf()):
-                        writer.writerow(sanitize([id, title, author, 1, 0]))
-                        self.inventory[int(id)] = InventoryRecord(title, author, 1, 0, [])
-            except IOError as e:
-                print("Couldn't create a new inventory file: " + str(e))
-
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         self.progress = QtGui.QProgressDialog(self)
         self.progress.setRange(0,0)
         self.progress.setWindowTitle("Working...")
         self.progress.canceled.connect(cancel_longtask)
-        self.inventory = {}
         self.books_in_table = []
 
     def startup(self):
@@ -165,7 +137,13 @@ class Main(QtGui.QMainWindow):
         if LIBRARY_SHELF not in self.config:
             self.on_switch_library_button_pressed(refresh=False)
 
-        self.load_inventory()
+        self.inventory_path = self.config[_INVENTORY_PATH_KEY]
+
+        try:
+            self.inventory = inventory.load_inventory(self.inventory_path)
+        except IOError as e:
+            self.inventory = inventory.create_inventory(self.inventory_path)
+
         longtask(self.all_tasks + [(self.populate_table, self.update_from_goodreads)], **self.task_args)
 
     def developer_key(self):
@@ -253,16 +231,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         if file:
             self.config[_INVENTORY_PATH_KEY] = str(file)
             self.refresh(self.inventory_file)
-            self.persist_inventory()
-
-    def persist_inventory(self):
-        with open(self.config[_INVENTORY_PATH_KEY], 'wb') as inventoryfile:
-            writer = csv.writer(inventoryfile)
-            data = self.inventory.items()
-            data.sort(key = lambda (id, record): (record.author, record.title))
-            for id, record in data:
-                writer.writerow(sanitize([id, record.title, record.author, record.checked_in, record.checked_out] +
-                    record.extra_data))
+            self.inventory.persist()
 
     def checkout_pressed(self, id, title):
         """ Connected to signal in populate_table """
@@ -277,11 +246,8 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 writer.writerow(sanitize([date, str(name), "checked out", id, title]))
 
             if id in self.inventory:
-                old = self.inventory[id]
-                self.inventory[id] = old._replace(
-                    checked_in = old.checked_in - 1,
-                    checked_out = old.checked_out + 1)
-                self.persist_inventory()
+                self.inventory.checkout(id)
+                self.inventory.persist()
             else:
                 print("couldn't find %d: %s" % (id, title))
 
@@ -329,11 +295,8 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                     writer.writerow(sanitize([date, name, "checked in", id, title]))
 
                 if id in self.inventory:
-                    old = self.inventory[id]
-                    self.inventory[id] = old._replace(
-                        checked_in = old.checked_in + 1,
-                        checked_out = old.checked_out - 1)
-                    self.persist_inventory()
+                    self.inventory.checkin(id)
+                    self.inventory.persist()
                 else:
                     print("Couldn't find ID: %d, title: %s" % (id, title))
 
@@ -352,7 +315,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         for (id, title, author) in books:
             if id not in self.inventory:
                 self.inventory[int(id)]= InventoryRecord(title, author, 1, 0, [])
-        self.persist_inventory()
+        self.inventory.persist()
         return books
 
     # Update the user interface
