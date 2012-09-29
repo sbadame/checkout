@@ -463,7 +463,6 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
         table.setCellWidget(row, 2, button_widget)
 
-
     def populate_table(self, books):
         self.books = books
         table = self.ui.books
@@ -477,8 +476,6 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         horizontal_header.setResizeMode(1, QtGui.QHeaderView.ResizeToContents)
         horizontal_header.setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
         horizontal_header.setStretchLastSection(False)
-
-
 
 def main():
     app = QtGui.QApplication(sys.argv)
