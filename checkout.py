@@ -13,7 +13,7 @@ from goodreads import GoodReads
 from checkoutgui import Ui_MainWindow
 from datetime import datetime
 from safewriter import SafeWrite
-from threading import longtask, cancel_longtask
+from tasks import longtask, cancel_longtask
 
 # How we represent books stored in the inventory csv
 InventoryRecord = namedtuple('InventoryRecord',
