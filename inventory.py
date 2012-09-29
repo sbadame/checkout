@@ -1,10 +1,6 @@
 from collections import namedtuple
 import unicodecsv as csv
 
-def sanitize(listofstuff):
-    return listofstuff
-    #return [str(s).encode('utf8') for s in listofstuff]
-
 # How we represent books stored in the inventory csv
 InventoryRecord = namedtuple('InventoryRecord',
     ['title', 'author', 'checked_in', 'checked_out', 'extra_data'])
@@ -29,7 +25,7 @@ def create_inventory(path, books):
     inventory = Inventory(path)
     with SafeWrite(path, 'b') as (inventoryfile, oldfile):
         for id, title, author in books:
-            writer.writerow(sanitize([id, title, author, 1, 0]))
+            writer.writerow([id, title, author, 1, 0])
             inventory.inventory[int(id)] = InventoryRecord(title, author, 1, 0, [])
         writer = csv.writer(inventoryfile)
     inventory.persist_inventory()
@@ -48,8 +44,8 @@ class Inventory():
             data = self.inventory.items()
             data.sort(key = lambda (id, record): (record.author, record.title))
             for id, record in data:
-                writer.writerow(sanitize([id, record.title, record.author, record.checked_in, record.checked_out] +
-                    record.extra_data))
+                writer.writerow([id, record.title, record.author, record.checked_in, record.checked_out] +
+                    record.extra_data)
 
     def __contains__(self, id):
         try:

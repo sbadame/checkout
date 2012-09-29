@@ -56,10 +56,6 @@ def openfile(filepath):
     else:
         os.system("xdg-open " + filepath)
 
-def sanitize(listofstuff):
-    return listofstuff
-    #return [str(s).encode('utf8') for s in listofstuff]
-
 """ To regenerate the gui from the design: pyside-uic checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
 
@@ -243,7 +239,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
             with open(self.config[_LOG_PATH_KEY], 'ab') as logfile:
                 writer = csv.writer(logfile)
-                writer.writerow(sanitize([date, str(name), "checked out", id, title]))
+                writer.writerow([date, str(name), "checked out", id, title])
 
             if id in self.inventory:
                 self.inventory.checkout(id)
@@ -292,7 +288,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
                 with open(self.config[_LOG_PATH_KEY], 'ab') as logfile:
                     writer = csv.writer(logfile)
-                    writer.writerow(sanitize([date, name, "checked in", id, title]))
+                    writer.writerow([date, name, "checked in", id, title])
 
                 if id in self.inventory:
                     self.inventory.checkin(id)
