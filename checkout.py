@@ -58,21 +58,6 @@ def openfile(filepath):
 """ To regenerate the gui from the design: pyside-uic checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
 
-    def shelf(self):
-        return self.config[LIBRARY_SHELF]
-
-    def request_dev_key(self, log=print):
-        key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
-                'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
-        if not success: exit()
-        return str(key)
-
-    def load_dev_secret(self):
-        secret, success = QtGui.QInputDialog.getText(None, "Developer Secret?",
-                'What is the developer secret for the key that you just gave?\n(It\'s also on that page with the key: http://www.goodreads.com/api/keys)')
-        if not success: exit()
-        return str(secret)
-
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         self.progress = QtGui.QProgressDialog(self)
@@ -106,28 +91,7 @@ class Main(QtGui.QMainWindow):
             "on_finish" : self.progress.hide,
             "on_terminate" : self.progress.hide}
 
-        try:
-            with open(CONFIG_FILE_PATH, "r") as configfile:
-                print("Loading: " + CONFIG_FILE_PATH)
-                # How to populate the configuration if it isn't set yet...
-                # Note that these are function calls and order maters!
-                config = Config.load_from_file(configfile)
-        except IOError as e:
-                print("Error loading: %s (%s). (This is normal for a first run)" % (CONFIG_FILE_PATH, e))
-                config = Config(CONFIG_FILE_PATH)
-
-        self.config = config
-        default_configuration = [
-            (_LOG_PATH_KEY, lambda: DEFAULT_LOG_PATH),
-            (_INVENTORY_PATH_KEY, lambda: DEFAULT_INVENTORY_FILE_PATH),
-            (DEVELOPER_KEY, self.request_dev_key),
-            (DEVELOPER_SECRET, self.load_dev_secret),
-        ]
-
-        for key, loader in default_configuration:
-            if key not in config:
-                print("Missing a value for your %s property, lets get one!" % key)
-                config[key] = loader()
+        self.config = self.init_config()
         self.goodreads = GoodReads(self.config[DEVELOPER_KEY], self.config[DEVELOPER_SECRET], waitfunction=self.wait_for_user)
         if LIBRARY_SHELF not in self.config:
             self.on_switch_library_button_pressed(refresh=False)
@@ -141,6 +105,31 @@ class Main(QtGui.QMainWindow):
 
         longtask(self.all_tasks + [(self.populate_table, self.update_from_goodreads)], **self.task_args)
 
+    def init_config(self):
+        try:
+            with open(CONFIG_FILE_PATH, "r") as configfile:
+                print("Loading: " + CONFIG_FILE_PATH)
+                # How to populate the configuration if it isn't set yet...
+                # Note that these are function calls and order maters!
+                config = Config.load_from_file(configfile)
+        except IOError as e:
+                print("Error loading: %s (%s). (This is normal for a first run)" % (CONFIG_FILE_PATH, e))
+                config = Config(CONFIG_FILE_PATH)
+
+        default_configuration = [
+            (_LOG_PATH_KEY, lambda: DEFAULT_LOG_PATH),
+            (_INVENTORY_PATH_KEY, lambda: DEFAULT_INVENTORY_FILE_PATH),
+            (DEVELOPER_KEY, self.request_dev_key),
+            (DEVELOPER_SECRET, self.request_dev_secret),
+        ]
+
+        for key, loader in default_configuration:
+            if key not in config:
+                print("Missing a value for your %s property, lets get one!" % key)
+                config[key] = loader()
+
+        return config
+
     def developer_key(self):
         return QtGui.QInputDialog.getText(None, "Developer Key?",
                 'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
@@ -148,6 +137,21 @@ class Main(QtGui.QMainWindow):
     def update_progress(self, text):
         self.progress.show()
         self.progress.setLabelText(text)
+
+    def shelf(self):
+        return self.config[LIBRARY_SHELF]
+
+    def request_dev_key(self, log=print):
+        key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
+                'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
+        if not success: exit()
+        return str(key)
+
+    def request_dev_secret(self):
+        secret, success = QtGui.QInputDialog.getText(None, "Developer Secret?",
+                'What is the developer secret for the key that you just gave?\n(It\'s also on that page with the key: http://www.goodreads.com/api/keys)')
+        if not success: exit()
+        return str(secret)
 
     def on_search_pressed(self):
         print("About to search")
