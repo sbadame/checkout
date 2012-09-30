@@ -5,14 +5,13 @@ import sys
 import os.path as path
 
 from config import Config
-from customgui import NoVisibleFocusItemDelegate
 from dialogs import ListDialog
 from goodreads import GoodReads
 from inventory import InventoryRecord
-from checkoutgui import Ui_MainWindow
 from datetime import datetime
 from safewriter import SafeWrite
 from tasks import longtask, cancel_longtask
+from mainui import MainUi
 import unicodecsv as csv
 
 
@@ -68,13 +67,9 @@ class Main(QtGui.QMainWindow):
 
     def startup(self):
         print("Starting up!")
-        self.ui = Ui_MainWindow()
+        self.ui = MainUi()
         self.ui.setupUi(self)
-        self.ui.search_reset.hide()
-        self.ui.books.setItemDelegate(NoVisibleFocusItemDelegate())
-        self.ui.books.setFocus()
 
-        self.ui.search_query.setDefaultText()
         self.ui.options.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.optionspage))
         self.ui.back_to_books.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.bookpage))
 
@@ -154,8 +149,6 @@ class Main(QtGui.QMainWindow):
         return str(secret)
 
     def on_search_pressed(self):
-        print("About to search")
-        import traceback; traceback.print_exc()
         """ Connected to signal through AutoConnect """
         search_query = self.ui.search_query.text()
         if search_query == self.ui.search_query.default_text():
