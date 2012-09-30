@@ -33,7 +33,6 @@ INVENTORY_LABEL_TEXT = None
 SHELF_DIALOG_LABEL_TEXT = "Which shelf should be used for the library books?"
 
 # Colors
-CHECKOUT_COLOR = "#FF7373"
 CHECKOUT_COLOR_SELECTED = "#BF3030"
 
 AVAILABLE_COLOR = "#0000FF"
@@ -369,62 +368,19 @@ If this is your first time, you will have to give 'Checkout' permission to acces
     def available(self, book_id):
         return self.inventory[book_id].checked_in > 0
 
-    def show_book_in_table(self, id):
-
-        if id not in self.inventory:
-            print("Trying to show book: %s but it's not in the inventory." % str(id))
-            return
-
-        table = self.ui.books
-        row = table.rowCount()
-        table.insertRow(row)
-        book = self.inventory[id]
-        table = self.ui.books
-
-        titlewidget = QtGui.QTableWidgetItem(book.title)
-        titlewidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-        table.setItem(row, 0, titlewidget)
-
-        authorwidget = QtGui.QTableWidgetItem(book.author)
-        authorwidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-        table.setItem(row, 1, authorwidget)
-
-        button_widget = QtGui.QWidget()
-        layout = QtGui.QVBoxLayout()
-        layout.setSpacing(0)
-        layout.setContentsMargins(0,0,3,0)
-        button_widget.setLayout(layout)
-
-        show_checkout_button = book.checked_in > 0
-        show_checkin_button = book.checked_out > 0
-
-        if show_checkout_button:
-            checkout_button = QtGui.QPushButton("Check this book out!")
-            checkout_button.clicked.connect(lambda c, a = id, b = book.title: self.checkout_pressed(a,b))
-            layout.addWidget(checkout_button)
-
-        if show_checkin_button:
-            checkin_button = QtGui.QPushButton("Return this book")
-            checkin_button.clicked.connect(lambda c, a = id, b = book.title: self.checkin_pressed(a,b))
-            layout.addWidget(checkin_button)
-
-        if show_checkout_button and show_checkin_button:
-            button_widget.setStyleSheet('margin:0px; padding:0px;')
-
-        if not show_checkout_button:
-            titlewidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
-            authorwidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
-            button_widget.setStyleSheet('background-color: "%s";' % CHECKOUT_COLOR);
-
-        table.setCellWidget(row, 2, button_widget)
-
     def populate_table(self, books):
+        print("Repopulating table")
         self.books = books
         table = self.ui.books
         table.clearContents()
         table.setRowCount(0)
         for (index, (id, title, author)) in enumerate(books):
-            self.show_book_in_table(id)
+            if id not in self.inventory:
+                print("Trying to show book: %s but it's not in the inventory." % str(id))
+            else:
+                self.ui.show_book_in_table( id, self.inventory[id],
+                    lambda c, a=id, b=title: self.checkin_pressed(a,b),
+                    lambda c, a=id, b=title: self.checkout_pressed(a,b))
 
         horizontal_header = table.horizontalHeader()
         horizontal_header.setResizeMode(0, QtGui.QHeaderView.Stretch)
