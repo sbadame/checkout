@@ -16,7 +16,24 @@ class MainUi(Ui_MainWindow):
         self.books.setFocus()
         self.search_query.setDefaultText()
 
-    def show_book_in_table(self, id, book, oncheckin, oncheckout):
+    def populate_table(self, books, oncheckin, oncheckout):
+        print("Repopulating table")
+        self._books_cached = books
+        table = self.books
+        table.clearContents()
+        table.setRowCount(0)
+        for (id, book) in books:
+            self.show_book_in_table(book,
+                lambda c, a=id, b=book.title: oncheckin(a, b),
+                lambda c, a=id, b=book.title: oncheckout(a, b))
+
+        horizontal_header = table.horizontalHeader()
+        horizontal_header.setResizeMode(0, QtGui.QHeaderView.Stretch)
+        horizontal_header.setResizeMode(1, QtGui.QHeaderView.ResizeToContents)
+        horizontal_header.setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
+        horizontal_header.setStretchLastSection(False)
+
+    def show_book_in_table(self, book, oncheckin, oncheckout):
         table = self.books
         row = table.rowCount()
         table.insertRow(row)
@@ -57,3 +74,11 @@ class MainUi(Ui_MainWindow):
             button_widget.setStyleSheet('background-color: "%s";' % CHECKOUT_COLOR);
 
         table.setCellWidget(row, 2, button_widget)
+
+    def on_books_currentCellChanged(self, prow, pcolumn, row, column):
+        if self._books_cached:
+            book = self.books[prow]
+            if book.checked_in > 0:
+                self.ui.books.setStyleSheet('')
+            else:
+                self.ui.books.setStyleSheet('selection-background-color: "%s"' % CHECKOUT_COLOR_SELECTED)

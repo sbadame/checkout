@@ -39,7 +39,7 @@ AVAILABLE_COLOR = "#0000FF"
 AVAILABLE_COLOR_SELECTED = "#0000FF"
 
 # How books in the UI are sorted
-BOOKSORT = lambda (id, title, author): (list(reversed(author.split())), title)
+BOOKSORT = lambda (id, book): (list(reversed(book.author.split())), book.title)
 
 DEVELOPER_KEY = "DEVELOPER_KEY"
 DEVELOPER_SECRET = "DEVELOPER_SECRET"
@@ -98,6 +98,9 @@ class Main(QtGui.QMainWindow):
             self.inventory = inventory.create_inventory(self.inventory_path)
 
         longtask(self.all_tasks + [(self.populate_table, self.update_from_goodreads)], **self.task_args)
+
+    def populate_table(self, books):
+        self.ui.populate_table(books, self.checkin_pressed, self.checkout_pressed)
 
     def init_config(self):
         try:
@@ -295,17 +298,19 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
     def local_inventory(self, log):
         log("Grabbing the local copy of your books.")
-        books = [ (id, book.title, book.author) for (id, book) in self.inventory.items() ]
+        books = self.inventory.items()
         books.sort(key=BOOKSORT)
         return books
 
     def update_from_goodreads(self, log):
         log("Reloading your books from goodreads...")
-        books = self.goodreads.listbooks(self.shelf())
-        books.sort(key=BOOKSORT)
-        for (id, title, author) in books:
+        books = []
+        for (id, t, a) in self.goodreads.listbooks(self.shelf()):
+            book = InventoryRecord(t, a, 1, 0, [])
+            books.append((id, book))
             if id not in self.inventory:
-                self.inventory[int(id)]= InventoryRecord(title, author, 1, 0, [])
+                self.inventory[int(id)] = book
+        books.sort(key=BOOKSORT)
         self.inventory.persist()
         return books
 
@@ -357,36 +362,8 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
         longtask(tasks, **self.task_args)
 
-    def on_books_currentCellChanged(self, prow, pcolumn, row, column):
-        if self.books:
-            id, title, author = self.books[prow]
-            if self.available(id):
-                self.ui.books.setStyleSheet('')
-            else:
-                self.ui.books.setStyleSheet('selection-background-color: "%s"' % CHECKOUT_COLOR_SELECTED)
-
     def available(self, book_id):
         return self.inventory[book_id].checked_in > 0
-
-    def populate_table(self, books):
-        print("Repopulating table")
-        self.books = books
-        table = self.ui.books
-        table.clearContents()
-        table.setRowCount(0)
-        for (index, (id, title, author)) in enumerate(books):
-            if id not in self.inventory:
-                print("Trying to show book: %s but it's not in the inventory." % str(id))
-            else:
-                self.ui.show_book_in_table( id, self.inventory[id],
-                    lambda c, a=id, b=title: self.checkin_pressed(a,b),
-                    lambda c, a=id, b=title: self.checkout_pressed(a,b))
-
-        horizontal_header = table.horizontalHeader()
-        horizontal_header.setResizeMode(0, QtGui.QHeaderView.Stretch)
-        horizontal_header.setResizeMode(1, QtGui.QHeaderView.ResizeToContents)
-        horizontal_header.setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
-        horizontal_header.setStretchLastSection(False)
 
 def main():
     app = QtGui.QApplication(sys.argv)
