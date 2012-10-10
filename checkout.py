@@ -3,6 +3,7 @@ from PyQt4 import QtGui, QtCore
 import inventory
 import sys
 import os.path as path
+import logging
 
 from config import Config
 from dialogs import ListDialog
@@ -14,6 +15,16 @@ from tasks import longtask, cancel_longtask
 from mainui import MainUi
 import unicodecsv as csv
 
+logger = logging.getLogger()
+
+sh = logging.StreamHandler()
+sh.setLevel(logging.DEBUG)
+logger.addHandler(sh)
+
+fh = logging.FileHandler("checkout.log")
+fh.setLevel(logging.DEBUG)
+logger.addHandler(fh)
+logger.setLevel(logging.DEBUG)
 
 # Default file paths for configuration
 CONFIG_FILE_PATH = path.normpath(path.expanduser("~/checkout.credentials"))
@@ -65,7 +76,7 @@ class Main(QtGui.QMainWindow):
         self.books_in_table = []
 
     def startup(self):
-        print("Starting up!")
+        logger.info("Starting up!")
         self.ui = MainUi()
         self.ui.setupUi(self)
 
@@ -105,12 +116,12 @@ class Main(QtGui.QMainWindow):
     def init_config(self):
         try:
             with open(CONFIG_FILE_PATH, "r") as configfile:
-                print("Loading: " + CONFIG_FILE_PATH)
+                logger.info("Loading: " + CONFIG_FILE_PATH)
                 # How to populate the configuration if it isn't set yet...
                 # Note that these are function calls and order maters!
                 config = Config.load_from_file(configfile)
         except IOError as e:
-                print("Error loading: %s (%s). (This is normal for a first run)" % (CONFIG_FILE_PATH, e))
+                logger.warn("Error loading: %s (%s). (This is normal for a first run)" % (CONFIG_FILE_PATH, e))
                 config = Config(CONFIG_FILE_PATH)
 
         default_configuration = [
@@ -122,7 +133,7 @@ class Main(QtGui.QMainWindow):
 
         for key, loader in default_configuration:
             if key not in config:
-                print("Missing a value for your %s property, lets get one!" % key)
+                logger.info("Missing a value for your %s property, lets get one!" % key)
                 config[key] = loader()
 
         return config
@@ -134,7 +145,7 @@ class Main(QtGui.QMainWindow):
     def shelf(self):
         return self.config[LIBRARY_SHELF]
 
-    def request_dev_key(self, log=print):
+    def request_dev_key(self, log=logger.info):
         key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
                 'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
         if not success: exit()
@@ -160,7 +171,7 @@ class Main(QtGui.QMainWindow):
             self.ui.search_reset.show()
             self.populate_table(*data)
 
-        print("Firing search for: " + search_query)
+        logger.info("Firing search for: " + search_query)
         longtask([(on_search_complete, search)], **self.task_args)
 
     def on_search_reset_pressed(self):
@@ -178,7 +189,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
     def on_switch_user_button_pressed(self):
-        print("Look at switch user again")
+        logger.warn("Look at switch user again")
 
     def on_switch_library_button_pressed(self, refresh=True):
         dialog = ListDialog(self, SHELF_DIALOG_LABEL_TEXT, self.goodreads.shelves())
@@ -239,7 +250,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                 self.inventory.checkout(id)
                 self.inventory.persist()
             else:
-                print("couldn't find %d: %s" % (id, title))
+                logger.critical("couldn't find %d: %s" % (id, title))
 
             self.refresh(self.local_inventory)
 
@@ -254,7 +265,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                             possible_people.append(name)
                 except ValueError as ve:
                     # it's ok if there is a malformed cell/row
-                    print("Malformed row: " + str(row))
+                    logger.warn("Malformed row: " + str(row))
                     pass
         return possible_people
 
@@ -288,7 +299,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                     self.inventory.checkin(id)
                     self.inventory.persist()
                 else:
-                    print("Couldn't find ID: %d, title: %s" % (id, title))
+                    logger.critical("Couldn't find ID: %d, title: %s" % (id, title))
 
                 self.refresh(self.local_inventory)
 

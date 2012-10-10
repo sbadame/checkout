@@ -1,10 +1,14 @@
 from PyQt4 import QtCore
 
+import logging
+
+logger = logging.getLogger()
+
 _asyncs = []
 _progress_thread = None
 
 def _default_progress(text):
-    print("Task Progress: " + str(text))
+    logger.info("Task Progress: " + str(text))
 
 def _no_op():
     pass
@@ -24,9 +28,9 @@ def longtask(tasks,
         _asyncs.append(async)
 
     def wait_for_death():
-        print("Waiting for all tasks to finish...")
+        logger.info("Waiting for all tasks to finish...")
         for async in _asyncs: async.wait()
-        print("All done!")
+        logger.info("All done!")
 
         #Update the UI only if everything finished correctly.
         if all(async.finished for async in _asyncs):
@@ -58,7 +62,7 @@ class ASyncWorker(QtCore.QThread):
 
     def log(self, message):
         self.progress.emit(message)
-        print("[LOG] " + message)
+        logger.info(message)
 
     def run(self):
         self.result = self.task(self.log)
