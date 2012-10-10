@@ -1,4 +1,5 @@
 checkout.credentials
+*.log
 *.pyc
 *.csv
 checkoutgui.py
