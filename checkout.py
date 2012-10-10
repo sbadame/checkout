@@ -127,10 +127,6 @@ class Main(QtGui.QMainWindow):
 
         return config
 
-    def developer_key(self):
-        return QtGui.QInputDialog.getText(None, "Developer Key?",
-                'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
-
     def update_progress(self, text):
         self.progress.show()
         self.progress.setLabelText(text)
