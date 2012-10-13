@@ -10,7 +10,6 @@ from dialogs import ListDialog
 from goodreads import GoodReads
 from inventory import InventoryRecord
 from datetime import datetime
-from safewriter import SafeWrite
 from tasks import longtask, cancel_longtask
 from mainui import MainUi
 import unicodecsv as csv
@@ -23,6 +22,7 @@ logger.addHandler(sh)
 
 fh = logging.FileHandler("checkout.log")
 fh.setLevel(logging.DEBUG)
+fh.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
 logger.addHandler(fh)
 logger.setLevel(logging.DEBUG)
 
@@ -222,13 +222,15 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         openfile(self.config[_INVENTORY_PATH_KEY])
 
     def on_switch_log_button_pressed(self):
-        file = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
+        file = QtGui.QFileDialog.getSaveFileName(
+                self, filter="CSV file (*.csv)")
         if file:
             self.config[_LOG_PATH_KEY] = str(file)
             self.refresh(self.log_file)
 
     def on_switch_inventory_button_pressed(self):
-        file = QtGui.QFileDialog.getSaveFileName(self, filter="CSV file (*.csv)")
+        file = QtGui.QFileDialog.getSaveFileName(
+                self, filter="CSV file (*.csv)")
         if file:
             self.config[_INVENTORY_PATH_KEY] = str(file)
             self.refresh(self.inventory_file)
@@ -380,4 +382,9 @@ def main():
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
+    def error_handler(type, value, tb):
+        logger.error("Exiting from uncaught exception",
+                     exc_info = (type, value, tb))
+        exit(1)
+    sys.excepthook = error_handler
     main()
