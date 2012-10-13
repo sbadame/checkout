@@ -1,6 +1,12 @@
+"""Handles showing off the books"""
+
+import logging
+
 from PyQt4 import QtGui, QtCore
 from checkoutgui import Ui_MainWindow
 from customgui import NoVisibleFocusItemDelegate
+
+LOGGER = logging.getLogger()
 
 CHECKOUT_COLOR = "#FF7373"
 
@@ -17,7 +23,7 @@ class MainUi(Ui_MainWindow):
         self.search_query.setDefaultText()
 
     def populate_table(self, books, oncheckin, oncheckout):
-        print("Repopulating table")
+        LOGGER.info("Repopulating table")
         self._books_cached = books
         table = self.books
         table.clearContents()
@@ -39,11 +45,13 @@ class MainUi(Ui_MainWindow):
         table.insertRow(row)
 
         titlewidget = QtGui.QTableWidgetItem(book.title)
-        titlewidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        titlewidget.setFlags(QtCore.Qt.ItemIsEnabled |
+                             QtCore.Qt.ItemIsSelectable)
         table.setItem(row, 0, titlewidget)
 
         authorwidget = QtGui.QTableWidgetItem(book.author)
-        authorwidget.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        authorwidget.setFlags(QtCore.Qt.ItemIsEnabled |
+                              QtCore.Qt.ItemIsSelectable)
         table.setItem(row, 1, authorwidget)
 
         button_widget = QtGui.QWidget()
@@ -69,9 +77,12 @@ class MainUi(Ui_MainWindow):
             button_widget.setStyleSheet('margin:0px; padding:0px;')
 
         if not show_checkout_button:
-            titlewidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
-            authorwidget.setBackground(QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
-            button_widget.setStyleSheet('background-color: "%s";' % CHECKOUT_COLOR);
+            titlewidget.setBackground(
+                    QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
+            authorwidget.setBackground(
+                    QtGui.QBrush(QtGui.QColor(CHECKOUT_COLOR)))
+            button_widget.setStyleSheet(
+                    'background-color: "%s";' % CHECKOUT_COLOR)
 
         table.setCellWidget(row, 2, button_widget)
 
@@ -81,4 +92,6 @@ class MainUi(Ui_MainWindow):
             if book.checked_in > 0:
                 self.ui.books.setStyleSheet('')
             else:
-                self.ui.books.setStyleSheet('selection-background-color: "%s"' % CHECKOUT_COLOR_SELECTED)
+                self.ui.books.setStyleSheet(
+                        'selection-background-color: "%s"' %
+                        CHECKOUT_COLOR_SELECTED)
