@@ -20,7 +20,7 @@ sh = logging.StreamHandler()
 sh.setLevel(logging.DEBUG)
 logger.addHandler(sh)
 
-fh = logging.FileHandler("checkout.log")
+fh = logging.FileHandler(path.expanduser("~/checkout.programlog"))
 fh.setLevel(logging.DEBUG)
 fh.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
 logger.addHandler(fh)
@@ -379,9 +379,12 @@ def main():
     window = Main()
     window.show()
     window.startup()
-    sys.exit(app.exec_())
+    returncode = app.exec_()
+    logger.info("======== All Done (%s) ========" % str(returncode))
+    sys.exit(returncode)
 
 if __name__ == "__main__":
+    logger.info("======== Starting Up ========")
     def error_handler(type, value, tb):
         logger.error("Exiting from uncaught exception",
                      exc_info = (type, value, tb))
