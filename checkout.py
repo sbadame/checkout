@@ -10,7 +10,8 @@ from dialogs import ListDialog
 from goodreads import GoodReads
 from inventory import InventoryRecord
 from datetime import datetime
-from tasks import longtask, cancel_longtask
+from tasks import longtask
+from tasks import cancel_longtask
 from mainui import MainUi
 import unicodecsv as csv
 
@@ -90,12 +91,6 @@ class Main(QtGui.QMainWindow):
             (self.ui.library_shelf_label.setText, self.library_shelf),
             (self.ui.inventory_label.setText, self.inventory_file)]
 
-        self.task_args = {
-            "on_progress": self.update_progress,
-            "on_start" : self.progress.show,
-            "on_finish" : self.progress.hide,
-            "on_terminate" : self.progress.hide}
-
         self.config = self.init_config()
         self.goodreads = GoodReads(self.config[DEVELOPER_KEY], self.config[DEVELOPER_SECRET], waitfunction=self.wait_for_user)
         if LIBRARY_SHELF not in self.config:
@@ -108,7 +103,14 @@ class Main(QtGui.QMainWindow):
         except IOError as e:
             self.inventory = inventory.create_inventory(self.inventory_path)
 
-        longtask(self.all_tasks + [(self.populate_table, self.update_from_goodreads)], **self.task_args)
+        self.longtask(self.all_tasks + [(self.populate_table, self.update_from_goodreads)])
+
+    def longtask(self, tasks):
+        longtask(tasks,
+                 on_progress=self.update_progress,
+                 on_start=self.progress.show,
+                 on_finish=self.progress.hide,
+                 on_terminate=self.progress.hide)
 
     def populate_table(self, books):
         self.ui.populate_table(books, self.checkin_pressed, self.checkout_pressed)
@@ -163,10 +165,9 @@ class Main(QtGui.QMainWindow):
             def search(log):
                 log("Searching for: " + query)
                 return self.inventory.search(query)
-            longtask([(self.populate_table, search)], **self.task_args)
+            self.longtask([(self.populate_table, search)])
         else:
-            longtask([(self.populate_table, lambda x: self.inventory.items())],
-                     **self.task_args)
+            self.longtask([(self.populate_table, lambda x: self.inventory.items())])
 
     def wait_for_user(self):
         QtGui.QMessageBox.question(self, "Hold up!",
@@ -356,7 +357,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
             else:
                 tasks = [self.all_tasks[tasks.index(task)] for task in refresh]
 
-        longtask(tasks, **self.task_args)
+        self.longtask(tasks)
 
     def available(self, book_id):
         return self.inventory[book_id].checked_in > 0
