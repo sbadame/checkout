@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>744</width>
-    <height>573</height>
+    <height>587</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -166,7 +166,32 @@ margin-left: 6px;
             </widget>
            </item>
            <item>
-            <widget class="QListWidget" name="booklist"/>
+            <widget class="QScrollArea" name="scrollArea">
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollAreaWidgetContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>729</width>
+                <height>268</height>
+               </rect>
+              </property>
+              <widget class="QWidget" name="verticalLayoutWidget">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>731</width>
+                 <height>271</height>
+                </rect>
+               </property>
+               <layout class="QVBoxLayout" name="booklist"/>
+              </widget>
+             </widget>
+            </widget>
            </item>
           </layout>
          </widget>
