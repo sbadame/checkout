@@ -78,20 +78,6 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="search">
-                <property name="text">
-                 <string>Search</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="search_reset">
-                <property name="text">
-                 <string>Reset</string>
-                </property>
-               </widget>
-              </item>
-              <item>
                <widget class="QPushButton" name="options">
                 <property name="text">
                  <string>Options</string>
@@ -319,54 +305,5 @@ margin-left: 6px;
   </customwidget>
  </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>search_query</sender>
-   <signal>returnPressed()</signal>
-   <receiver>search</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>280</x>
-     <y>51</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>574</x>
-     <y>51</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>search</sender>
-   <signal>clicked()</signal>
-   <receiver>search_reset</receiver>
-   <slot>show()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>574</x>
-     <y>51</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>665</x>
-     <y>51</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>search_reset</sender>
-   <signal>pressed()</signal>
-   <receiver>search_reset</receiver>
-   <slot>hide()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>665</x>
-     <y>51</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>665</x>
-     <y>51</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

@@ -64,7 +64,7 @@ def openfile(filepath):
     else:
         os.system("xdg-open " + filepath)
 
-""" To regenerate the gui from the design: pyside-uic checkout.ui -o checkoutgui.py"""
+""" To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
 class Main(QtGui.QMainWindow):
 
     def __init__(self):
@@ -167,30 +167,6 @@ class Main(QtGui.QMainWindow):
         else:
             longtask([(self.populate_table, lambda x: self.inventory.items())],
                      **self.task_args)
-
-    def on_search_pressed(self):
-        """ Connected to signal through AutoConnect """
-        search_query = self.ui.search_query.text()
-        if search_query == self.ui.search_query.default_text():
-            search_query = ""
-
-        def search(log):
-            log("Searching for: \"%s\"" % search_query)
-            return self.goodreads.search(search_query, self.shelf())
-
-        def on_search_complete(*data):
-            self.ui.search_reset.show()
-            self.populate_table(*data)
-
-        logger.info("Firing search for: " + search_query)
-        longtask([(on_search_complete, search)], **self.task_args)
-
-    def on_search_reset_pressed(self):
-        def updateUI(books):
-            self.ui.search_query.setText("")
-            self.populate_table(books)
-
-        longtask([(updateUI, self.local_inventory)], **self.task_args)
 
     def wait_for_user(self):
         QtGui.QMessageBox.question(self, "Hold up!",
