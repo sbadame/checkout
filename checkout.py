@@ -157,6 +157,13 @@ class Main(QtGui.QMainWindow):
         if not success: exit()
         return str(secret)
 
+    def on_search_query_textEdited(self, text):
+        query = str(text).strip()
+        if query:
+            logger.info("Searching for: " + query)
+            for result in self.inventory.search(query):
+                logger.info(result)
+
     def on_search_pressed(self):
         """ Connected to signal through AutoConnect """
         search_query = self.ui.search_query.text()

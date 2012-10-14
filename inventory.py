@@ -77,4 +77,9 @@ class Inventory():
     def items(self):
         return self.inventory.items()
 
+    def search(self, query):
+        query = query.lower()
+        for record in self.inventory.itervalues():
+            if query in record.title.lower() or query in record.author.lower():
+                yield record
 
