@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>744</width>
-    <height>556</height>
+    <height>573</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -164,6 +164,9 @@ margin-left: 6px;
               </property>
              </column>
             </widget>
+           </item>
+           <item>
+            <widget class="QListWidget" name="booklist"/>
            </item>
           </layout>
          </widget>
