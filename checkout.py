@@ -160,9 +160,13 @@ class Main(QtGui.QMainWindow):
     def on_search_query_textEdited(self, text):
         query = str(text).strip()
         if query:
-            logger.info("Searching for: " + query)
-            for result in self.inventory.search(query):
-                logger.info(result)
+            def search(log):
+                log("Searching for: " + query)
+                return self.inventory.search(query)
+            longtask([(self.populate_table, search)], **self.task_args)
+        else:
+            longtask([(self.populate_table, lambda x: self.inventory.items())],
+                     **self.task_args)
 
     def on_search_pressed(self):
         """ Connected to signal through AutoConnect """

@@ -78,8 +78,10 @@ class Inventory():
         return self.inventory.items()
 
     def search(self, query):
+        results = []
         query = query.lower()
-        for record in self.inventory.itervalues():
+        for id, record in self.items():
             if query in record.title.lower() or query in record.author.lower():
-                yield record
+                results.append((id, record))
+        return results
 
