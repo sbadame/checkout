@@ -3,7 +3,7 @@
 import logging
 
 from PyQt4 import QtGui, QtCore
-from bookwidget import Ui_Form
+from bookwidget import Ui_Form as BookBase
 from checkoutgui import Ui_MainWindow
 from customgui import NoVisibleFocusItemDelegate
 
@@ -11,10 +11,30 @@ LOGGER = logging.getLogger()
 
 CHECKOUT_COLOR = "#FF7373"
 
-class BookWidget(QtGui.QWidget, Ui_Form):
-    def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+class BookWidget(QtGui.QWidget, BookBase):
+    def __init__(self, book):
+        QtGui.QWidget.__init__(self)
         self.setupUi(self)
+
+#def bookWidget(book):
+#    buttons = QtGui.QWidget()
+#    button_layout = QtGui.QVBoxLayout()
+#    checkout = QtGui.QPushButton("Check this book out!")
+#    checkin = QtGui.QPushButton("Return this book")
+#    button_layout.addWidget(checkout)
+#    button_layout.addWidget(checkin)
+#    buttons.setLayout(button_layout)
+#
+#    row = QtGui.QWidget()
+#    row_layout = QtGui.QHBoxLayout()
+#    title = QtGui.QLabel(book.title)
+#    author = QtGui.QLabel(book.author)
+#    row_layout.addWidget(title)
+#    row_layout.addWidget(author)
+#    row_layout.addWidget(buttons)
+#    row.setLayout(row_layout)
+#    row.show()
+#    return row
 
 
 class MainUi(Ui_MainWindow):
@@ -38,13 +58,7 @@ class MainUi(Ui_MainWindow):
                 lambda c, a=id, b=book.title: oncheckout(a, b))
 
     def show_book_in_list(self, book, oncheckedin, oncheckedout):
-        bookWidget = BookWidget()
-        bookWidget.ui.title.setText(book.title)
-        bookWidget.ui.author.setText(book.author)
-        bookWidget.ui.checkin.clicked.connect(oncheckedin)
-        bookWidget.ui.checkout.clicked.connect(oncheckedout)
-        self.booklist.addWidget(bookWidget)
-        bookWidget.show()
+        self.booklist.addWidget(BookWidget(book))
 
     def populate_table(self, books, oncheckin, oncheckout):
         LOGGER.info("Repopulating table")

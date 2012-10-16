@@ -167,8 +167,11 @@ margin-left: 6px;
            </item>
            <item>
             <widget class="QScrollArea" name="scrollArea">
+             <property name="layoutDirection">
+              <enum>Qt::LeftToRight</enum>
+             </property>
              <property name="widgetResizable">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <widget class="QWidget" name="scrollAreaWidgetContents">
               <property name="geometry">
@@ -180,6 +183,9 @@ margin-left: 6px;
                </rect>
               </property>
               <layout class="QGridLayout" name="gridLayout">
+               <property name="sizeConstraint">
+                <enum>QLayout::SetMaximumSize</enum>
+               </property>
                <item row="0" column="0">
                 <layout class="QVBoxLayout" name="booklist"/>
                </item>
