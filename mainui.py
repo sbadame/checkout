@@ -3,7 +3,7 @@
 import logging
 
 from PyQt4 import QtGui, QtCore
-from bookwidget import Ui_Form as BookUi
+from bookwidget import Ui_Form
 from checkoutgui import Ui_MainWindow
 from customgui import NoVisibleFocusItemDelegate
 
@@ -11,7 +11,7 @@ LOGGER = logging.getLogger()
 
 CHECKOUT_COLOR = "#FF7373"
 
-class BookWidget(QtGui.QWidget, BookUi):
+class BookWidget(QtGui.QWidget, Ui_Form):
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.setupUi(self)
@@ -21,7 +21,6 @@ class MainUi(Ui_MainWindow):
 
     def __init__(self):
         super(MainUi, self).__init__()
-        self.done = False
 
     def setupUi(self, main):
         super(MainUi, self).setupUi(main)
@@ -31,10 +30,6 @@ class MainUi(Ui_MainWindow):
 
     def populate_list(self, books, oncheckin, oncheckout):
         LOGGER.info("Repopulating list")
-        if self.done:
-            return
-
-        self.done = True
         self._books_cached = books
         list = self.booklist
         for id, book in books:
@@ -42,14 +37,14 @@ class MainUi(Ui_MainWindow):
                 lambda c, a=id, b=book.title: oncheckin(a, b),
                 lambda c, a=id, b=book.title: oncheckout(a, b))
 
-
     def show_book_in_list(self, book, oncheckedin, oncheckedout):
         bookWidget = BookWidget()
-        bookWidget.title.setText(book.title)
-        bookWidget.author.setText(book.author)
-        bookWidget.checkin.clicked.connect(oncheckedin)
-        bookWidget.checkout.clicked.connect(oncheckedout)
+        bookWidget.ui.title.setText(book.title)
+        bookWidget.ui.author.setText(book.author)
+        bookWidget.ui.checkin.clicked.connect(oncheckedin)
+        bookWidget.ui.checkout.clicked.connect(oncheckedout)
         self.booklist.addWidget(bookWidget)
+        bookWidget.show()
 
     def populate_table(self, books, oncheckin, oncheckout):
         LOGGER.info("Repopulating table")
