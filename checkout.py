@@ -1,5 +1,5 @@
 from __future__ import print_function
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui
 import inventory
 import sys
 import os.path as path
@@ -33,7 +33,7 @@ DEFAULT_INVENTORY_FILE_PATH = path.normpath(path.expanduser("~/inventory.csv"))
 DEFAULT_LOG_PATH = path.normpath(path.expanduser("~/checkout.csv"))
 
 # Keys for the configuration hash
-LIBRARY_SHELF = "LIBRARY_SHELF" # The name of the shelf where books are stored
+LIBRARY_SHELF = "LIBRARY_SHELF"  # The name of the shelf where books are stored
 _LOG_PATH_KEY = 'LOG_PATH'
 _INVENTORY_PATH_KEY = 'INVENTORY_PATH'
 
@@ -56,6 +56,7 @@ BOOKSORT = lambda (id, book): (list(reversed(book.author.split())), book.title)
 DEVELOPER_KEY = "DEVELOPER_KEY"
 DEVELOPER_SECRET = "DEVELOPER_SECRET"
 
+
 def openfile(filepath):
     import os
     if sys.platform.startswith('win'):
@@ -65,13 +66,17 @@ def openfile(filepath):
     else:
         os.system("xdg-open " + filepath)
 
-""" To regenerate the gui from the design: pyuic4 checkout.ui -o checkoutgui.py"""
+
+# To regenerate the gui from the design:
+#   pyuic4 checkout.ui -o checkoutgui.py
+
+
 class Main(QtGui.QMainWindow):
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         self.progress = QtGui.QProgressDialog(self)
-        self.progress.setRange(0,0)
+        self.progress.setRange(0, 0)
         self.progress.setWindowTitle("Working...")
         self.progress.canceled.connect(cancel_longtask)
         self.books_in_table = []
@@ -81,8 +86,10 @@ class Main(QtGui.QMainWindow):
         self.ui = MainUi()
         self.ui.setupUi(self)
 
-        self.ui.options.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.optionspage))
-        self.ui.back_to_books.clicked.connect(lambda : self.ui.uistack.setCurrentWidget(self.ui.bookpage))
+        self.ui.options.clicked.connect(
+            lambda: self.ui.uistack.setCurrentWidget(self.ui.optionspage))
+        self.ui.back_to_books.clicked.connect(
+            lambda: self.ui.uistack.setCurrentWidget(self.ui.bookpage))
 
         self.all_tasks = [
             (self.populate_table, self.local_inventory),
@@ -92,7 +99,9 @@ class Main(QtGui.QMainWindow):
             (self.ui.inventory_label.setText, self.inventory_file)]
 
         self.config = self.init_config()
-        self.goodreads = GoodReads(self.config[DEVELOPER_KEY], self.config[DEVELOPER_SECRET], waitfunction=self.wait_for_user)
+        self.goodreads = GoodReads(self.config[DEVELOPER_KEY],
+                                   self.config[DEVELOPER_SECRET],
+                                   waitfunction=self.wait_for_user)
         if LIBRARY_SHELF not in self.config:
             self.on_switch_library_button_pressed(refresh=False)
 
@@ -100,10 +109,11 @@ class Main(QtGui.QMainWindow):
 
         try:
             self.inventory = inventory.load_inventory(self.inventory_path)
-        except IOError as e:
+        except IOError:
             self.inventory = inventory.create_inventory(self.inventory_path)
 
-        self.longtask(self.all_tasks + [(self.populate_table, self.update_from_goodreads)])
+        self.longtask(self.all_tasks +
+                      [(self.populate_table, self.update_from_goodreads)])
 
     def longtask(self, tasks):
         longtask(tasks,
@@ -113,7 +123,8 @@ class Main(QtGui.QMainWindow):
                  on_terminate=self.progress.hide)
 
     def populate_table(self, books):
-        self.ui.populate_table(books, self.checkin_pressed, self.checkout_pressed)
+        self.ui.populate_table(books, self.checkin_pressed,
+                               self.checkout_pressed)
 
     def init_config(self):
         try:
@@ -123,7 +134,9 @@ class Main(QtGui.QMainWindow):
                 # Note that these are function calls and order maters!
                 config = Config.load_from_file(configfile)
         except IOError as e:
-                logger.warn("Error loading: %s (%s). (This is normal for a first run)" % (CONFIG_FILE_PATH, e))
+                logger.warn(("Error loading: %s (%s)."
+                             "(This is normal for a first run)") %
+                            (CONFIG_FILE_PATH, e))
                 config = Config(CONFIG_FILE_PATH)
 
         default_configuration = [
@@ -135,7 +148,7 @@ class Main(QtGui.QMainWindow):
 
         for key, loader in default_configuration:
             if key not in config:
-                logger.info("Missing a value for your %s property, lets get one!" % key)
+                logger.info("Missing a value for your %s property" % key)
                 config[key] = loader()
 
         return config
@@ -148,9 +161,13 @@ class Main(QtGui.QMainWindow):
         return self.config[LIBRARY_SHELF]
 
     def request_dev_key(self, log=logger.info):
-        key, success = QtGui.QInputDialog.getText(None, "Developer Key?",
-                'A developer key is needed to communicate with goodreads.\nYou can usually find it here: http://www.goodreads.com/api/keys')
-        if not success: exit()
+        key, success = QtGui.QInputDialog.getText(
+            None,
+            "Developer Key?",
+            ('A developer key is needed to communicate with goodreads.\n'
+             'You can find it here: http://www.goodreads.com/api/keys'))
+        if not success:
+            exit()
         return str(key)
 
     def request_dev_secret(self):
