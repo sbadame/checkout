@@ -1,11 +1,13 @@
 from PyQt4 import QtCore
 
 import logging
+import threading
 
 logger = logging.getLogger()
 
 _asyncs = []
 _progress_thread = None
+_lock = threading.Lock()
 
 def _default_progress(text):
     logger.info("Task Progress: " + str(text))
@@ -20,6 +22,7 @@ def longtask(tasks,
         on_finish = _no_op,
         on_terminate = _no_op):
     global _progress_thread
+    _lock.acquire()
 
     for slot, task in tasks:
         async = ASyncWorker(slot, task)
@@ -37,6 +40,7 @@ def longtask(tasks,
             for async in _asyncs: async.commit()
 
         del _asyncs[:]
+        _lock.release()
 
     _progress_thread = QtCore.QThread()
     _progress_thread.run = wait_for_death

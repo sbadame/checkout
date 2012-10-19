@@ -17,30 +17,12 @@ class BookWidget(QtGui.QWidget, BookBase):
     def __init__(self, book, oncheckedin, oncheckedout):
         QtGui.QWidget.__init__(self)
         self.setupUi(self)
+        self.setObjectName(str(book))
         self.title.setText(book.title)
         self.author.setText(book.author)
         self.checkin.clicked.connect(oncheckedin)
         self.checkout.clicked.connect(oncheckedout)
-
-#def bookWidget(book):
-#    buttons = QtGui.QWidget()
-#    button_layout = QtGui.QVBoxLayout()
-#    checkout = QtGui.QPushButton("Check this book out!")
-#    checkin = QtGui.QPushButton("Return this book")
-#    button_layout.addWidget(checkout)
-#    button_layout.addWidget(checkin)
-#    buttons.setLayout(button_layout)
-#
-#    row = QtGui.QWidget()
-#    row_layout = QtGui.QHBoxLayout()
-#    title = QtGui.QLabel(book.title)
-#    author = QtGui.QLabel(book.author)
-#    row_layout.addWidget(title)
-#    row_layout.addWidget(author)
-#    row_layout.addWidget(buttons)
-#    row.setLayout(row_layout)
-#    row.show()
-#    return row
+        self.book = book
 
 
 class MainUi(Ui_MainWindow):
@@ -53,6 +35,17 @@ class MainUi(Ui_MainWindow):
         self.books.setItemDelegate(NoVisibleFocusItemDelegate())
         self.books.setFocus()
         self.search_query.setDefaultText()
+
+    def showBooks(self, booksWithId):
+        if booksWithId:
+            ids, books = zip(*booksWithId)
+            for i in range(self.booklist.count()):
+                bookwidget = self.booklist.itemAt(i).widget()
+                bookwidget.setVisible(bookwidget.book in books)
+
+    def showAllBooks(self):
+        for i in range(self.booklist.count()):
+            self.booklist.itemAt(i).widget().setVisible(True)
 
     def populate_list(self, books, oncheckin, oncheckout):
         LOGGER.info("Repopulating list")

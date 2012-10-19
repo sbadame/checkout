@@ -1,5 +1,5 @@
 from __future__ import print_function
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 import inventory
 import sys
 import os.path as path
@@ -43,9 +43,6 @@ LIBRARY_SHELF_LABEL_TEXT = None
 LOG_LABEL_TEXT = None
 INVENTORY_LABEL_TEXT = None
 SHELF_DIALOG_LABEL_TEXT = "Which shelf should be used for the library books?"
-
-# Colors
-CHECKOUT_COLOR_SELECTED = "#BF3030"
 
 AVAILABLE_COLOR = "#0000FF"
 AVAILABLE_COLOR_SELECTED = "#0000FF"
@@ -112,10 +109,12 @@ class Main(QtGui.QMainWindow):
         except IOError:
             self.inventory = inventory.create_inventory(self.inventory_path)
 
-        self.longtask(self.all_tasks +
+        self.longtask(self.all_tasks[1:] +
                       [(self.populate_table, self.update_from_goodreads)])
 
     def longtask(self, tasks):
+        #QtCore.pyqtRemoveInputHook()
+        #import pdb; pdb.set_trace()
         longtask(tasks,
                  on_progress=self.update_progress,
                  on_start=self.progress.show,
@@ -182,9 +181,10 @@ class Main(QtGui.QMainWindow):
             def search(log):
                 log("Searching for: " + query)
                 return self.inventory.search(query)
-            self.longtask([(self.populate_table, search)])
+            self.longtask([
+                (self.ui.showBooks, search)])
         else:
-            self.longtask([(self.populate_table, lambda x: self.inventory.items())])
+            self.longtask([(self.ui.showAllBooks, lambda x: None)])
 
     def wait_for_user(self):
         QtGui.QMessageBox.question(self, "Hold up!",
