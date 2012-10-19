@@ -14,11 +14,13 @@ CHECKOUT_COLOR_SELECTED = "#BF3030"
 
 
 class BookWidget(QtGui.QWidget, BookBase):
-    def __init__(self, book):
+    def __init__(self, book, oncheckedin, oncheckedout):
         QtGui.QWidget.__init__(self)
         self.setupUi(self)
         self.title.setText(book.title)
         self.author.setText(book.author)
+        self.checkin.clicked.connect(oncheckedin)
+        self.checkout.clicked.connect(oncheckedout)
 
 #def bookWidget(book):
 #    buttons = QtGui.QWidget()
@@ -62,7 +64,7 @@ class MainUi(Ui_MainWindow):
                 lambda c, a=id, b=book.title: oncheckout(a, b))
 
     def show_book_in_list(self, book, oncheckedin, oncheckedout):
-        self.booklist.addWidget(BookWidget(book))
+        self.booklist.addWidget(BookWidget(book, oncheckedin, oncheckedout))
 
     def populate_table(self, books, oncheckin, oncheckout):
         LOGGER.info("Repopulating table")
