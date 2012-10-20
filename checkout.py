@@ -113,8 +113,6 @@ class Main(QtGui.QMainWindow):
                       [(self.populate_table, self.update_from_goodreads)])
 
     def longtask(self, tasks):
-        #QtCore.pyqtRemoveInputHook()
-        #import pdb; pdb.set_trace()
         longtask(tasks,
                  on_progress=self.update_progress,
                  on_start=self.progress.show,
