@@ -301,7 +301,8 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                     self.inventory.checkin(id)
                     self.inventory.persist()
                 else:
-                    logger.critical("Couldn't find ID: %d, title: %s" % (id, title))
+                    logger.critical('Couldn\'t find ID: %d, title: %s' %
+                                    (id, title))
 
                 self.refresh(self.local_inventory)
 
@@ -314,8 +315,8 @@ If this is your first time, you will have to give 'Checkout' permission to acces
     def update_from_goodreads(self, log):
         log("Reloading your books from goodreads...")
         books = []
-        for (id, t, a) in self.goodreads.listbooks(self.shelf()):
-            book = InventoryRecord(t, a, 1, 0, [])
+        for (id, title, author) in self.goodreads.listbooks(self.shelf()):
+            book = InventoryRecord(title, author)
             books.append((id, book))
             if id not in self.inventory:
                 self.inventory[int(id)] = book
@@ -325,24 +326,25 @@ If this is your first time, you will have to give 'Checkout' permission to acces
 
     # Update the user interface
     def current_user(self, log):
-        global USER_LABEL_TEXT
         """ Returns the string used in the Options GUI for user name """
+        global USER_LABEL_TEXT
         log("Finding out who your are")
         if not USER_LABEL_TEXT:
             USER_LABEL_TEXT = str(self.ui.user_label.text())
         return USER_LABEL_TEXT % self.goodreads.user()[1]
 
     def log_file(self, log):
+        """Returns the string used in the Options GUI for the log file """
         global LOG_LABEL_TEXT
-        """ Returns the string used in the Options GUI for the log file """
         log("Finding that log file")
         if not LOG_LABEL_TEXT:
             LOG_LABEL_TEXT = str(self.ui.log_label.text())
         return LOG_LABEL_TEXT % self.config[_LOG_PATH_KEY]
 
     def inventory_file(self, log):
+        """Text used in the Options GUI for the inventory file."""
         global INVENTORY_LABEL_TEXT
-        """ Returns the string used in the Options GUI for the inventory file """
+
         log("Figuring out where I keep track of your books")
         if not INVENTORY_LABEL_TEXT:
             INVENTORY_LABEL_TEXT = str(self.ui.inventory_label.text())
