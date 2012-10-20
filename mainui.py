@@ -38,7 +38,8 @@ class BookWidget(QtGui.QWidget, BookBase):
 
     @QtCore.pyqtSlot(int)
     def onInventoryChange(self, checked_in):
-        import pdb; pdb.set_trace()
+        import pdb
+        pdb.set_trace()
         LOGGER.info('%s, %d, %d' % (str(self.book), checked_in))
 
 
