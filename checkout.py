@@ -87,18 +87,11 @@ class Main(QtGui.QMainWindow):
 
         self.all_tasks = [
             (self.populate_table, self.local_inventory),
-            (self.ui.user_label.setText, self.current_user),
             (self.ui.log_label.setText, self.log_file),
             (self.ui.library_shelf_label.setText, self.library_shelf),
             (self.ui.inventory_label.setText, self.inventory_file)]
 
         self.config = self.init_config()
-        # self.goodreads = GoodReads(self.config[DEVELOPER_KEY],
-        #                            self.config[DEVELOPER_SECRET],
-        #                            waitfunction=self.wait_for_user)
-        # if LIBRARY_SHELF not in self.config:
-        #     self.on_switch_library_button_pressed(refresh=False)
-
         self.inventory_path = self.config[_INVENTORY_PATH_KEY]
 
         try:
