@@ -93,11 +93,11 @@ class Main(QtGui.QMainWindow):
             (self.ui.inventory_label.setText, self.inventory_file)]
 
         self.config = self.init_config()
-        self.goodreads = GoodReads(self.config[DEVELOPER_KEY],
-                                   self.config[DEVELOPER_SECRET],
-                                   waitfunction=self.wait_for_user)
-        if LIBRARY_SHELF not in self.config:
-            self.on_switch_library_button_pressed(refresh=False)
+        # self.goodreads = GoodReads(self.config[DEVELOPER_KEY],
+        #                            self.config[DEVELOPER_SECRET],
+        #                            waitfunction=self.wait_for_user)
+        # if LIBRARY_SHELF not in self.config:
+        #     self.on_switch_library_button_pressed(refresh=False)
 
         self.inventory_path = self.config[_INVENTORY_PATH_KEY]
 
@@ -106,8 +106,7 @@ class Main(QtGui.QMainWindow):
         except IOError:
             self.inventory = inventory.create_inventory(self.inventory_path)
 
-        self.longtask(self.all_tasks[1:] +
-                      [(self.populate_table, self.update_from_goodreads)])
+        self.longtask(self.all_tasks)
 
     def longtask(self, tasks):
         longtask(tasks,
