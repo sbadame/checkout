@@ -9,6 +9,9 @@ from customgui import NoVisibleFocusItemDelegate
 
 LOGGER = logging.getLogger()
 
+BACKGROUND_COLOR = "#FFFFFF"
+SELECTED_COLOR = "#336699"
+
 CHECKOUT_COLOR = "#FF7373"
 CHECKOUT_COLOR_SELECTED = "#BF3030"
 
@@ -23,6 +26,13 @@ class BookWidget(QtGui.QWidget, BookBase):
         self.checkin.clicked.connect(oncheckedin)
         self.checkout.clicked.connect(oncheckedout)
         self.book = book
+        self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
+
+    def focusInEvent(self, event):
+        self.setStyleSheet('background-color: "%s"' % SELECTED_COLOR)
+
+    def focusOutEvent(self, event):
+        self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
 
 
 class MainUi(Ui_MainWindow):

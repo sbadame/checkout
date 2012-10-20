@@ -1,9 +1,11 @@
 from collections import namedtuple
 import unicodecsv as csv
+from safewriter import SafeWrite
 
 # How we represent books stored in the inventory csv
-InventoryRecord = namedtuple('InventoryRecord',
-    ['title', 'author', 'checked_in', 'checked_out', 'extra_data'])
+InventoryRecord = namedtuple(
+    'InventoryRecord', ['title', 'author', 'checked_in',
+                        'checked_out', 'extra_data'])
 
 
 def load_inventory(path):
@@ -18,18 +20,25 @@ def load_inventory(path):
         for row in csv.reader(inventoryfile):
             id, title, author, num_in, num_out = row[0:number_of_fields]
             inventory.inventory[int(id)] = InventoryRecord(
-                title, author, int(num_in), int(num_out), row[number_of_fields:])
+                title,
+                author,
+                int(num_in),
+                int(num_out),
+                row[number_of_fields:])
     return inventory
+
 
 def create_inventory(path, books):
     inventory = Inventory(path)
     with SafeWrite(path, 'b') as (inventoryfile, oldfile):
+        writer = csv.writer(inventoryfile)
         for id, title, author in books:
             writer.writerow([id, title, author, 1, 0])
-            inventory.inventory[int(id)] = InventoryRecord(title, author, 1, 0, [])
-        writer = csv.writer(inventoryfile)
+            inventory.inventory[int(id)] = InventoryRecord(
+                title, author, 1, 0, [])
     inventory.persist_inventory()
     return inventory
+
 
 class Inventory():
 
@@ -37,14 +46,18 @@ class Inventory():
         self.path = path
         self.inventory = {}
 
-
     def persist(self):
         with open(self.path, 'wb') as inventoryfile:
             writer = csv.writer(inventoryfile)
             data = self.inventory.items()
-            data.sort(key = lambda (id, record): (record.author, record.title))
+            data.sort(key=lambda (id, record): (record.author, record.title))
             for id, record in data:
-                writer.writerow([id, record.title, record.author, record.checked_in, record.checked_out] +
+                writer.writerow(
+                    [id,
+                     record.title,
+                     record.author,
+                     record.checked_in,
+                     record.checked_out] +
                     record.extra_data)
 
     def __contains__(self, id):
@@ -65,14 +78,14 @@ class Inventory():
     def checkout(self, id):
         old = self.inventory[id]
         self.inventory[id] = old._replace(
-            checked_in = old.checked_in - 1,
-            checked_out = old.checked_out + 1)
+            checked_in=old.checked_in - 1,
+            checked_out=old.checked_out + 1)
 
     def checkin(self, id):
         old = self.inventory[id]
         self.inventory[id] = old._replace(
-            checked_in = old.checked_in + 1,
-            checked_out = old.checked_out - 1)
+            checked_in=old.checked_in + 1,
+            checked_out=old.checked_out - 1)
 
     def items(self):
         return self.inventory.items()
@@ -84,4 +97,3 @@ class Inventory():
             if query in record.title.lower() or query in record.author.lower():
                 results.append((id, record))
         return results
-

@@ -179,7 +179,7 @@ margin-left: 6px;
                 <x>0</x>
                 <y>0</y>
                 <width>729</width>
-                <height>292</height>
+                <height>280</height>
                </rect>
               </property>
               <layout class="QGridLayout" name="gridLayout">

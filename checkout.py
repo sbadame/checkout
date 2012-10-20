@@ -44,9 +44,6 @@ LOG_LABEL_TEXT = None
 INVENTORY_LABEL_TEXT = None
 SHELF_DIALOG_LABEL_TEXT = "Which shelf should be used for the library books?"
 
-AVAILABLE_COLOR = "#0000FF"
-AVAILABLE_COLOR_SELECTED = "#0000FF"
-
 # How books in the UI are sorted
 BOOKSORT = lambda (id, book): (list(reversed(book.author.split())), book.title)
 
@@ -377,6 +374,7 @@ If this is your first time, you will have to give 'Checkout' permission to acces
     def available(self, book_id):
         return self.inventory[book_id].checked_in > 0
 
+
 def main():
     app = QtGui.QApplication(sys.argv)
     window = Main()
@@ -388,9 +386,10 @@ def main():
 
 if __name__ == "__main__":
     logger.info("======== Starting Up ========")
+
     def error_handler(type, value, tb):
         logger.error("Exiting from uncaught exception",
-                     exc_info = (type, value, tb))
+                     exc_info=(type, value, tb))
         exit(1)
     sys.excepthook = error_handler
     main()
