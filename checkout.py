@@ -4,6 +4,7 @@ import sys
 import os.path as path
 import logging
 
+from PyQt4 import QtGui
 from config import Config
 from dialogs import ListDialog
 from goodreads import GoodReads
@@ -164,9 +165,13 @@ class Main(QtGui.QMainWindow):
         return str(key)
 
     def request_dev_secret(self):
-        secret, success = QtGui.QInputDialog.getText(None, "Developer Secret?",
-                'What is the developer secret for the key that you just gave?\n(It\'s also on that page with the key: http://www.goodreads.com/api/keys)')
-        if not success: exit()
+        secret, success = QtGui.QInputDialog.getText(
+            None, "Developer Secret?",
+            ('What is the developer secret for the key that you just gave?\n'
+             'It\'s also on that page with the key: '
+             'http://www.goodreads.com/api/keys)'))
+        if not success:
+            exit()
         return str(secret)
 
     def on_search_query_textEdited(self, text):
@@ -181,20 +186,25 @@ class Main(QtGui.QMainWindow):
             self.longtask([(self.ui.showAllBooks, lambda x: None)])
 
     def wait_for_user(self):
-        QtGui.QMessageBox.question(self, "Hold up!",
-"""I'm opening a link to goodreads for you.
-Once the goodreads page loads click "Yes" below to continue.
-If this is your first time, you will have to give 'Checkout' permission to access your goodreads account.""",
+        QtGui.QMessageBox.question(
+            self,
+            "Hold up!",
+            ('I\'m opening a link to goodreads for you. '
+             'Once the goodreads page loads click "Yes" below to continue.'
+             'If this is your first time, you will have to give "Checkout" '
+             'permission to access your goodreads account.'),
             QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
     def on_switch_user_button_pressed(self):
         logger.warn("Look at switch user again")
 
     def on_switch_library_button_pressed(self, refresh=True):
-        dialog = ListDialog(self, SHELF_DIALOG_LABEL_TEXT, self.goodreads.shelves())
+        dialog = ListDialog(self, SHELF_DIALOG_LABEL_TEXT,
+                            self.goodreads.shelves())
 
         def create_new_shelf():
-            name, success = QtGui.QInputDialog.getText(dialog,
+            name, success = QtGui.QInputDialog.getText(
+                dialog,
                 'Adding a new shelf',
                 'What would you like to name the new shelf?')
 
@@ -221,15 +231,15 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         openfile(self.config[_INVENTORY_PATH_KEY])
 
     def on_switch_log_button_pressed(self):
-        file = QtGui.QFileDialog.getSaveFileName(
-                self, filter="CSV file (*.csv)")
+        file = QtGui.QFileDialog.getSaveFileName(self,
+                                                 filter='CSV file (*.csv)')
         if file:
             self.config[_LOG_PATH_KEY] = str(file)
             self.refresh(self.log_file)
 
     def on_switch_inventory_button_pressed(self):
-        file = QtGui.QFileDialog.getSaveFileName(
-                self, filter="CSV file (*.csv)")
+        file = QtGui.QFileDialog.getSaveFileName(self,
+                                                 filter='CSV file (*.csv)')
         if file:
             self.config[_INVENTORY_PATH_KEY] = str(file)
             self.refresh(self.inventory_file)
@@ -238,7 +248,8 @@ If this is your first time, you will have to give 'Checkout' permission to acces
     def checkout_pressed(self, id, title):
         """ Connected to signal in populate_table """
 
-        name, success = QtGui.QInputDialog.getText(self,
+        name, success = QtGui.QInputDialog.getText(
+            self,
             'Checking out %s' % title, 'What is your name?')
         if success:
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
@@ -264,10 +275,10 @@ If this is your first time, you will have to give 'Checkout' permission to acces
                         name = row[1].strip()
                         if name not in possible_people:
                             possible_people.append(name)
-                except ValueError as ve:
+                except ValueError:
                     # it's ok if there is a malformed cell/row
                     logger.warn("Malformed row: " + str(row))
-                    pass
+
         return possible_people
 
     def checkin_pressed(self, id, title):
@@ -277,7 +288,8 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         dialog = ListDialog(self, "Who are you?", candidates_for_return)
 
         def not_on_list():
-            name, success = QtGui.QInputDialog.getText(self,
+            name, success = QtGui.QInputDialog.getText(
+                self,
                 'Return %s' % title, 'What is your name?')
 
             name = str(name).strip()
@@ -358,15 +370,15 @@ If this is your first time, you will have to give 'Checkout' permission to acces
         return LIBRARY_SHELF_LABEL_TEXT % self.shelf()
 
     def refresh(self, *refresh):
-
-        slots, tasks = zip(*self.all_tasks) #unzip in python
+        slots, tasks = zip(*self.all_tasks)  # unzip in python
 
         if not refresh or refresh == ('',) or refresh == (None,):
             tasks = self.all_tasks
         else:
             not_allowed = filter(lambda t: t not in tasks, refresh)
             if not_allowed:
-                raise ValueError("'%s' are not available for refresh" % not_allowed)
+                raise ValueError("'%s' are not available for refresh" %
+                                 not_allowed)
             else:
                 tasks = [self.all_tasks[tasks.index(task)] for task in refresh]
 

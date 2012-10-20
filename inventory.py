@@ -1,18 +1,24 @@
 import logging
 import unicodecsv as csv
+
+from PyQt4 import QtCore
+
 from safewriter import SafeWrite
 
 LOGGER = logging.getLogger()
 
 
-class InventoryRecord(object):
+class InventoryRecord(QtCore.QObject):
     """The line item of this program."""
 
     # Number of fields per Inventory record in the csv
     NUMBER_OF_CSV_FIELDS = 5
 
+    inventory_changed = QtCore.pyqtSignal(int)
+
     def __init__(self, title, author, checked_in=1, checked_out=0,
                  extra_data=None):
+        QtCore.QObject.__init__(self)
         self.title = title
         self.author = author
         self.checked_in = checked_in
@@ -25,10 +31,14 @@ class InventoryRecord(object):
     def check_in_a_copy(self):
         self.checked_in += 1
         self.checked_out -= 1
+        LOGGER.info("checkin Emitting: %d" % self.checked_in)
+        self.inventory_changed.emit(5)
 
     def check_out_a_copy(self):
         self.checked_in -= 1
         self.checked_out += 1
+        LOGGER.info("checkout Emitting: %d" % self.checked_out)
+        self.inventory_changed.emit(5)
 
     def __str__(self):
         info = (self.__class__.__name__, self.title, self.author,

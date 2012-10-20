@@ -26,6 +26,8 @@ class BookWidget(QtGui.QWidget, BookBase):
         self.checkin.clicked.connect(oncheckedin)
         self.checkout.clicked.connect(oncheckedout)
         self.book = book
+        print(book)
+        self.book.inventory_changed.connect(self.onInventoryChange)
         self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
 
     def focusInEvent(self, event):
@@ -33,6 +35,11 @@ class BookWidget(QtGui.QWidget, BookBase):
 
     def focusOutEvent(self, event):
         self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
+
+    @QtCore.pyqtSlot(int)
+    def onInventoryChange(self, checked_in):
+        import pdb; pdb.set_trace()
+        LOGGER.info('%s, %d, %d' % (str(self.book), checked_in))
 
 
 class MainUi(Ui_MainWindow):
