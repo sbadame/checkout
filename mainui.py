@@ -26,8 +26,7 @@ class BookWidget(QtGui.QWidget, BookBase):
         self.checkin.clicked.connect(oncheckedin)
         self.checkout.clicked.connect(oncheckedout)
         self.book = book
-        print(book)
-        self.book.inventory_changed.connect(self.onInventoryChange)
+        book.inventory_changed.connect(self.onInventoryChange)
         self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
 
     def focusInEvent(self, event):

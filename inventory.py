@@ -18,7 +18,7 @@ class InventoryRecord(QtCore.QObject):
 
     def __init__(self, title, author, checked_in=1, checked_out=0,
                  extra_data=None):
-        QtCore.QObject.__init__(self)
+        super(QtCore.QObject, self).__init__()
         self.title = title
         self.author = author
         self.checked_in = checked_in

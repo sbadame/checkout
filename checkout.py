@@ -264,8 +264,6 @@ class Main(QtGui.QMainWindow):
             else:
                 logger.critical("couldn't find %d: %s" % (id, title))
 
-            self.refresh(self.local_inventory)
-
     def candidates_for_return(self, bookid):
         possible_people = []
         with open(self.config[_LOG_PATH_KEY], 'rb') as logfile:
@@ -314,8 +312,6 @@ class Main(QtGui.QMainWindow):
                 else:
                     logger.critical('Couldn\'t find ID: %d, title: %s' %
                                     (id, title))
-
-                self.refresh(self.local_inventory)
 
     def local_inventory(self, log):
         log("Grabbing the local copy of your books.")
