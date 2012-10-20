@@ -35,11 +35,9 @@ class BookWidget(QtGui.QWidget, BookBase):
     def focusOutEvent(self, event):
         self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
 
-    @QtCore.pyqtSlot(int)
-    def onInventoryChange(self, checked_in):
-        import pdb
-        pdb.set_trace()
-        LOGGER.info('%s, %d, %d' % (str(self.book), checked_in))
+    @QtCore.pyqtSlot(int, int)
+    def onInventoryChange(self, checked_in, checked_out):
+        LOGGER.info('%s, %d, %d' % (str(self.book), checked_in, checked_out))
 
 
 class MainUi(Ui_MainWindow):

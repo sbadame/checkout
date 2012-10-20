@@ -14,7 +14,8 @@ class InventoryRecord(QtCore.QObject):
     # Number of fields per Inventory record in the csv
     NUMBER_OF_CSV_FIELDS = 5
 
-    inventory_changed = QtCore.pyqtSignal(int)
+    # Emitted whenever the quantity this book changes
+    inventory_changed = QtCore.pyqtSignal(int, int)
 
     def __init__(self, title, author, checked_in=1, checked_out=0,
                  extra_data=None):
@@ -31,14 +32,12 @@ class InventoryRecord(QtCore.QObject):
     def check_in_a_copy(self):
         self.checked_in += 1
         self.checked_out -= 1
-        LOGGER.info("checkin Emitting: %d" % self.checked_in)
-        self.inventory_changed.emit(5)
+        self.inventory_changed.emit(self.checked_in, self.checked_out)
 
     def check_out_a_copy(self):
         self.checked_in -= 1
         self.checked_out += 1
-        LOGGER.info("checkout Emitting: %d" % self.checked_out)
-        self.inventory_changed.emit(5)
+        self.inventory_changed.emit(self.checked_in, self.checked_out)
 
     def __str__(self):
         info = (self.__class__.__name__, self.title, self.author,
