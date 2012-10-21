@@ -338,9 +338,6 @@ class Main(QtGui.QMainWindow):
             LIBRARY_SHELF_LABEL_TEXT = str(self.ui.library_shelf_label.text())
         return LIBRARY_SHELF_LABEL_TEXT % shelf
 
-    def available(self, book_id):
-        return self.inventory[book_id].checked_in > 0
-
 
 def main():
     app = QtGui.QApplication(sys.argv)
