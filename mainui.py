@@ -1,6 +1,7 @@
 """Handles showing off the books"""
 
 import logging
+import inventory
 
 from PyQt4 import QtGui, QtCore
 from bookwidget import Ui_Form as BookBase
@@ -103,11 +104,16 @@ class MainUi(Ui_MainWindow):
                 lambda c, a=id, b=book.title: oncheckin(a, b),
                 lambda c, a=id, b=book.title: oncheckout(a, b))
 
-    def addBook(self, book, oncheckedin, oncheckedout):
-        LOGGER.info('Book: %s', book)
+    @QtCore.pyqtSlot(inventory.InventoryRecord, object, object)
+    def addBook(self, id, book, oncheckedin, oncheckedout):
+        self.booklist.addWidget(BookWidget(
+            book,
+            lambda c, a=id, b=book.title: oncheckedin(a, b),
+            lambda c, a=id, b=book.title: oncheckedout(a, b)))
 
     def show_book_in_list(self, book, oncheckedin, oncheckedout):
-        self.booklist.addWidget(BookWidget(book, oncheckedin, oncheckedout))
+        pass
+        #self.booklist.addWidget(BookWidget(book, oncheckedin, oncheckedout))
 
     def populate_table(self, books, oncheckin, oncheckout):
         LOGGER.info("Repopulating table")

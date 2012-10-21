@@ -50,7 +50,7 @@ class InventoryRecord(QtCore.QObject):
 class Inventory(QtCore.QObject):
 
     # Emitted whenever a book is added to the inventory
-    bookAdded = QtCore.pyqtSignal(InventoryRecord)
+    bookAdded = QtCore.pyqtSignal(int, InventoryRecord)
 
     def __init__(self, path):
         super(QtCore.QObject, self).__init__()
@@ -67,12 +67,7 @@ class Inventory(QtCore.QObject):
             number_of_fields = InventoryRecord.NUMBER_OF_CSV_FIELDS
             for row in csv.reader(inventoryfile):
                 id, title, author, num_in, num_out = row[0:number_of_fields]
-                self.inventory[int(id)] = InventoryRecord(
-                    title,
-                    author,
-                    int(num_in),
-                    int(num_out),
-                    row[number_of_fields:])
+                self.addBook(int(id), title, author, int(num_in), int(num_out))
 
     def persist(self):
         logger.info("Persisting the inventory to %s", self.path)
@@ -91,12 +86,12 @@ class Inventory(QtCore.QObject):
                     record.extra_data)
         logger.info("Done with persisting.")
 
-    def addBook(self, (id, title, author)):
-        logger.info("Adding to the Inventory: %s", (id, title, author))
+    def addBook(self, id, title, author, checked_in=1, checked_out=0):
         if id not in self:
-            book = InventoryRecord(title, author)
+            logger.info("Adding to the Inventory: %s", (id, title, author))
+            book = InventoryRecord(title, author, checked_in, checked_out)
             self.inventory[id] = book
-            self.bookAdded.emit(InventoryRecord(title, author))
+            self.bookAdded.emit(id, book)
         else:
             raise ValueError("%d is already contained in this inventory" % id)
 

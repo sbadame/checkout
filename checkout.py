@@ -85,7 +85,7 @@ class Main(QtGui.QMainWindow):
             lambda: self.ui.uistack.setCurrentWidget(self.ui.bookpage))
 
         self.all_tasks = [
-            (self.populate_table, self.local_inventory),
+            #(self.populate_table, self.local_inventory),
             (self.ui.log_label.setText, self.log_file),
             (self.ui.library_shelf_label.setText, self.library_shelf),
             (self.ui.inventory_label.setText, self.inventory_file)]
@@ -94,7 +94,8 @@ class Main(QtGui.QMainWindow):
 
         self.inventory = inventory.Inventory(self.config[_INVENTORY_PATH_KEY])
         self.inventory.bookAdded.connect(
-            lambda book: self.ui.addBook(book, None, None))
+            lambda id, book: self.ui.addBook(
+                id, book, self.checkin_pressed, self.checkout_pressed))
         try:
             self.inventory.load_inventory()
         except IOError:
@@ -197,7 +198,7 @@ class Main(QtGui.QMainWindow):
         for id, title, author in gr.listbooks(shelf):
             if id not in self.inventory:
                 dirty = True
-                self.inventory.addBook((id, title, author))
+                self.inventory.addBook(id, title, author)
         if dirty:
             self.inventory.persist()
         logging.info('Done with Sync')
@@ -269,7 +270,8 @@ class Main(QtGui.QMainWindow):
                 self.inventory.checkout(id)
                 self.inventory.persist()
             else:
-                logger.critical("couldn't find %d: %s" % (id, title))
+                logger.critical("checkout.checkout_pressed: Didn't find %d: %s"
+                                % (id, title))
 
     def candidates_for_return(self, bookid):
         possible_people = []
