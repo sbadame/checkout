@@ -7,7 +7,6 @@ import logging
 from PyQt4 import QtGui
 from config import Config
 from dialogs import ListDialog
-#from goodreads import GoodReads
 from inventory import InventoryRecord
 from datetime import datetime
 from tasks import longtask
