@@ -3,6 +3,7 @@ import inventory
 import sys
 import os.path as path
 import logging
+import threading
 
 from PyQt4 import QtGui
 from config import Config
@@ -133,6 +134,9 @@ class Main(QtGui.QMainWindow):
     def update_progress(self, text):
         self.progress.show()
         self.progress.setLabelText(text)
+
+    def hide_progress(self):
+        self.progress.hide()
 
     def shelf(self):
         return self.config[_LIBRARY_SHELF_KEY]
@@ -334,7 +338,6 @@ class Main(QtGui.QMainWindow):
         if not LIBRARY_SHELF_LABEL_TEXT:
             LIBRARY_SHELF_LABEL_TEXT = str(self.ui.library_shelf_label.text())
         return LIBRARY_SHELF_LABEL_TEXT % shelf
-
 
 def main():
     app = QtGui.QApplication(sys.argv)
