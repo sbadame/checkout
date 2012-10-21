@@ -73,6 +73,7 @@ class Main(QtGui.QMainWindow):
         self.progress.setWindowTitle("Working...")
         self.progress.canceled.connect(cancel_longtask)
         self.books_in_table = []
+        self._goodreads = None
 
     def startup(self):
         logger.info("Starting up!")
@@ -85,9 +86,7 @@ class Main(QtGui.QMainWindow):
             lambda: self.ui.uistack.setCurrentWidget(self.ui.bookpage))
 
         self.all_tasks = [
-            #(self.populate_table, self.local_inventory),
             (self.ui.log_label.setText, self.log_file),
-            (self.ui.library_shelf_label.setText, self.library_shelf),
             (self.ui.inventory_label.setText, self.inventory_file)]
 
         self.config = self.init_config()
@@ -186,16 +185,20 @@ class Main(QtGui.QMainWindow):
              'permission to access your goodreads account.'),
             QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
+    def goodreads(self):
+        if not self._goodreads:
+            self._goodreads = goodreads.GoodReads(
+                dev_key=self.config[DEVELOPER_KEY],
+                dev_secret=self.config[DEVELOPER_SECRET],
+                wait_function=self.wait_for_user)
+        return self._goodreads
+
     def on_sync_button_pressed(self):
         shelf = self.config[LIBRARY_SHELF]
         logger.info('Syncing books from shelf: %s,', shelf)
-        gr = goodreads.GoodReads(
-            dev_key=self.config[DEVELOPER_KEY],
-            dev_secret=self.config[DEVELOPER_SECRET],
-            wait_function=self.wait_for_user)
 
         dirty = False
-        for id, title, author in gr.listbooks(shelf):
+        for id, title, author in self.goodreads().listbooks(shelf):
             if id not in self.inventory:
                 dirty = True
                 self.inventory.addBook(id, title, author)
@@ -208,7 +211,7 @@ class Main(QtGui.QMainWindow):
 
     def on_switch_library_button_pressed(self, refresh=True):
         dialog = ListDialog(self, SHELF_DIALOG_LABEL_TEXT,
-                            self.goodreads.shelves())
+                            self.goodreads().shelves())
 
         def create_new_shelf():
             name, success = QtGui.QInputDialog.getText(
@@ -217,20 +220,20 @@ class Main(QtGui.QMainWindow):
                 'What would you like to name the new shelf?')
 
             if success:
-                self.goodreads.add_shelf(str(name))
-                dialog.setItems(self.goodreads.shelves())
+                self.goodreads().add_shelf(str(name))
+                dialog.setItems(self.goodreads().shelves())
 
         dialog.button.pressed.connect(create_new_shelf)
         dialog.button.setText("Create a new shelf")
 
-        if dialog.exec_():
+        def accepted():
             shelf = dialog.result()
             if shelf:
                 self.config[LIBRARY_SHELF] = shelf
-                refresh_list = [self.library_shelf]
-                if refresh:
-                    refresh_list.append(self.local_inventory)
-                self.refresh(*refresh_list)
+                self.ui.library_shelf_label.setText(self.library_shelf())
+
+        dialog.accepted.connect(accepted)
+        dialog.exec_()
 
     def on_view_log_button_pressed(self):
         openfile(self.config[_LOG_PATH_KEY])
@@ -352,7 +355,6 @@ class Main(QtGui.QMainWindow):
     def log_file(self, log):
         """Returns the string used in the Options GUI for the log file """
         global LOG_LABEL_TEXT
-        log("Finding that log file")
         if not LOG_LABEL_TEXT:
             LOG_LABEL_TEXT = str(self.ui.log_label.text())
         return LOG_LABEL_TEXT % self.config[_LOG_PATH_KEY]
@@ -366,10 +368,10 @@ class Main(QtGui.QMainWindow):
             INVENTORY_LABEL_TEXT = str(self.ui.inventory_label.text())
         return INVENTORY_LABEL_TEXT % self.config[_INVENTORY_PATH_KEY]
 
-    def library_shelf(self, log):
+    def library_shelf(self):
         global LIBRARY_SHELF_LABEL_TEXT
         """ Returns the string used in the Options GUI for the shelf """
-        log("Figuring out where you keep your books")
+        logging.info("Figuring out where you keep your books")
         if not LIBRARY_SHELF_LABEL_TEXT:
             LIBRARY_SHELF_LABEL_TEXT = str(self.ui.library_shelf_label.text())
         return LIBRARY_SHELF_LABEL_TEXT % self.shelf()

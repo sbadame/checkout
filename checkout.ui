@@ -216,35 +216,28 @@ margin-left: 6px;
               <property name="rightMargin">
                <number>30</number>
               </property>
-              <item row="2" column="0">
-               <widget class="QLabel" name="user_label">
+              <item row="1" column="0">
+               <widget class="QPushButton" name="sync_button">
                 <property name="text">
-                 <string>Currently logged into goodreads as %s.</string>
+                 <string>Sync With Goodreads</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="library_shelf_label">
+                <property name="text">
+                 <string>Sync to the &quot;%s&quot; shelf in your goodreads inventory.</string>
                 </property>
                </widget>
               </item>
               <item row="2" column="1">
-               <widget class="QPushButton" name="switch_user_button">
-                <property name="text">
-                 <string>Switch to a different user</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="library_shelf_label">
-                <property name="text">
-                 <string>The books in your &quot;%s&quot; shelf on goodreads represent your inventory.</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
                <widget class="QPushButton" name="switch_library_button">
                 <property name="text">
                  <string>Use a different shelf</string>
                 </property>
                </widget>
               </item>
-              <item row="5" column="0">
+              <item row="4" column="0">
                <spacer name="horizontalSpacer">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
@@ -257,28 +250,28 @@ margin-left: 6px;
                 </property>
                </spacer>
               </item>
-              <item row="6" column="0">
+              <item row="5" column="0">
                <widget class="QLabel" name="log_label">
                 <property name="text">
                  <string>The check-ins and check-outs are being recorded in: &quot;%s&quot;.</string>
                 </property>
                </widget>
               </item>
-              <item row="6" column="1">
+              <item row="5" column="1">
                <widget class="QPushButton" name="view_log_button">
                 <property name="text">
                  <string>View your log file</string>
                 </property>
                </widget>
               </item>
-              <item row="7" column="1">
+              <item row="6" column="1">
                <widget class="QPushButton" name="switch_log_button">
                 <property name="text">
                  <string>Move your log file</string>
                 </property>
                </widget>
               </item>
-              <item row="8" column="0">
+              <item row="7" column="0">
                <spacer name="horizontalSpacer_2">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
@@ -291,31 +284,24 @@ margin-left: 6px;
                 </property>
                </spacer>
               </item>
-              <item row="9" column="0">
+              <item row="8" column="0">
                <widget class="QLabel" name="inventory_label">
                 <property name="text">
                  <string>Your current inventory is recorded in: &quot;%s&quot;.</string>
                 </property>
                </widget>
               </item>
-              <item row="9" column="1">
+              <item row="8" column="1">
                <widget class="QPushButton" name="view_inventory_button">
                 <property name="text">
                  <string>View your inventory file</string>
                 </property>
                </widget>
               </item>
-              <item row="10" column="1">
+              <item row="9" column="1">
                <widget class="QPushButton" name="switch_inventory_button">
                 <property name="text">
                  <string>Move your inventory file</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QPushButton" name="sync_button">
-                <property name="text">
-                 <string>Sync With Goodreads</string>
                 </property>
                </widget>
               </item>
