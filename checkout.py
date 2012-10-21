@@ -96,7 +96,7 @@ class Main(QtGui.QMainWindow):
         self.inventory.bookAdded.connect(
             lambda book: self.ui.addBook(book, None, None))
         try:
-            self.inventory.load_inventory(self.inventory_path)
+            self.inventory.load_inventory()
         except IOError:
             logger.warn('Error accessing: %s, is this a first run?',
                         self.inventory_path)
