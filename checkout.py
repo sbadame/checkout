@@ -77,7 +77,7 @@ class Main(QtGui.QMainWindow):
         self.ui = MainUi()
         self.ui.setupUi(self)
 
-        self.ui.options.clicked.connect(
+        self.ui.options_button.clicked.connect(
             lambda: self.ui.uistack.setCurrentWidget(self.ui.optionspage))
         self.ui.back_to_books.clicked.connect(
             lambda: self.ui.uistack.setCurrentWidget(self.ui.bookpage))
