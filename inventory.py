@@ -8,7 +8,8 @@ from safewriter import SafeWrite
 logger = logging.getLogger()
 
 # How books in the UI are sorted
-BOOKSORT = lambda title, author: (list(reversed(author.split())), title)
+BOOKSORT = lambda title, author: (list(reversed(author.lower().split())),
+                                  title.lower())
 
 
 class InventoryRecord(QtCore.QObject):
