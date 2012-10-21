@@ -26,7 +26,7 @@ class GoodReads(object):
                  dev_key=None,
                  dev_secret=None,
                  wait_function=DEFAULT_WAIT,
-                 log=logging.info):
+                 log=logging.debug):
         self.log = log
         self.dev_key = dev_key
         self.consumer = oauth.Consumer(key=dev_key, secret=dev_secret)
