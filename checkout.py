@@ -314,24 +314,6 @@ class Main(QtGui.QMainWindow):
                     logger.critical('Couldn\'t find ID: %d, title: %s' %
                                     (id, title))
 
-    def local_inventory(self, log):
-        log("Grabbing the local copy of your books.")
-        books = self.inventory.items()
-        books.sort(key=BOOKSORT)
-        return books
-
-    def update_from_goodreads(self, log):
-        log("Reloading your books from goodreads...")
-        books = []
-        for (id, title, author) in self.goodreads.listbooks(self.shelf()):
-            book = InventoryRecord(title, author)
-            books.append((id, book))
-            if id not in self.inventory:
-                self.inventory[int(id)] = book
-        books.sort(key=BOOKSORT)
-        self.inventory.persist()
-        return books
-
     def log_file(self, log_file):
         """Returns the string used in the Options GUI for the log file """
         global LOG_LABEL_TEXT
