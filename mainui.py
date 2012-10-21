@@ -21,7 +21,7 @@ class BookWidget(QtGui.QWidget, BookBase):
     def __init__(self, book, oncheckedin, oncheckedout):
         QtGui.QWidget.__init__(self)
         self.setupUi(self)
-        self.setObjectName(str(book))
+        #self.setObjectName(str(book))
         self.title.setText(book.title)
         self.author.setText(book.author)
         self.checkin.clicked.connect(oncheckedin)
@@ -56,8 +56,8 @@ class BookWidget(QtGui.QWidget, BookBase):
                 self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
 
     def setSearchQuery(self, query):
-        if query in str(self.title.text()).lower() or (
-                query in str(self.author.text()).lower()):
+        if query in unicode(self.title.text()).lower() or (
+                query in unicode(self.author.text()).lower()):
             self.show()
         else:
             self.hide()

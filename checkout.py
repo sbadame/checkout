@@ -80,7 +80,8 @@ class Main(QtGui.QMainWindow):
 
         self.config = self.init_config()
 
-        self.inventory = inventory.Inventory(self.config[_INVENTORY_PATH_KEY])
+        inventory_path = self.config[_INVENTORY_PATH_KEY]
+        self.inventory = inventory.Inventory(inventory_path)
         self.inventory.bookAdded.connect(
             lambda id, book: self.ui.addBook(
                 id, book, self.checkin_pressed, self.checkout_pressed))
@@ -88,7 +89,7 @@ class Main(QtGui.QMainWindow):
             self.inventory.load_inventory()
         except IOError:
             logger.warn('Error accessing: %s, is this a first run?',
-                        self.inventory_path)
+                        inventory_path)
 
     def populate_table(self, books):
         self.ui.populate_table(books, self.checkin_pressed,
