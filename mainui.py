@@ -6,7 +6,6 @@ import inventory
 from PyQt4 import QtGui, QtCore
 from bookwidget import Ui_Form as BookBase
 from checkoutgui import Ui_MainWindow
-from customgui import NoVisibleFocusItemDelegate
 
 LOGGER = logging.getLogger()
 
@@ -72,8 +71,6 @@ class MainUi(Ui_MainWindow):
 
     def setupUi(self, main):
         super(MainUi, self).setupUi(main)
-        self.books.setItemDelegate(NoVisibleFocusItemDelegate())
-        self.books.setFocus()
         self.search_query.setDefaultText()
 
     def setSearchQuery(self, query):

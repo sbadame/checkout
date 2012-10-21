@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QLineEdit, QFocusEvent, QItemDelegate, QTableWidget
+from PyQt4.QtGui import QLineEdit, QFocusEvent
 from PyQt4.QtCore import QEvent
 
 
@@ -28,12 +28,3 @@ class CustomLineEdit(QLineEdit):
 
     def default_text(self):
         return self.defaultText
-
-class NoVisibleFocusItemDelegate(QItemDelegate):
-    def __init__(self, parent=None):
-        QItemDelegate.__init__(self, parent)
-        #super(QItemDelegate, self).__init__(parent)
-
-    def drawFocus(self, painter, option, rect):
-        pass
-
