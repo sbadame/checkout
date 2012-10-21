@@ -88,7 +88,7 @@ class Inventory(QtCore.QObject):
 
     def addBook(self, id, title, author, checked_in=1, checked_out=0):
         if id not in self:
-            logger.info("Adding to the Inventory: %s", (id, title, author))
+            logger.debug("Adding to the Inventory: %s", (id, title, author))
             book = InventoryRecord(title, author, checked_in, checked_out)
             self.inventory[id] = book
             self.bookAdded.emit(id, book)
