@@ -53,6 +53,16 @@ class BookWidget(QtGui.QWidget, BookBase):
             else:
                 self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
 
+    def setSearchQuery(self, query):
+        if query in str(self.title.text()).lower() or (
+                query in str(self.author.text()).lower()):
+            self.show()
+        else:
+            self.hide()
+
+    def clearSearchQuery(self):
+        self.show()
+
 
 class MainUi(Ui_MainWindow):
 
@@ -64,6 +74,14 @@ class MainUi(Ui_MainWindow):
         self.books.setItemDelegate(NoVisibleFocusItemDelegate())
         self.books.setFocus()
         self.search_query.setDefaultText()
+
+    def setSearchQuery(self, query):
+        for i in range(self.booklist.count()):
+            self.booklist.itemAt(i).widget().setSearchQuery(query)
+
+    def clearSearchQuery(self):
+        for i in range(self.booklist.count()):
+            self.booklist.itemAt(i).widget().clearSearchQuery()
 
     def showBooks(self, booksWithId):
         if booksWithId:

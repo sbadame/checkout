@@ -121,11 +121,3 @@ class Inventory():
 
     def items(self):
         return self.inventory.items()
-
-    def search(self, query):
-        results = []
-        query = query.lower()
-        for id, record in self.items():
-            if query in record.title.lower() or query in record.author.lower():
-                results.append((id, record))
-        return results

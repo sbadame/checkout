@@ -7,7 +7,7 @@ import logging
 from PyQt4 import QtGui
 from config import Config
 from dialogs import ListDialog
-from goodreads import GoodReads
+#from goodreads import GoodReads
 from inventory import InventoryRecord
 from datetime import datetime
 from tasks import longtask
@@ -167,15 +167,11 @@ class Main(QtGui.QMainWindow):
         return str(secret)
 
     def on_search_query_textEdited(self, text):
-        query = str(text).strip()
+        query = str(text).strip().lower()
         if query:
-            def search(log):
-                log("Searching for: " + query)
-                return self.inventory.search(query)
-            self.longtask([
-                (self.ui.showBooks, search)])
+            self.ui.setSearchQuery(query)
         else:
-            self.longtask([(self.ui.showAllBooks, lambda x: None)])
+            self.ui.clearSearchQuery()
 
     def wait_for_user(self):
         QtGui.QMessageBox.question(
