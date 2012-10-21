@@ -16,11 +16,8 @@ class Config(dict):
             self.__setitem__withoutwrite(k, v)
 
     def __setitem__withoutwrite(self, key, val):
-        print("SETTING " + key + "= " + val)
         super(Config, self).__setitem__(key, val)
-        print("\tKEYS " + str(self.slots.keys()))
         if key in self.slots:
-            print("EMITTING " + key + ", " + val)
             self.slots[key].optionChanged.emit(val)
 
     def __setitem__(self, key, val):
@@ -31,9 +28,7 @@ class Config(dict):
     def connectKey(self, key, slot):
         if key not in self.slots:
             self.slots[key] = SignalSender()
-        print("CONNECTING " + key + ", " + str(slot))
         self.slots[key].optionChanged.connect(slot)
-        print("KEYS " + str(self.slots.keys()))
 
 
 class SignalSender(QtCore.QObject):

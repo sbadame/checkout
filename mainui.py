@@ -88,19 +88,6 @@ class MainUi(Ui_MainWindow):
                 bookwidget = self.booklist.itemAt(i).widget()
                 bookwidget.setVisible(bookwidget.book in books)
 
-    def showAllBooks(self):
-        for i in range(self.booklist.count()):
-            self.booklist.itemAt(i).widget().setVisible(True)
-
-    def populate_list(self, books, oncheckin, oncheckout):
-        LOGGER.info("Repopulating list")
-        self._books_cached = books
-        for id, book in books:
-            self.show_book_in_list(
-                book,
-                lambda c, a=id, b=book.title: oncheckin(a, b),
-                lambda c, a=id, b=book.title: oncheckout(a, b))
-
     @QtCore.pyqtSlot(inventory.InventoryRecord, object, object)
     def addBook(self, id, book, oncheckedin, oncheckedout):
         self.booklist.addWidget(BookWidget(
