@@ -47,46 +47,37 @@ class InventoryRecord(QtCore.QObject):
                 'extra_data=%s)') % info)
 
 
-def load_inventory(path):
-    inventory = Inventory(path)
-    with open(path, 'rb') as inventoryfile:
-        logger.info("Loading inventory from %s", path)
-        # The book id is the key in the dictionary, but is
-        # not stored in the InventoryRecord, so we need to add one for it.
-        # buuut we have an extra field "extra_data" that stores the extra stuff
-        # so it all works out in the end
-        number_of_fields = InventoryRecord.NUMBER_OF_CSV_FIELDS
-        for row in csv.reader(inventoryfile):
-            id, title, author, num_in, num_out = row[0:number_of_fields]
-            inventory.inventory[int(id)] = InventoryRecord(
-                title,
-                author,
-                int(num_in),
-                int(num_out),
-                row[number_of_fields:])
-    return inventory
+class Inventory(QtCore.QObject):
 
-
-def create_inventory(path, books):
-    inventory = Inventory(path)
-    with SafeWrite(path, 'b') as (inventoryfile, oldfile):
-        writer = csv.writer(inventoryfile)
-        for id, title, author in books:
-            writer.writerow([id, title, author, 1, 0])
-            inventory.inventory[int(id)] = InventoryRecord(title, author)
-    inventory.persist_inventory()
-    return inventory
-
-
-class Inventory():
+    # Emitted whenever a book is added to the inventory
+    bookAdded = QtCore.pyqtSignal(InventoryRecord)
 
     def __init__(self, path):
+        super(QtCore.QObject, self).__init__()
         self.path = path
         self.inventory = {}
 
+    def load_inventory(self):
+        with open(self.path, 'rb') as inventoryfile:
+            logger.info("Loading inventory from %s", self.path)
+            # The book id is the key in the dictionary, but is
+            # not stored in the InventoryRecord, so we need to add one for it.
+            # buuut we have an extra field "extra_data" that stores the extra
+            # stuff so it all works out in the end
+            number_of_fields = InventoryRecord.NUMBER_OF_CSV_FIELDS
+            for row in csv.reader(inventoryfile):
+                id, title, author, num_in, num_out = row[0:number_of_fields]
+                self.inventory[int(id)] = InventoryRecord(
+                    title,
+                    author,
+                    int(num_in),
+                    int(num_out),
+                    row[number_of_fields:])
+
     def persist(self):
         logger.info("Persisting the inventory to %s", self.path)
-        with open(self.path, 'wb') as inventoryfile:
+
+        with SafeWrite(self.path, 'b') as (inventoryfile, _):
             writer = csv.writer(inventoryfile)
             data = self.inventory.items()
             data.sort(key=lambda (id, record): (record.author, record.title))
@@ -103,7 +94,9 @@ class Inventory():
     def addBook(self, (id, title, author)):
         logger.info("Adding to the Inventory: %s", (id, title, author))
         if id not in self:
-            self.inventory[id] = InventoryRecord(title, author)
+            book = InventoryRecord(title, author)
+            self.inventory[id] = book
+            self.bookAdded.emit(InventoryRecord(title, author))
         else:
             raise ValueError("%d is already contained in this inventory" % id)
 

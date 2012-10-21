@@ -103,6 +103,9 @@ class MainUi(Ui_MainWindow):
                 lambda c, a=id, b=book.title: oncheckin(a, b),
                 lambda c, a=id, b=book.title: oncheckout(a, b))
 
+    def addBook(self, book, oncheckedin, oncheckedout):
+        LOGGER.info('Book: %s', book)
+
     def show_book_in_list(self, book, oncheckedin, oncheckedout):
         self.booklist.addWidget(BookWidget(book, oncheckedin, oncheckedout))
 

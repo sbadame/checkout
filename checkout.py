@@ -91,12 +91,15 @@ class Main(QtGui.QMainWindow):
             (self.ui.inventory_label.setText, self.inventory_file)]
 
         self.config = self.init_config()
-        self.inventory_path = self.config[_INVENTORY_PATH_KEY]
 
+        self.inventory = inventory.Inventory(self.config[_INVENTORY_PATH_KEY])
+        self.inventory.bookAdded.connect(
+            lambda book: self.ui.addBook(book, None, None))
         try:
-            self.inventory = inventory.load_inventory(self.inventory_path)
+            self.inventory.load_inventory(self.inventory_path)
         except IOError:
-            self.inventory = inventory.create_inventory(self.inventory_path)
+            logger.warn('Error accessing: %s, is this a first run?',
+                        self.inventory_path)
 
         self.longtask(self.all_tasks)
 
