@@ -2,12 +2,13 @@
 
 import logging
 import inventory
+from bisect import bisect
 
 from PyQt4 import QtGui, QtCore
 from bookwidget import Ui_Form as BookBase
 from checkoutgui import Ui_MainWindow
 
-LOGGER = logging.getLogger()
+logger = logging.getLogger()
 
 BACKGROUND_COLOR = "#FFFFFF"
 SELECTED_COLOR = "#336699"
@@ -26,6 +27,7 @@ class BookWidget(QtGui.QWidget, BookBase):
         self.checkin.clicked.connect(oncheckedin)
         self.checkout.clicked.connect(oncheckedout)
         self.book = book
+        self.sort_data = inventory.BOOKSORT(book.title, book.author)
         book.inventory_changed.connect(self.onInventoryChange)
         self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
         self.onInventoryChange(book.checked_in, book.checked_out)
@@ -90,7 +92,11 @@ class MainUi(Ui_MainWindow):
 
     @QtCore.pyqtSlot(inventory.InventoryRecord, object, object)
     def addBook(self, id, book, oncheckedin, oncheckedout):
-        self.booklist.addWidget(BookWidget(
+        books = [self.booklist.itemAt(i).widget().sort_data
+                 for i in range(self.booklist.count())]
+        insertData = inventory.BOOKSORT(book.title, book.author)
+        index = bisect(books, insertData)
+        self.booklist.insertWidget(index, BookWidget(
             book,
             lambda c, a=id, b=book.title: oncheckedin(a, b),
             lambda c, a=id, b=book.title: oncheckedout(a, b)))

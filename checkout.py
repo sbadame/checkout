@@ -7,7 +7,6 @@ import logging
 from PyQt4 import QtGui
 from config import Config
 from dialogs import ListDialog
-from inventory import InventoryRecord
 from datetime import datetime
 from mainui import MainUi
 import unicodecsv as csv
@@ -40,9 +39,6 @@ LIBRARY_SHELF_LABEL_TEXT = None
 LOG_LABEL_TEXT = None
 INVENTORY_LABEL_TEXT = None
 SHELF_DIALOG_LABEL_TEXT = "Which shelf should be used for the library books?"
-
-# How books in the UI are sorted
-BOOKSORT = lambda (id, book): (list(reversed(book.author.split())), book.title)
 
 DEVELOPER_KEY = "DEVELOPER_KEY"
 DEVELOPER_SECRET = "DEVELOPER_SECRET"
