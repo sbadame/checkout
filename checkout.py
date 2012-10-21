@@ -1,4 +1,4 @@
-from __future__ import print_function
+import goodreads
 import inventory
 import sys
 import os.path as path
@@ -181,6 +181,22 @@ class Main(QtGui.QMainWindow):
              'If this is your first time, you will have to give "Checkout" '
              'permission to access your goodreads account.'),
             QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+
+    def on_sync_button_pressed(self):
+        shelf = self.config[LIBRARY_SHELF]
+        logger.info('Syncing books from %s,', shelf)
+        gr = goodreads.GoodReads(
+            dev_key=self.config.DEVELOPER_KEY,
+            dev_secret=self.config.DEVELOPER_SECRET,
+            wait_function=self.wait_for_user)
+
+        dirty = False
+        for id, title, author in gr.listbooks(shelf):
+            if id not in self.inventory:
+                dirty = True
+                self.inventory.addBook(id, title, author)
+        if dirty:
+            self.inventory.persist()
 
     def on_switch_user_button_pressed(self):
         logger.warn("Look at switch user again")

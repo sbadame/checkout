@@ -5,7 +5,7 @@ from PyQt4 import QtCore
 
 from safewriter import SafeWrite
 
-LOGGER = logging.getLogger()
+logger = logging.getLogger()
 
 
 class InventoryRecord(QtCore.QObject):
@@ -14,7 +14,7 @@ class InventoryRecord(QtCore.QObject):
     # Number of fields per Inventory record in the csv
     NUMBER_OF_CSV_FIELDS = 5
 
-    # Emitted whenever the quantity this book changes
+    # Emitted whenever the quantities of this book changes
     inventory_changed = QtCore.pyqtSignal(int, int)
 
     def __init__(self, title, author, checked_in=1, checked_out=0,
@@ -50,7 +50,7 @@ class InventoryRecord(QtCore.QObject):
 def load_inventory(path):
     inventory = Inventory(path)
     with open(path, 'rb') as inventoryfile:
-        LOGGER.info("Opened: " + path)
+        logger.info("Loading inventory from %s", path)
         # The book id is the key in the dictionary, but is
         # not stored in the InventoryRecord, so we need to add one for it.
         # buuut we have an extra field "extra_data" that stores the extra stuff
@@ -85,6 +85,7 @@ class Inventory():
         self.inventory = {}
 
     def persist(self):
+        logger.info("Persisting the inventory to %s", self.path)
         with open(self.path, 'wb') as inventoryfile:
             writer = csv.writer(inventoryfile)
             data = self.inventory.items()
@@ -97,6 +98,14 @@ class Inventory():
                      record.checked_in,
                      record.checked_out] +
                     record.extra_data)
+        logger.info("Done with persisting.")
+
+    def addBook(self, (id, title, author)):
+        logger.info("Adding to the Inventory: %s", (id, title, author))
+        if id not in self:
+            self.inventory[id] = InventoryRecord(title, author)
+        else:
+            raise ValueError("%d is already contained in this inventory" % id)
 
     def __contains__(self, id):
         try:

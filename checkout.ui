@@ -313,7 +313,7 @@ margin-left: 6px;
                </widget>
               </item>
               <item row="1" column="0">
-               <widget class="QPushButton" name="sync">
+               <widget class="QPushButton" name="sync_button">
                 <property name="text">
                  <string>Sync With Goodreads</string>
                 </property>
