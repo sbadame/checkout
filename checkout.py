@@ -9,8 +9,6 @@ from config import Config
 from dialogs import ListDialog
 from inventory import InventoryRecord
 from datetime import datetime
-from tasks import longtask
-from tasks import cancel_longtask
 from mainui import MainUi
 import unicodecsv as csv
 
@@ -32,7 +30,7 @@ DEFAULT_INVENTORY_FILE_PATH = path.normpath(path.expanduser("~/inventory.csv"))
 DEFAULT_LOG_PATH = path.normpath(path.expanduser("~/checkout.csv"))
 
 # Keys for the configuration hash
-LIBRARY_SHELF = "LIBRARY_SHELF"  # The name of the shelf where books are stored
+_LIBRARY_SHELF_KEY = "LIBRARY_SHELF"
 _LOG_PATH_KEY = 'LOG_PATH'
 _INVENTORY_PATH_KEY = 'INVENTORY_PATH'
 
@@ -71,7 +69,6 @@ class Main(QtGui.QMainWindow):
         self.progress = QtGui.QProgressDialog(self)
         self.progress.setRange(0, 0)
         self.progress.setWindowTitle("Working...")
-        self.progress.canceled.connect(cancel_longtask)
         self.books_in_table = []
         self._goodreads = None
 
@@ -85,10 +82,6 @@ class Main(QtGui.QMainWindow):
         self.ui.back_to_books.clicked.connect(
             lambda: self.ui.uistack.setCurrentWidget(self.ui.bookpage))
 
-        self.all_tasks = [
-            (self.ui.log_label.setText, self.log_file),
-            (self.ui.inventory_label.setText, self.inventory_file)]
-
         self.config = self.init_config()
 
         self.inventory = inventory.Inventory(self.config[_INVENTORY_PATH_KEY])
@@ -101,31 +94,30 @@ class Main(QtGui.QMainWindow):
             logger.warn('Error accessing: %s, is this a first run?',
                         self.inventory_path)
 
-        self.longtask(self.all_tasks)
-
-    def longtask(self, tasks):
-        longtask(tasks,
-                 on_progress=self.update_progress,
-                 on_start=self.progress.show,
-                 on_finish=self.progress.hide,
-                 on_terminate=self.progress.hide)
-
     def populate_table(self, books):
         self.ui.populate_table(books, self.checkin_pressed,
                                self.checkout_pressed)
 
     def init_config(self):
+        config = Config(CONFIG_FILE_PATH)
+        config.connectKey(
+            _LOG_PATH_KEY,
+            lambda x: self.ui.log_label.setText(self.log_file(x)))
+        config.connectKey(
+            _INVENTORY_PATH_KEY,
+            lambda x: self.ui.inventory_label.setText(self.inventory_file(x)))
+        config.connectKey(
+            _LIBRARY_SHELF_KEY,
+            lambda x: self.ui.library_shelf_label.setText(
+                self.library_shelf(x)))
+
         try:
             with open(CONFIG_FILE_PATH, "r") as configfile:
-                logger.info("Loading: " + CONFIG_FILE_PATH)
-                # How to populate the configuration if it isn't set yet...
-                # Note that these are function calls and order maters!
-                config = Config.load_from_file(configfile)
+                config.load_from_file(configfile)
         except IOError as e:
                 logger.warn(("Error loading: %s (%s)."
                              "(This is normal for a first run)") %
                             (CONFIG_FILE_PATH, e))
-                config = Config(CONFIG_FILE_PATH)
 
         default_configuration = [
             (_LOG_PATH_KEY, lambda: DEFAULT_LOG_PATH),
@@ -146,7 +138,7 @@ class Main(QtGui.QMainWindow):
         self.progress.setLabelText(text)
 
     def shelf(self):
-        return self.config[LIBRARY_SHELF]
+        return self.config[_LIBRARY_SHELF_KEY]
 
     def request_dev_key(self, log=logger.info):
         key, success = QtGui.QInputDialog.getText(
@@ -194,7 +186,7 @@ class Main(QtGui.QMainWindow):
         return self._goodreads
 
     def on_sync_button_pressed(self):
-        shelf = self.config[LIBRARY_SHELF]
+        shelf = self.shelf()
         logger.info('Syncing books from shelf: %s,', shelf)
 
         dirty = False
@@ -209,7 +201,7 @@ class Main(QtGui.QMainWindow):
     def on_switch_user_button_pressed(self):
         logger.warn("Look at switch user again")
 
-    def on_switch_library_button_pressed(self, refresh=True):
+    def on_switch_library_button_pressed(self):
         dialog = ListDialog(self, SHELF_DIALOG_LABEL_TEXT,
                             self.goodreads().shelves())
 
@@ -229,8 +221,7 @@ class Main(QtGui.QMainWindow):
         def accepted():
             shelf = dialog.result()
             if shelf:
-                self.config[LIBRARY_SHELF] = shelf
-                self.ui.library_shelf_label.setText(self.library_shelf())
+                self.config[_LIBRARY_SHELF_KEY] = shelf
 
         dialog.accepted.connect(accepted)
         dialog.exec_()
@@ -246,14 +237,12 @@ class Main(QtGui.QMainWindow):
                                                  filter='CSV file (*.csv)')
         if file:
             self.config[_LOG_PATH_KEY] = str(file)
-            self.refresh(self.log_file)
 
     def on_switch_inventory_button_pressed(self):
         file = QtGui.QFileDialog.getSaveFileName(self,
                                                  filter='CSV file (*.csv)')
         if file:
             self.config[_INVENTORY_PATH_KEY] = str(file)
-            self.refresh(self.inventory_file)
             self.inventory.persist()
 
     def checkout_pressed(self, id, title):
@@ -343,53 +332,29 @@ class Main(QtGui.QMainWindow):
         self.inventory.persist()
         return books
 
-    # Update the user interface
-    def current_user(self, log):
-        """ Returns the string used in the Options GUI for user name """
-        global USER_LABEL_TEXT
-        log("Finding out who your are")
-        if not USER_LABEL_TEXT:
-            USER_LABEL_TEXT = str(self.ui.user_label.text())
-        return USER_LABEL_TEXT % self.goodreads.user()[1]
-
-    def log_file(self, log):
+    def log_file(self, log_file):
         """Returns the string used in the Options GUI for the log file """
         global LOG_LABEL_TEXT
         if not LOG_LABEL_TEXT:
             LOG_LABEL_TEXT = str(self.ui.log_label.text())
-        return LOG_LABEL_TEXT % self.config[_LOG_PATH_KEY]
+        return LOG_LABEL_TEXT % log_file
 
-    def inventory_file(self, log):
+    def inventory_file(self, inventory_file):
         """Text used in the Options GUI for the inventory file."""
         global INVENTORY_LABEL_TEXT
 
-        log("Figuring out where I keep track of your books")
+        logging.info("Figuring out where I keep track of your books")
         if not INVENTORY_LABEL_TEXT:
             INVENTORY_LABEL_TEXT = str(self.ui.inventory_label.text())
-        return INVENTORY_LABEL_TEXT % self.config[_INVENTORY_PATH_KEY]
+        return INVENTORY_LABEL_TEXT % inventory_file
 
-    def library_shelf(self):
+    def library_shelf(self, shelf):
         global LIBRARY_SHELF_LABEL_TEXT
         """ Returns the string used in the Options GUI for the shelf """
         logging.info("Figuring out where you keep your books")
         if not LIBRARY_SHELF_LABEL_TEXT:
             LIBRARY_SHELF_LABEL_TEXT = str(self.ui.library_shelf_label.text())
-        return LIBRARY_SHELF_LABEL_TEXT % self.shelf()
-
-    def refresh(self, *refresh):
-        slots, tasks = zip(*self.all_tasks)  # unzip in python
-
-        if not refresh or refresh == ('',) or refresh == (None,):
-            tasks = self.all_tasks
-        else:
-            not_allowed = filter(lambda t: t not in tasks, refresh)
-            if not_allowed:
-                raise ValueError("'%s' are not available for refresh" %
-                                 not_allowed)
-            else:
-                tasks = [self.all_tasks[tasks.index(task)] for task in refresh]
-
-        self.longtask(tasks)
+        return LIBRARY_SHELF_LABEL_TEXT % shelf
 
     def available(self, book_id):
         return self.inventory[book_id].checked_in > 0
