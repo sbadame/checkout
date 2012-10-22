@@ -92,6 +92,10 @@
              <property name="layoutDirection">
               <enum>Qt::LeftToRight</enum>
              </property>
+             <property name="styleSheet">
+              <string notr="true">margin: 0px;
+padding: 0px;</string>
+             </property>
              <property name="widgetResizable">
               <bool>true</bool>
              </property>
@@ -104,9 +108,16 @@
                 <height>568</height>
                </rect>
               </property>
+              <property name="styleSheet">
+               <string notr="true">padding: 0px;
+margin: 0px;</string>
+              </property>
               <layout class="QGridLayout" name="gridLayout">
                <property name="sizeConstraint">
                 <enum>QLayout::SetMaximumSize</enum>
+               </property>
+               <property name="margin">
+                <number>0</number>
                </property>
                <item row="0" column="0">
                 <layout class="QVBoxLayout" name="booklist"/>

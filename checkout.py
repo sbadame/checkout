@@ -3,9 +3,8 @@ import inventory
 import sys
 import os.path as path
 import logging
-import threading
 
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 from config import Config
 from dialogs import ListDialog
 from datetime import datetime
@@ -44,6 +43,8 @@ SHELF_DIALOG_LABEL_TEXT = "Which shelf should be used for the library books?"
 DEVELOPER_KEY = "DEVELOPER_KEY"
 DEVELOPER_SECRET = "DEVELOPER_SECRET"
 
+SEARCH_TIMEOUT = 800
+
 
 def openfile(filepath):
     import os
@@ -70,7 +71,6 @@ class Main(QtGui.QMainWindow):
         self._goodreads = None
 
     def startup(self):
-        logger.info("Starting up!")
         self.ui = MainUi()
         self.ui.setupUi(self)
 
@@ -78,6 +78,8 @@ class Main(QtGui.QMainWindow):
             lambda: self.ui.uistack.setCurrentWidget(self.ui.optionspage))
         self.ui.back_to_books.clicked.connect(
             lambda: self.ui.uistack.setCurrentWidget(self.ui.bookpage))
+
+        self.searchTimer = None
 
         self.config = self.init_config()
 
@@ -162,11 +164,22 @@ class Main(QtGui.QMainWindow):
         return str(secret)
 
     def on_search_query_textEdited(self, text):
-        query = str(text).strip().lower()
-        if query:
-            self.ui.setSearchQuery(query)
-        else:
-            self.ui.clearSearchQuery()
+        def do_search(x):
+            logger.info("Searching for %s", x)
+            query = str(x).strip().lower()
+            if query:
+                self.ui.setSearchQuery(query)
+            else:
+                self.ui.clearSearchQuery()
+
+        if self.searchTimer:
+            self.searchTimer.stop()
+
+        self.searchTimer = QtCore.QTimer()
+        self.searchTimer.setSingleShot(True)
+        self.searchTimer.setInterval(SEARCH_TIMEOUT)
+        self.searchTimer.timeout.connect(lambda: do_search(text))
+        self.searchTimer.start()
 
     def wait_for_user(self):
         QtGui.QMessageBox.question(
