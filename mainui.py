@@ -27,7 +27,6 @@ class BookWidget(QtGui.QWidget, BookBase):
         self.checkin.clicked.connect(oncheckedin)
         self.checkout.clicked.connect(oncheckedout)
         self.book = book
-        self.sort_data = inventory.BOOKSORT(book.title, book.author)
         book.inventory_changed.connect(self.onInventoryChange)
         self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
         self.onInventoryChange(book.checked_in, book.checked_out)
@@ -92,7 +91,7 @@ class MainUi(Ui_MainWindow):
 
     @QtCore.pyqtSlot(inventory.InventoryRecord, object, object)
     def addBook(self, id, book, oncheckedin, oncheckedout):
-        books = [self.booklist.itemAt(i).widget().sort_data
+        books = [self.booklist.itemAt(i).widget().book
                  for i in range(self.booklist.count())]
         insertData = inventory.BOOKSORT(book.title, book.author)
         index = bisect(books, insertData)
