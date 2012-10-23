@@ -86,8 +86,8 @@ class Main(QtGui.QMainWindow):
         inventory_path = self.config[_INVENTORY_PATH_KEY]
         self.inventory = inventory.Inventory(inventory_path)
         self.inventory.bookAdded.connect(
-            lambda id, book: self.ui.addBook(
-                id, book, self.checkin_pressed, self.checkout_pressed))
+            lambda book: self.ui.addBook(
+                book, self.checkin_pressed, self.checkout_pressed))
         try:
             self.inventory.load_inventory()
         except IOError:
@@ -355,6 +355,7 @@ class Main(QtGui.QMainWindow):
 
 
 def main():
+    import pdb; pdb.set_trace()
     app = QtGui.QApplication(sys.argv)
     window = Main()
     window.show()

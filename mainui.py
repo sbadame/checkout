@@ -97,5 +97,5 @@ class MainUi(Ui_MainWindow):
         index = bisect(books, insertData)
         self.booklist.insertWidget(index, BookWidget(
             book,
-            lambda c, a=id, b=book.title: oncheckedin(a, b),
-            lambda c, a=id, b=book.title: oncheckedout(a, b)))
+            lambda _, book: oncheckedin(book),
+            lambda _, book: oncheckedout(book)))

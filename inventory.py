@@ -84,20 +84,18 @@ class Inventory(QtCore.QObject):
 
         with SafeWrite(self.path, 'b') as (inventoryfile, _):
             writer = csv.writer(inventoryfile)
-            data = self.inventory.items()
-            data.sort(key=lambda (id, record): (record.author, record.title))
-            for id, record in data:
+            for book in self.inventory:
                 writer.writerow(
-                    [id,
-                     record.title,
-                     record.author,
-                     record.checked_in,
-                     record.checked_out] +
-                    record.extra_data)
+                    [-1,
+                     book.title,
+                     book.author,
+                     book.checked_in,
+                     book.checked_out] +
+                    book.extra_data)
         logger.info("Done with persisting.")
 
     def addBook(self, title, author, checked_in=1, checked_out=0):
-        if not self.contains(title, author):
+        if not self.containsTitleAndAuthor(title, author):
             book = InventoryRecord(title, author, checked_in, checked_out)
             bisect.insort(self.inventory, book)
             self.bookAdded.emit(book)
@@ -109,7 +107,10 @@ class Inventory(QtCore.QObject):
     def containsTitleAndAuthor(self, title, author):
         books = [(b.title, b.author) for b in self.inventory]
         index = bisect.bisect_left(books, (title, author))
-        return books[index] == (title, author)
+        try:
+            return books[index] == (title, author)
+        except IndexError:
+            return False
 
     def __contains__(self, book):
         index = bisect.bisect_left(self.inventory, book)
