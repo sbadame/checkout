@@ -1,3 +1,5 @@
+import bisect
+import functools
 import logging
 import unicodecsv as csv
 
@@ -7,11 +9,8 @@ from safewriter import SafeWrite
 
 logger = logging.getLogger()
 
-# How books in the UI are sorted
-BOOKSORT = lambda title, author: (list(reversed(author.lower().split())),
-                                  title.lower())
 
-
+@functools.total_ordering
 class InventoryRecord(QtCore.QObject):
     """The line item of this program."""
 
@@ -50,28 +49,35 @@ class InventoryRecord(QtCore.QObject):
         return (('%s(title=%s,author=%s,checked_in=%d,checked_out=%d,'
                 'extra_data=%s)') % info)
 
+    def __eq__(self, other):
+        try:
+            return ((self.title.lower(), self.title.lower()) ==
+                    (other.author.lower(), other.author.lower()))
+        except AttributeError:
+            return False
+
+    def __lt__(self, other):
+        return ((list(reversed(self.author.lower().split())), self.title) <
+                (list(reversed(other.author.lower().split())), other.title))
+
 
 class Inventory(QtCore.QObject):
 
     # Emitted whenever a book is added to the inventory
-    bookAdded = QtCore.pyqtSignal(int, InventoryRecord)
+    bookAdded = QtCore.pyqtSignal(InventoryRecord)
 
     def __init__(self, path):
         super(QtCore.QObject, self).__init__()
         self.path = path
-        self.inventory = {}
+        self.inventory = []
 
     def load_inventory(self):
         with open(self.path, 'rb') as inventoryfile:
             logger.info("Loading inventory from %s", self.path)
-            # The book id is the key in the dictionary, but is
-            # not stored in the InventoryRecord, so we need to add one for it.
-            # buuut we have an extra field "extra_data" that stores the extra
-            # stuff so it all works out in the end
             number_of_fields = InventoryRecord.NUMBER_OF_CSV_FIELDS
             for row in csv.reader(inventoryfile):
                 id, title, author, num_in, num_out = row[0:number_of_fields]
-                self.addBook(int(id), title, author, int(num_in), int(num_out))
+                self.addBook(title, author, int(num_in), int(num_out))
 
     def persist(self):
         logger.info("Persisting the inventory to %s", self.path)
@@ -90,34 +96,24 @@ class Inventory(QtCore.QObject):
                     record.extra_data)
         logger.info("Done with persisting.")
 
-    def addBook(self, id, title, author, checked_in=1, checked_out=0):
-        if id not in self:
+    def addBook(self, title, author, checked_in=1, checked_out=0):
+        if not self.contains(title, author):
             book = InventoryRecord(title, author, checked_in, checked_out)
-            self.inventory[id] = book
-            self.bookAdded.emit(id, book)
+            bisect.insort(self.inventory, book)
+            self.bookAdded.emit(book)
+            return book
         else:
-            raise ValueError("%d is already contained in this inventory" % id)
+            raise ValueError("%s,%s is already contained in this inventory" %
+                             (title, author))
 
-    def __contains__(self, id):
-        try:
-            return int(id) in self.inventory
-        except ValueError:
-            return False
+    def containsTitleAndAuthor(self, title, author):
+        books = [(b.title, b.author) for b in self.inventory]
+        index = bisect.bisect_left(books, (title, author))
+        return books[index] == (title, author)
 
-    def __getitem__(self, id):
-        try:
-            return self.inventory[int(id)]
-        except ValueError:
-            return False
-
-    def __setitem__(self, id, book):
-        self.inventory[id] = book
-
-    def checkout(self, id):
-        self.inventory[id].check_out_a_copy()
-
-    def checkin(self, id):
-        self.inventory[id].check_in_a_copy()
+    def __contains__(self, book):
+        index = bisect.bisect_left(self.inventory, book)
+        return self.inventory[index] == book
 
     def items(self):
         return self.inventory.items()
