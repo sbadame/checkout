@@ -20,14 +20,12 @@ class BookWidget(QtGui.QWidget, BookBase):
     def __init__(self, book, oncheckedin, oncheckedout):
         QtGui.QWidget.__init__(self)
         self.setupUi(self)
-        #self.setObjectName(str(book))
         self.title.setText(book.title)
         self.author.setText(book.author)
         self.checkin.clicked.connect(lambda _: oncheckedin(book))
         self.checkout.clicked.connect(lambda _: oncheckedout(book))
         self.book = book
         book.inventory_changed.connect(self.onInventoryChange)
-        self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
         self.onInventoryChange(book.checked_in, book.checked_out)
 
     def focusInEvent(self, event):
