@@ -90,7 +90,7 @@ class MainUi(Ui_MainWindow):
                 bookwidget.setVisible(bookwidget.book in books)
 
     @QtCore.pyqtSlot(inventory.InventoryRecord, object, object)
-    def addBook(self, id, book, oncheckedin, oncheckedout):
+    def addBook(self, book, oncheckedin, oncheckedout):
         books = [self.booklist.itemAt(i).widget().book
                  for i in range(self.booklist.count())]
         insertData = inventory.BOOKSORT(book.title, book.author)
