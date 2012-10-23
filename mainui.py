@@ -24,8 +24,8 @@ class BookWidget(QtGui.QWidget, BookBase):
         #self.setObjectName(str(book))
         self.title.setText(book.title)
         self.author.setText(book.author)
-        self.checkin.clicked.connect(oncheckedin)
-        self.checkout.clicked.connect(oncheckedout)
+        self.checkin.clicked.connect(lambda _: oncheckedin(book))
+        self.checkout.clicked.connect(lambda _: oncheckedout(book))
         self.book = book
         book.inventory_changed.connect(self.onInventoryChange)
         self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
@@ -93,9 +93,6 @@ class MainUi(Ui_MainWindow):
     def addBook(self, book, oncheckedin, oncheckedout):
         books = [self.booklist.itemAt(i).widget().book
                  for i in range(self.booklist.count())]
-        insertData = inventory.BOOKSORT(book.title, book.author)
-        index = bisect(books, insertData)
+        index = bisect(books, book)
         self.booklist.insertWidget(index, BookWidget(
-            book,
-            lambda _, book: oncheckedin(book),
-            lambda _, book: oncheckedout(book)))
+            book, oncheckedin, oncheckedout))
