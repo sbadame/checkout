@@ -2,7 +2,6 @@
 
 import logging
 import inventory
-from bisect import bisect
 
 from PyQt4 import QtGui, QtCore
 from bookwidget import Ui_Form as BookBase
@@ -89,10 +88,7 @@ class MainUi(Ui_MainWindow):
                 bookwidget = self.booklist.itemAt(i).widget()
                 bookwidget.setVisible(bookwidget.book in books)
 
-    @QtCore.pyqtSlot(inventory.InventoryRecord, object, object)
-    def addBook(self, book, oncheckedin, oncheckedout):
-        books = [self.booklist.itemAt(i).widget().book
-                 for i in range(self.booklist.count())]
-        index = bisect(books, book)
+    @QtCore.pyqtSlot(inventory.InventoryRecord, object, object, int)
+    def addBook(self, book, oncheckedin, oncheckedout, index):
         self.booklist.insertWidget(index, BookWidget(
             book, oncheckedin, oncheckedout))

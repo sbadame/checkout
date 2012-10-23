@@ -72,7 +72,7 @@ class InventoryRecord(QtCore.QObject):
 class Inventory(QtCore.QObject):
 
     # Emitted whenever a book is added to the inventory
-    bookAdded = QtCore.pyqtSignal(InventoryRecord)
+    bookAdded = QtCore.pyqtSignal(InventoryRecord, int)
 
     def __init__(self, path):
         super(QtCore.QObject, self).__init__()
@@ -105,8 +105,9 @@ class Inventory(QtCore.QObject):
     def addBook(self, title, author, checked_in=1, checked_out=0):
         if not self.containsTitleAndAuthor(title, author):
             book = InventoryRecord(title, author, checked_in, checked_out)
-            bisect.insort(self.inventory, book)
-            self.bookAdded.emit(book)
+            index = self.index(book)
+            self.inventory.insert(index, book)
+            self.bookAdded.emit(book, index)
             return book
         else:
             raise ValueError("%s,%s is already contained in this inventory" %
@@ -126,3 +127,6 @@ class Inventory(QtCore.QObject):
 
     def items(self):
         return self.inventory.items()
+
+    def index(self, book):
+        return bisect.bisect_left(self.inventory, book)

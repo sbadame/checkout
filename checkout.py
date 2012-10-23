@@ -86,8 +86,8 @@ class Main(QtGui.QMainWindow):
         inventory_path = self.config[_INVENTORY_PATH_KEY]
         self.inventory = inventory.Inventory(inventory_path)
         self.inventory.bookAdded.connect(
-            lambda book: self.ui.addBook(
-                book, self.checkin_pressed, self.checkout_pressed))
+            lambda book, index: self.ui.addBook(
+                book, self.checkin_pressed, self.checkout_pressed, index))
         try:
             self.inventory.load_inventory()
         except IOError:
