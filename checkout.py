@@ -355,7 +355,6 @@ class Main(QtGui.QMainWindow):
 
 
 def main():
-    import pdb; pdb.set_trace()
     app = QtGui.QApplication(sys.argv)
     window = Main()
     window.show()
