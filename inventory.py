@@ -10,6 +10,14 @@ from safewriter import SafeWrite
 logger = logging.getLogger()
 
 
+def debug_trace():
+    '''Set a tracepoint in the Python debugger that works with Qt'''
+    from PyQt4.QtCore import pyqtRemoveInputHook
+    from pdb import set_trace
+    pyqtRemoveInputHook()
+    set_trace()
+
+
 @functools.total_ordering
 class InventoryRecord(QtCore.QObject):
     """The line item of this program."""
@@ -51,8 +59,8 @@ class InventoryRecord(QtCore.QObject):
 
     def __eq__(self, other):
         try:
-            return ((self.title.lower(), self.title.lower()) ==
-                    (other.author.lower(), other.author.lower()))
+            return ((self.title.lower(), self.author.lower()) ==
+                    (other.title.lower(), other.author.lower()))
         except AttributeError:
             return False
 
