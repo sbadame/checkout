@@ -29,7 +29,9 @@
    <bool>true</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true"/>
+   <string notr="true">* {
+  font-family: 'Arial', 'helvetica', 'georgia';
+}</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="sizeConstraint">
