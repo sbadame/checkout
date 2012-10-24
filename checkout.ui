@@ -129,7 +129,9 @@
                </sizepolicy>
               </property>
               <property name="styleSheet">
-               <string notr="true"/>
+               <string notr="true">BookWidget {
+	border: 2px solid black;
+}</string>
               </property>
               <layout class="QGridLayout" name="gridLayout">
                <property name="sizeConstraint">
