@@ -93,8 +93,7 @@
               <enum>Qt::LeftToRight</enum>
              </property>
              <property name="styleSheet">
-              <string notr="true">margin: 0px;
-padding: 0px;</string>
+              <string notr="true"/>
              </property>
              <property name="widgetResizable">
               <bool>true</bool>
@@ -109,8 +108,7 @@ padding: 0px;</string>
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">padding: 0px;
-margin: 0px;</string>
+               <string notr="true"/>
               </property>
               <layout class="QGridLayout" name="gridLayout">
                <property name="sizeConstraint">
@@ -120,7 +118,11 @@ margin: 0px;</string>
                 <number>0</number>
                </property>
                <item row="0" column="0">
-                <layout class="QVBoxLayout" name="booklist"/>
+                <layout class="QVBoxLayout" name="booklist">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                </layout>
                </item>
               </layout>
              </widget>
