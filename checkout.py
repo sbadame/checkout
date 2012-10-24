@@ -70,6 +70,7 @@ class Main(QtGui.QMainWindow):
         self.books_in_table = []
         self._goodreads = None
         self._inventoryThread = None
+        self._syncThread = None
 
     def startup(self):
         self.ui = MainUi()
@@ -86,17 +87,24 @@ class Main(QtGui.QMainWindow):
 
         inventory_path = self.config[_INVENTORY_PATH_KEY]
         self.inventory = inventory.Inventory(inventory_path)
+
+        # Loading up our inventory
         self.inventory.bookAdded.connect(
             lambda book, index: self.ui.addBook(
                 book, self.checkin_pressed, self.checkout_pressed, index))
+        # self.update_progress("Loading inventory...")
+
+        # self._inventoryThread = QtCore.QThread()
+        # self._inventoryThread.run = self.async_load_inventory
+        # self._inventoryThread.finished.connect(self.progress.hide)
+        # self._inventoryThread.start()
+
+    def async_load_inventory(self):
         try:
-            self._inventoryThread = QtCore.QThread()
-            self._inventoryThread.run = self.inventory.load_inventory
-            self._inventoryThread.start()
-            #self.inventory.load_inventory()
+            self.inventory.load_inventory()
         except IOError:
             logger.warn('Error accessing: %s, is this a first run?',
-                        inventory_path)
+                        self.inventory.path)
 
     def populate_table(self, books):
         self.ui.populate_table(books, self.checkin_pressed,
@@ -203,18 +211,33 @@ class Main(QtGui.QMainWindow):
                 wait_function=self.wait_for_user)
         return self._goodreads
 
-    def on_sync_button_pressed(self):
-        shelf = self.shelf()
-        logger.info('Syncing books from shelf: %s,', shelf)
-
+    def async_sync(self, shelf):
+        print("starting")
         dirty = False
         for id, title, author in self.goodreads().listbooks(shelf):
+            print("working")
             if not self.inventory.containsTitleAndAuthor(title, author):
                 dirty = True
                 self.inventory.addBook(title, author)
         if dirty:
             self.inventory.persist()
         logging.info('Done with Sync')
+
+    def on_sync_button_pressed(self):
+        shelf = self.shelf()
+        logger.info('Syncing books from shelf: %s', shelf)
+
+        syncThread = QtCore.QThread()
+        self._syncThread = syncThread
+        worker = SyncWorker(self.async_sync)
+        worker.moveToThread(syncThread)
+        syncThread.started.connect(self.progress.show)
+        syncThread.started.connect(worker.work)
+        worker.finished.connect(syncThread.quit)
+        worker.finished.connect(worker.deleteLater)
+        syncThread.finished.connect(worker.deleteLater)
+        syncThread.finished.connect(syncThread.deleteLater)
+        syncThread.start()
 
     def on_switch_user_button_pressed(self):
         logger.warn("Look at switch user again")
@@ -356,6 +379,20 @@ class Main(QtGui.QMainWindow):
         if not LIBRARY_SHELF_LABEL_TEXT:
             LIBRARY_SHELF_LABEL_TEXT = str(self.ui.library_shelf_label.text())
         return LIBRARY_SHELF_LABEL_TEXT % shelf
+
+
+class SyncWorker(QtCore.QObject):
+
+    # Emitted whenever done
+    finished = QtCore.pyqtSignal()
+
+    def __init__(self, delegate):
+        QtCore.QObject.__init__(self)
+
+    @QtCore.pyqtSlot()
+    def work(self):
+        print("Worker gonna work")
+        self.finished.emit()
 
 
 def main():
