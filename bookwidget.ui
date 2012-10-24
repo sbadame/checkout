@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>594</width>
+    <width>400</width>
     <height>125</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>594</width>
+    <width>400</width>
     <height>16777215</height>
    </size>
   </property>
@@ -37,7 +37,7 @@
   <property name="styleSheet">
    <string notr="true"> border-bottom: 5px solid gray;</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="gridLayout" columnstretch="1,0">
    <property name="sizeConstraint">
     <enum>QLayout::SetMaximumSize</enum>
    </property>
@@ -68,9 +68,30 @@
        <number>0</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1,0">
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QLabel" name="title">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>5</width>
+            <height>5</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>800</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Title</string>
           </property>
@@ -78,8 +99,20 @@
         </item>
         <item>
          <widget class="QLabel" name="author">
+          <property name="maximumSize">
+           <size>
+            <width>250</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>Author</string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
