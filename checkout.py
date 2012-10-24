@@ -71,6 +71,7 @@ class Main(QtGui.QMainWindow):
         self._goodreads = None
         self._inventoryThread = None
         self._syncThread = None
+        self._syncWorker = None
 
     def startup(self):
         self.ui = MainUi()
@@ -194,6 +195,7 @@ class Main(QtGui.QMainWindow):
         self.searchTimer.start()
 
     def wait_for_user(self):
+        return
         QtGui.QMessageBox.question(
             self,
             "Hold up!",
@@ -212,10 +214,8 @@ class Main(QtGui.QMainWindow):
         return self._goodreads
 
     def async_sync(self, shelf):
-        print("starting")
         dirty = False
         for id, title, author in self.goodreads().listbooks(shelf):
-            print("working")
             if not self.inventory.containsTitleAndAuthor(title, author):
                 dirty = True
                 self.inventory.addBook(title, author)
@@ -224,18 +224,19 @@ class Main(QtGui.QMainWindow):
         logging.info('Done with Sync')
 
     def on_sync_button_pressed(self):
+        print("yo")
         shelf = self.shelf()
         logger.info('Syncing books from shelf: %s', shelf)
 
         syncThread = QtCore.QThread()
         self._syncThread = syncThread
-        worker = SyncWorker(self.async_sync)
-        worker.moveToThread(syncThread)
+        self._syncWorker = SyncWorker(lambda: self.async_sync(shelf))
+        self._syncWorker.moveToThread(syncThread)
         syncThread.started.connect(self.progress.show)
-        syncThread.started.connect(worker.work)
-        worker.finished.connect(syncThread.quit)
-        worker.finished.connect(worker.deleteLater)
-        syncThread.finished.connect(worker.deleteLater)
+        syncThread.started.connect(self._syncWorker.work)
+        self._syncWorker.finished.connect(syncThread.quit)
+        self._syncWorker.finished.connect(self._syncWorker.deleteLater)
+        syncThread.finished.connect(self._syncWorker.deleteLater)
         syncThread.finished.connect(syncThread.deleteLater)
         syncThread.start()
 
@@ -386,12 +387,13 @@ class SyncWorker(QtCore.QObject):
     # Emitted whenever done
     finished = QtCore.pyqtSignal()
 
-    def __init__(self, delegate):
-        QtCore.QObject.__init__(self)
+    def __init__(self, delegate, parent=None):
+        QtCore.QObject.__init__(self, parent)
+        self.delegate = delegate
 
     @QtCore.pyqtSlot()
     def work(self):
-        print("Worker gonna work")
+        self.delegate()
         self.finished.emit()
 
 
