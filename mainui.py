@@ -54,6 +54,10 @@ class BookWidget(QtGui.QWidget, BookBase):
     def setSearchQuery(self, query):
         if query in unicode(self.title.text()).lower() or (
                 query in unicode(self.author.text()).lower()):
+            self.title.setText(self.book.title.replace(query,
+                                                       '<b>%s</b>' % query))
+            self.author.setText(self.book.author.replace(query,
+                                                         '<b>%s</b>' % query))
             self.show()
         else:
             self.hide()
