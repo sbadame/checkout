@@ -86,8 +86,8 @@ class Main(QtGui.QMainWindow):
         inventory_path = self.config[_INVENTORY_PATH_KEY]
         self.inventory = inventory.Inventory(inventory_path)
         self.inventory.bookAdded.connect(
-            lambda id, book: self.ui.addBook(
-                id, book, self.checkin_pressed, self.checkout_pressed))
+            lambda book, index: self.ui.addBook(
+                book, self.checkin_pressed, self.checkout_pressed, index))
         try:
             self.inventory.load_inventory()
         except IOError:
@@ -205,9 +205,9 @@ class Main(QtGui.QMainWindow):
 
         dirty = False
         for id, title, author in self.goodreads().listbooks(shelf):
-            if id not in self.inventory:
+            if not self.inventory.containsTitleAndAuthor(title, author):
                 dirty = True
-                self.inventory.addBook(id, title, author)
+                self.inventory.addBook(title, author)
         if dirty:
             self.inventory.persist()
         logging.info('Done with Sync')
@@ -259,32 +259,33 @@ class Main(QtGui.QMainWindow):
             self.config[_INVENTORY_PATH_KEY] = str(file)
             self.inventory.persist()
 
-    def checkout_pressed(self, id, title):
+    def checkout_pressed(self, book):
         """ Connected to signal in populate_table """
 
         name, success = QtGui.QInputDialog.getText(
             self,
-            'Checking out %s' % title, 'What is your name?')
+            'Checking out %s' % book.title, 'What is your name?')
         if success:
             date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
 
             with open(self.config[_LOG_PATH_KEY], 'ab') as logfile:
                 writer = csv.writer(logfile)
-                writer.writerow([date, str(name), "checked out", id, title])
+                writer.writerow([date, str(name), "checked out", -1,
+                                 book.title])
 
-            if id in self.inventory:
-                self.inventory.checkout(id)
+            if book in self.inventory:  # This can probably be removed
+                book.check_out_a_copy()
                 self.inventory.persist()
             else:
-                logger.critical("checkout.checkout_pressed: Didn't find %d: %s"
-                                % (id, title))
+                logger.critical("checkout.checkout_pressed: Didn't find %s"
+                                % book)
 
-    def candidates_for_return(self, bookid):
+    def candidates_for_return(self, book):
         possible_people = []
         with open(self.config[_LOG_PATH_KEY], 'rb') as logfile:
             for row in csv.reader(logfile):
                 try:
-                    if int(row[3]) == bookid:
+                    if row[4].strip() == book.title:
                         name = row[1].strip()
                         if name not in possible_people:
                             possible_people.append(name)
@@ -294,16 +295,17 @@ class Main(QtGui.QMainWindow):
 
         return possible_people
 
-    def checkin_pressed(self, id, title):
+    def checkin_pressed(self, book):
         """ Connected to signal in populate_table """
-        candidates_for_return = self.candidates_for_return(id)
 
-        dialog = ListDialog(self, "Who are you?", candidates_for_return)
+        dialog = ListDialog(self,
+                            "Who are you?",
+                            self.candidates_for_return(book))
 
         def not_on_list():
             name, success = QtGui.QInputDialog.getText(
                 self,
-                'Return %s' % title, 'What is your name?')
+                'Return %s' % book.title, 'What is your name?')
 
             name = str(name).strip()
             if success and name:
@@ -319,14 +321,13 @@ class Main(QtGui.QMainWindow):
                 date = datetime.now().strftime("%m/%d/%Y %I:%M%p")
                 with open(self.config[_LOG_PATH_KEY], 'ab') as logfile:
                     writer = csv.writer(logfile)
-                    writer.writerow([date, name, "checked in", id, title])
+                    writer.writerow([date, name, "checked in", -1, book.title])
 
-                if id in self.inventory:
-                    self.inventory.checkin(id)
+                if book in self.inventory:  # Can probably remove this check
+                    book.check_in_a_copy()
                     self.inventory.persist()
                 else:
-                    logger.critical('Couldn\'t find ID: %d, title: %s' %
-                                    (id, title))
+                    logger.critical('Couldn\'t find book: %s' % book)
 
     def log_file(self, log_file):
         """Returns the string used in the Options GUI for the log file """
@@ -351,6 +352,7 @@ class Main(QtGui.QMainWindow):
         if not LIBRARY_SHELF_LABEL_TEXT:
             LIBRARY_SHELF_LABEL_TEXT = str(self.ui.library_shelf_label.text())
         return LIBRARY_SHELF_LABEL_TEXT % shelf
+
 
 def main():
     app = QtGui.QApplication(sys.argv)

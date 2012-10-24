@@ -2,7 +2,6 @@
 
 import logging
 import inventory
-from bisect import bisect
 
 from PyQt4 import QtGui, QtCore
 from bookwidget import Ui_Form as BookBase
@@ -21,15 +20,12 @@ class BookWidget(QtGui.QWidget, BookBase):
     def __init__(self, book, oncheckedin, oncheckedout):
         QtGui.QWidget.__init__(self)
         self.setupUi(self)
-        #self.setObjectName(str(book))
         self.title.setText(book.title)
         self.author.setText(book.author)
-        self.checkin.clicked.connect(oncheckedin)
-        self.checkout.clicked.connect(oncheckedout)
+        self.checkin.clicked.connect(lambda _: oncheckedin(book))
+        self.checkout.clicked.connect(lambda _: oncheckedout(book))
         self.book = book
-        self.sort_data = inventory.BOOKSORT(book.title, book.author)
         book.inventory_changed.connect(self.onInventoryChange)
-        self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
         self.onInventoryChange(book.checked_in, book.checked_out)
 
     def focusInEvent(self, event):
@@ -90,13 +86,7 @@ class MainUi(Ui_MainWindow):
                 bookwidget = self.booklist.itemAt(i).widget()
                 bookwidget.setVisible(bookwidget.book in books)
 
-    @QtCore.pyqtSlot(inventory.InventoryRecord, object, object)
-    def addBook(self, id, book, oncheckedin, oncheckedout):
-        books = [self.booklist.itemAt(i).widget().sort_data
-                 for i in range(self.booklist.count())]
-        insertData = inventory.BOOKSORT(book.title, book.author)
-        index = bisect(books, insertData)
+    @QtCore.pyqtSlot(inventory.InventoryRecord, object, object, int)
+    def addBook(self, book, oncheckedin, oncheckedout, index):
         self.booklist.insertWidget(index, BookWidget(
-            book,
-            lambda c, a=id, b=book.title: oncheckedin(a, b),
-            lambda c, a=id, b=book.title: oncheckedout(a, b)))
+            book, oncheckedin, oncheckedout))
