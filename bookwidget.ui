@@ -30,7 +30,11 @@
   </property>
   <property name="styleSheet">
    <string notr="true">* {
-  font-family: 'Arial', 'helvetica', 'georgia';
+  font-family: &quot;Arial&quot;, &quot;Helvetica&quot;, &quot;Georgia&quot;;
+}
+
+QLabel {
+  font-size: 16pt;
 }</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
