@@ -69,6 +69,7 @@ class Main(QtGui.QMainWindow):
         self.progress.setWindowTitle("Working...")
         self.books_in_table = []
         self._goodreads = None
+        self._inventoryThread = None
 
     def startup(self):
         self.ui = MainUi()
@@ -89,7 +90,10 @@ class Main(QtGui.QMainWindow):
             lambda book, index: self.ui.addBook(
                 book, self.checkin_pressed, self.checkout_pressed, index))
         try:
-            self.inventory.load_inventory()
+            self._inventoryThread = QtCore.QThread()
+            self._inventoryThread.run = self.inventory.load_inventory
+            self._inventoryThread.start()
+            #self.inventory.load_inventory()
         except IOError:
             logger.warn('Error accessing: %s, is this a first run?',
                         inventory_path)
