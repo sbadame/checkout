@@ -62,6 +62,10 @@ def openfile(filepath):
 
 class Main(QtGui.QMainWindow):
 
+    # Signals for a dialog to open and wait for the user to auth us to
+    # goodreads
+    startWaitForAuth = QtCore.pyqtSignal()
+
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         self.progress = QtGui.QProgressDialog(self)
@@ -89,6 +93,22 @@ class Main(QtGui.QMainWindow):
         inventory_path = self.config[_INVENTORY_PATH_KEY]
         self.inventory = inventory.Inventory(inventory_path)
 
+        # Authentication
+        self._waitDialog = QtGui.QMessageBox(
+            QtGui.QMessageBox.Information,
+            "Hold up!",
+            ('I\'m opening a link to goodreads for you. '
+             'Once the goodreads page loads click "Yes" below to continue.'
+             'If this is your first time, you will have to give "Checkout" '
+             'permission to access your goodreads account.'),
+            QtGui.QMessageBox.Ok, parent=self)
+        self.startWaitForAuth.connect(self._waitDialog.show)
+        self.startWaitForAuth.connect(self.progress.hide)
+        self._waitSemaphore = QtCore.QSemaphore()
+        self._waitDialog.finished.connect(self.progress.show)
+        self._waitDialog.finished.connect(
+            lambda _: self._waitSemaphore.release())
+
         # Loading up our inventory
         self.inventory.bookAdded.connect(
             lambda book, index: self.ui.addBook(
@@ -106,6 +126,12 @@ class Main(QtGui.QMainWindow):
         except IOError:
             logger.warn('Error accessing: %s, is this a first run?',
                         self.inventory.path)
+
+    def wait_for_user(self):
+        self.startWaitForAuth.emit()
+        print("Waiting on semahore...")
+        self._waitSemaphore.acquire()
+        print("Got it!")
 
     def populate_table(self, books):
         self.ui.populate_table(books, self.checkin_pressed,
@@ -194,17 +220,6 @@ class Main(QtGui.QMainWindow):
         self.searchTimer.timeout.connect(lambda: do_search(text))
         self.searchTimer.start()
 
-    def wait_for_user(self):
-        return
-        QtGui.QMessageBox.question(
-            self,
-            "Hold up!",
-            ('I\'m opening a link to goodreads for you. '
-             'Once the goodreads page loads click "Yes" below to continue.'
-             'If this is your first time, you will have to give "Checkout" '
-             'permission to access your goodreads account.'),
-            QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-
     def goodreads(self):
         if not self._goodreads:
             self._goodreads = goodreads.GoodReads(
@@ -216,6 +231,7 @@ class Main(QtGui.QMainWindow):
     def async_sync(self, shelf):
         dirty = False
         for id, title, author in self.goodreads().listbooks(shelf):
+            print("working")
             if not self.inventory.containsTitleAndAuthor(title, author):
                 dirty = True
                 self.inventory.addBook(title, author)
