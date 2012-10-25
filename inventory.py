@@ -103,8 +103,6 @@ class Inventory(QtCore.QObject):
         logger.info("Done with persisting.")
 
     def addBook(self, title, author, checked_in=1, checked_out=0):
-        if len(self.inventory) == 11:
-            debug_trace()
         if not self.containsTitleAndAuthor(title, author):
             book = InventoryRecord(title, author, checked_in, checked_out)
             index = self.index(book)
