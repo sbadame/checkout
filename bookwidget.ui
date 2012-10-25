@@ -109,7 +109,7 @@
            <string>Author</string>
           </property>
           <property name="textFormat">
-           <enum>Qt::RichText</enum>
+           <enum>Qt::AutoText</enum>
           </property>
           <property name="scaledContents">
            <bool>true</bool>
