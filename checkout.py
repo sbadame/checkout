@@ -74,6 +74,7 @@ class Main(QtGui.QMainWindow):
         self.books_in_table = []
         self._goodreads = None
         self._inventoryThread = None
+        self._inventoryWorker = None
         self._syncThread = None
         self._syncWorker = None
 
@@ -90,10 +91,10 @@ class Main(QtGui.QMainWindow):
 
         self.config = self.init_config()
 
-        inventory_path = self.config[_INVENTORY_PATH_KEY]
-        self.inventory = inventory.Inventory(inventory_path)
+        self.setup_authentication()
+        self.setup_inventory()
 
-        # Authentication
+    def setup_authentication(self):
         self._waitDialog = QtGui.QMessageBox(
             QtGui.QMessageBox.Information,
             "Hold up!",
@@ -111,17 +112,27 @@ class Main(QtGui.QMainWindow):
         self.ui.sync_button.pressed.connect(
             lambda: self.ui.sync_button.setEnabled(False))
 
-        # Loading up our inventory
+    def setup_inventory(self):
+        inventory_path = self.config[_INVENTORY_PATH_KEY]
+        self.inventory = inventory.Inventory(inventory_path)
         self.inventory.bookAdded.connect(
             lambda book, index: self.ui.addBook(
                 book, self.checkin_pressed, self.checkout_pressed, index))
 
-        # self.update_progress("Loading inventory...")
-
-        # self._inventoryThread = QtCore.QThread()
-        # self._inventoryThread.run = self.async_load_inventory
-        # self._inventoryThread.finished.connect(self.progress.hide)
-        # self._inventoryThread.start()
+        self._inventoryThread = QtCore.QThread()
+        self._inventoryWorker = SyncWorker(self.async_load_inventory)
+        self._inventoryWorker.moveToThread(self._inventoryThread)
+        self._inventoryThread.started.connect(self.progress.show)
+        self._inventoryThread.started.connect(self._inventoryWorker.work)
+        self._inventoryWorker.finished.connect(self._inventoryThread.quit)
+        self._inventoryWorker.finished.connect(
+            self._inventoryWorker.deleteLater)
+        self._inventoryWorker.finished.connect(self.progress.hide)
+        self._inventoryThread.finished.connect(
+            self._inventoryWorker.deleteLater)
+        self._inventoryThread.finished.connect(
+            self._inventoryThread.deleteLater)
+        self._inventoryThread.start()
 
     def async_load_inventory(self):
         try:
@@ -239,20 +250,19 @@ class Main(QtGui.QMainWindow):
         shelf = self.shelf()
         logger.info('Syncing books from shelf: %s', shelf)
 
-        syncThread = QtCore.QThread()
-        self._syncThread = syncThread
+        self._syncThread = QtCore.QThread()
         self._syncWorker = SyncWorker(lambda: self.async_sync(shelf))
-        self._syncWorker.moveToThread(syncThread)
-        syncThread.started.connect(self.progress.show)
-        syncThread.started.connect(self._syncWorker.work)
-        self._syncWorker.finished.connect(syncThread.quit)
+        self._syncWorker.moveToThread(self._syncThread)
+        self._syncThread.started.connect(self.progress.show)
+        self._syncThread.started.connect(self._syncWorker.work)
+        self._syncWorker.finished.connect(self._syncThread.quit)
         self._syncWorker.finished.connect(self._syncWorker.deleteLater)
         self._syncWorker.finished.connect(self.progress.hide)
         self._syncWorker.finished.connect(
             lambda: self.ui.sync_button.setEnabled(True))
-        syncThread.finished.connect(self._syncWorker.deleteLater)
-        syncThread.finished.connect(syncThread.deleteLater)
-        syncThread.start()
+        self._syncThread.finished.connect(self._syncWorker.deleteLater)
+        self._syncThread.finished.connect(self._syncThread.deleteLater)
+        self._syncThread.start()
 
     def on_switch_user_button_pressed(self):
         logger.warn("Look at switch user again")
