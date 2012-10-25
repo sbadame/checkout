@@ -74,13 +74,14 @@ class MainUi(Ui_MainWindow):
     def setupUi(self, main):
         super(MainUi, self).setupUi(main)
         self.search_query.setDefaultText()
+        self.booklist.insertStretch(-1)  # This fills down to the bottom
 
     def setSearchQuery(self, query):
-        for i in range(self.booklist.count()):
+        for i in range(self.booklist.count() - 1):  # Spacer at the end
             self.booklist.itemAt(i).widget().setSearchQuery(query)
 
     def clearSearchQuery(self):
-        for i in range(self.booklist.count()):
+        for i in range(self.booklist.count() - 1):   # Spacer at the end
             self.booklist.itemAt(i).widget().clearSearchQuery()
 
     def showBooks(self, booksWithId):
