@@ -135,11 +135,11 @@
            <widget class="QPushButton" name="checkout">
             <property name="styleSheet">
              <string notr="true">/* Let's make the size of the button 1,5 times of font size. */
-   min-height: 1.5em;
+   min-height: 2em;
    /* Font size just 1.*/
    font: 1em;
    /* Margins so that we get a little space on the left and right. */
-   margin: 0 1px 0 1px;
+   margin: 0 3px 0 3px;
    /* The font color */ 
    color: white;
    /* Here's the background gradient with start point, end point, 
@@ -169,6 +169,35 @@ pressed {
           </item>
           <item>
            <widget class="QPushButton" name="checkin">
+            <property name="styleSheet">
+             <string notr="true">/* Let's make the size of the button 1,5 times of font size. */
+   min-height: 2em;
+   /* Font size just 1.*/
+   font: 1em;
+   /* Margins so that we get a little space on the left and right. */
+   margin: 0 3px 0 3px;
+   /* The font color */ 
+   color: white;
+   /* Here's the background gradient with start point, end point, 
+      stop &quot;percentage&quot; and color, stop percentage and color. */
+   background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                            stop: 0 #98c021, stop: 1 #5ca60d);
+   /* We'll round the borders. */
+   border-style: outset;
+   /* Round radius will be 3px */
+   border-radius: 3px;
+   /* Border is only one pixel */
+   border-width: 1px;
+   /* Border color is now set */
+   border-color: #457e0c;
+
+pressed {
+
+   /* We'll just invert the gradient by changing the colors around. */
+   background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                     stop: 0 #5ca60d, stop: 1 #98c021);
+}</string>
+            </property>
             <property name="text">
              <string>Return this book!</string>
             </property>
