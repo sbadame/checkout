@@ -52,13 +52,22 @@ class BookWidget(QtGui.QWidget, BookBase):
                 self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
 
     def setSearchQuery(self, query):
-        if query in unicode(self.title.text()).lower() or (
-                query in unicode(self.author.text()).lower()):
+        ui_title_sanitized = self.book.title.lower()
+        ui_author_sanitized = self.book.author.lower()
+        if query in ui_title_sanitized or query in ui_author_sanitized:
+            i = ui_title_sanitized.find(query)
+            q_len = len(query)
+            content = (ui_title_sanitized[:i] + "<b>" +
+                       ui_title_sanitized[i:i + q_len] + "</b>" +
+                       ui_title_sanitized[i + q_len:])
+            self.title.setText(content)
             self.show()
         else:
             self.hide()
 
     def clearSearchQuery(self):
+        self.title.setText(self.book.title)
+        self.author.setText(self.book.author)
         self.show()
 
 
@@ -70,13 +79,14 @@ class MainUi(Ui_MainWindow):
     def setupUi(self, main):
         super(MainUi, self).setupUi(main)
         self.search_query.setDefaultText()
+        self.booklist.insertStretch(-1)  # This fills down to the bottom
 
     def setSearchQuery(self, query):
-        for i in range(self.booklist.count()):
+        for i in range(self.booklist.count() - 1):  # Spacer at the end
             self.booklist.itemAt(i).widget().setSearchQuery(query)
 
     def clearSearchQuery(self):
-        for i in range(self.booklist.count()):
+        for i in range(self.booklist.count() - 1):   # Spacer at the end
             self.booklist.itemAt(i).widget().clearSearchQuery()
 
     def showBooks(self, booksWithId):

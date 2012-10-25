@@ -21,21 +21,18 @@
     <string notr="true"/>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_3">
-    <property name="leftMargin">
-     <number>5</number>
-    </property>
-    <property name="topMargin">
+    <property name="spacing">
      <number>0</number>
     </property>
-    <property name="rightMargin">
-     <number>5</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
      <widget class="QWidget" name="widget" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <property name="margin">
         <number>0</number>
        </property>
@@ -49,16 +46,10 @@
          </property>
          <widget class="QWidget" name="bookpage">
           <layout class="QVBoxLayout" name="verticalLayout_2">
-           <property name="leftMargin">
-            <number>3</number>
-           </property>
-           <property name="topMargin">
-            <number>3</number>
-           </property>
-           <property name="rightMargin">
+           <property name="spacing">
             <number>0</number>
            </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <item>
@@ -89,12 +80,26 @@
            </item>
            <item>
             <widget class="QScrollArea" name="scrollArea">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
              <property name="layoutDirection">
               <enum>Qt::LeftToRight</enum>
              </property>
              <property name="styleSheet">
-              <string notr="true">margin: 0px;
-padding: 0px;</string>
+              <string notr="true"/>
+             </property>
+             <property name="horizontalScrollBarPolicy">
+              <enum>Qt::ScrollBarAsNeeded</enum>
              </property>
              <property name="widgetResizable">
               <bool>true</bool>
@@ -104,23 +109,34 @@ padding: 0px;</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>729</width>
-                <height>568</height>
+                <width>742</width>
+                <height>577</height>
                </rect>
               </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="styleSheet">
-               <string notr="true">padding: 0px;
-margin: 0px;</string>
+               <string notr="true">BookWidget {
+	border: 2px solid black;
+}</string>
               </property>
               <layout class="QGridLayout" name="gridLayout">
                <property name="sizeConstraint">
-                <enum>QLayout::SetMaximumSize</enum>
+                <enum>QLayout::SetDefaultConstraint</enum>
                </property>
                <property name="margin">
                 <number>0</number>
                </property>
                <item row="0" column="0">
-                <layout class="QVBoxLayout" name="booklist"/>
+                <layout class="QVBoxLayout" name="booklist">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                </layout>
                </item>
               </layout>
              </widget>
