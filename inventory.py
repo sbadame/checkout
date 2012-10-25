@@ -103,6 +103,8 @@ class Inventory(QtCore.QObject):
         logger.info("Done with persisting.")
 
     def addBook(self, title, author, checked_in=1, checked_out=0):
+        if len(self.inventory) == 11:
+            debug_trace()
         if not self.containsTitleAndAuthor(title, author):
             book = InventoryRecord(title, author, checked_in, checked_out)
             index = self.index(book)
@@ -114,12 +116,7 @@ class Inventory(QtCore.QObject):
                              (title, author))
 
     def containsTitleAndAuthor(self, title, author):
-        books = [(b.title, b.author) for b in self.inventory]
-        index = bisect.bisect_left(books, (title, author))
-        try:
-            return books[index] == (title, author)
-        except IndexError:
-            return False
+        return (title, author) in [(b.title, b.author) for b in self.inventory]
 
     def __contains__(self, book):
         index = bisect.bisect_left(self.inventory, book)

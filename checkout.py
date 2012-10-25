@@ -119,27 +119,16 @@ class Main(QtGui.QMainWindow):
             lambda book, index: self.ui.addBook(
                 book, self.checkin_pressed, self.checkout_pressed, index))
 
-        self._inventoryThread = QtCore.QThread()
-        self._inventoryWorker = SyncWorker(self.async_load_inventory)
-        self._inventoryWorker.moveToThread(self._inventoryThread)
-        self._inventoryThread.started.connect(self.progress.show)
-        self._inventoryThread.started.connect(self._inventoryWorker.work)
-        self._inventoryWorker.finished.connect(self._inventoryThread.quit)
-        self._inventoryWorker.finished.connect(
-            self._inventoryWorker.deleteLater)
-        self._inventoryWorker.finished.connect(self.progress.hide)
-        self._inventoryThread.finished.connect(
-            self._inventoryWorker.deleteLater)
-        self._inventoryThread.finished.connect(
-            self._inventoryThread.deleteLater)
-        self._inventoryThread.start()
+        def async_load_inventory():
+            try:
+                self.inventory.load_inventory()
+            except IOError:
+                logger.warn('Error accessing: %s, is this a first run?',
+                            inventory_path)
 
-    def async_load_inventory(self):
-        try:
-            self.inventory.load_inventory()
-        except IOError:
-            logger.warn('Error accessing: %s, is this a first run?',
-                        self.inventory.path)
+        (self._inventoryThread, self._inventoryWorker) = self.wire_async(
+            async_load_inventory)
+        self._inventoryThread.start()
 
     def wait_for_user(self):
         self.startWaitForAuth.emit()
@@ -236,32 +225,36 @@ class Main(QtGui.QMainWindow):
             self._goodreads.on_progress.connect(self.progress.setLabelText)
         return self._goodreads
 
-    def async_sync(self, shelf):
-        dirty = False
-        for id, title, author in self.goodreads().listbooks(shelf):
-            if not self.inventory.containsTitleAndAuthor(title, author):
-                dirty = True
-                self.inventory.addBook(title, author)
-        if dirty:
-            self.inventory.persist()
-
     def on_sync_button_pressed(self):
-        print("yo")
         shelf = self.shelf()
         logger.info('Syncing books from shelf: %s', shelf)
 
-        self._syncThread = QtCore.QThread()
-        self._syncWorker = SyncWorker(lambda: self.async_sync(shelf))
-        self._syncWorker.moveToThread(self._syncThread)
-        self._syncThread.started.connect(self.progress.show)
-        self._syncThread.started.connect(self._syncWorker.work)
-        self._syncWorker.finished.connect(self._syncThread.quit)
-        self._syncWorker.finished.connect(self._syncWorker.deleteLater)
-        self._syncWorker.finished.connect(self.progress.hide)
+        def async_sync(shelf):
+            dirty = False
+            for id, title, author in self.goodreads().listbooks(shelf):
+                if not self.inventory.containsTitleAndAuthor(title, author):
+                    dirty = True
+                    self.inventory.addBook(title, author)
+            if dirty:
+                self.inventory.persist()
+
+        (self._syncThread, self._syncWorker) = self.wire_async(
+            lambda: async_sync(shelf))
         self._syncWorker.finished.connect(
             lambda: self.ui.sync_button.setEnabled(True))
-        self._syncThread.finished.connect(self._syncWorker.deleteLater)
-        self._syncThread.finished.connect(self._syncThread.deleteLater)
+
+        # self._syncThread = QtCore.QThread()
+        # self._syncWorker = SyncWorker(lambda: self.async_sync(shelf))
+        # self._syncWorker.moveToThread(self._syncThread)
+        # self._syncThread.started.connect(self.progress.show)
+        # self._syncThread.started.connect(self._syncWorker.work)
+        # self._syncWorker.finished.connect(self._syncThread.quit)
+        # self._syncWorker.finished.connect(self._syncWorker.deleteLater)
+        # self._syncWorker.finished.connect(self.progress.hide)
+        # self._syncWorker.finished.connect(
+        #     lambda: self.ui.sync_button.setEnabled(True))
+        # self._syncThread.finished.connect(self._syncWorker.deleteLater)
+        # self._syncThread.finished.connect(self._syncThread.deleteLater)
         self._syncThread.start()
 
     def on_switch_user_button_pressed(self):
@@ -404,6 +397,21 @@ class Main(QtGui.QMainWindow):
         if not LIBRARY_SHELF_LABEL_TEXT:
             LIBRARY_SHELF_LABEL_TEXT = str(self.ui.library_shelf_label.text())
         return LIBRARY_SHELF_LABEL_TEXT % shelf
+
+    def wire_async(self, executable):
+        thread = QtCore.QThread()
+        worker = SyncWorker(executable)
+
+        worker.moveToThread(thread)
+        thread.started.connect(self.progress.show)
+        thread.started.connect(worker.work)
+        worker.finished.connect(thread.quit)
+        worker.finished.connect(worker.deleteLater)
+        worker.finished.connect(self.progress.hide)
+        thread.finished.connect(worker.deleteLater)
+        thread.finished.connect(thread.deleteLater)
+
+        return (thread, worker)
 
 
 class SyncWorker(QtCore.QObject):
