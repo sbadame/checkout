@@ -52,17 +52,22 @@ class BookWidget(QtGui.QWidget, BookBase):
                 self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
 
     def setSearchQuery(self, query):
-        if query in unicode(self.title.text()).lower() or (
-                query in unicode(self.author.text()).lower()):
-            self.title.setText(self.book.title.replace(query,
-                                                       '<b>%s</b>' % query))
-            self.author.setText(self.book.author.replace(query,
-                                                         '<b>%s</b>' % query))
+        ui_title_sanitized = self.book.title.lower()
+        ui_author_sanitized = self.book.author.lower()
+        if query in ui_title_sanitized or query in ui_author_sanitized:
+            i = ui_title_sanitized.find(query)
+            q_len = len(query)
+            content = (ui_title_sanitized[:i] + "<b>" +
+                       ui_title_sanitized[i:i + q_len] + "</b>" +
+                       ui_title_sanitized[i + q_len:])
+            self.title.setText(content)
             self.show()
         else:
             self.hide()
 
     def clearSearchQuery(self):
+        self.title.setText(self.book.title)
+        self.author.setText(self.book.author)
         self.show()
 
 
