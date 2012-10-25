@@ -57,9 +57,10 @@ class BookWidget(QtGui.QWidget, BookBase):
         if query in ui_title_sanitized or query in ui_author_sanitized:
             i = ui_title_sanitized.find(query)
             q_len = len(query)
-            content = (ui_title_sanitized[:i] + "<b>" +
-                       ui_title_sanitized[i:i + q_len] + "</b>" +
-                       ui_title_sanitized[i + q_len:])
+            ui_text = self.book.title
+            content = (ui_text[:i] + "<b>" +
+                       ui_text[i:i + q_len] + "</b>" +
+                       ui_text[i + q_len:])
             self.title.setText(content)
             self.show()
         else:
