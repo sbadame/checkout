@@ -4,6 +4,7 @@ import time
 import urllib
 import urlparse
 import xml.etree.ElementTree as ET
+from PyQt4 import QtCore
 
 # PROGRAM CONSTANTS
 HTTP_OK = '200'
@@ -21,13 +22,17 @@ DEFAULT_WAIT = lambda: raw_input("Press enter once authorized.")
 logger = logging.getLogger()
 
 
-class GoodReads(object):
+class GoodReads(QtCore.QObject):
+
+    on_progress = QtCore.pyqtSignal(str)
+
     def __init__(self,
                  dev_key=None,
                  dev_secret=None,
                  wait_function=DEFAULT_WAIT,
                  log=logging.debug):
-        self.log = log
+        QtCore.QObject.__init__(self)
+        self.logger = log
         self.dev_key = dev_key
         self.consumer = oauth.Consumer(key=dev_key, secret=dev_secret)
         self.access_token = self.authenticate(wait_function)
@@ -180,6 +185,11 @@ class GoodReads(object):
     def add_shelf(self, name):
         return self._request('user_shelves.xml', {'user_shelf[name]': name},
                              'POST')
+
+    def log(self, msg):
+        self.logger(msg)
+        self.on_progress.emit(msg)
+
 
 if __name__ == '__main__':
     pass

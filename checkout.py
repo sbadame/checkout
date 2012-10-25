@@ -108,11 +108,14 @@ class Main(QtGui.QMainWindow):
         self._waitDialog.finished.connect(self.progress.show)
         self._waitDialog.finished.connect(
             lambda _: self._waitSemaphore.release())
+        self.ui.sync_button.pressed.connect(
+            lambda: self.ui.sync_button.setEnabled(False))
 
         # Loading up our inventory
         self.inventory.bookAdded.connect(
             lambda book, index: self.ui.addBook(
                 book, self.checkin_pressed, self.checkout_pressed, index))
+
         # self.update_progress("Loading inventory...")
 
         # self._inventoryThread = QtCore.QThread()
@@ -172,13 +175,6 @@ class Main(QtGui.QMainWindow):
 
         return config
 
-    def update_progress(self, text):
-        self.progress.show()
-        self.progress.setLabelText(text)
-
-    def hide_progress(self):
-        self.progress.hide()
-
     def shelf(self):
         return self.config[_LIBRARY_SHELF_KEY]
 
@@ -226,18 +222,17 @@ class Main(QtGui.QMainWindow):
                 dev_key=self.config[DEVELOPER_KEY],
                 dev_secret=self.config[DEVELOPER_SECRET],
                 wait_function=self.wait_for_user)
+            self._goodreads.on_progress.connect(self.progress.setLabelText)
         return self._goodreads
 
     def async_sync(self, shelf):
         dirty = False
         for id, title, author in self.goodreads().listbooks(shelf):
-            print("working")
             if not self.inventory.containsTitleAndAuthor(title, author):
                 dirty = True
                 self.inventory.addBook(title, author)
         if dirty:
             self.inventory.persist()
-        logging.info('Done with Sync')
 
     def on_sync_button_pressed(self):
         print("yo")
@@ -252,6 +247,9 @@ class Main(QtGui.QMainWindow):
         syncThread.started.connect(self._syncWorker.work)
         self._syncWorker.finished.connect(syncThread.quit)
         self._syncWorker.finished.connect(self._syncWorker.deleteLater)
+        self._syncWorker.finished.connect(self.progress.hide)
+        self._syncWorker.finished.connect(
+            lambda: self.ui.sync_button.setEnabled(True))
         syncThread.finished.connect(self._syncWorker.deleteLater)
         syncThread.finished.connect(syncThread.deleteLater)
         syncThread.start()
