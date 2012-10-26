@@ -84,8 +84,10 @@
      </property>
      <property name="font">
       <font>
-       <family>Helvetica</family>
-       <pointsize>13</pointsize>
+       <family>Serif</family>
+       <pointsize>14</pointsize>
+       <italic>false</italic>
+       <stylestrategy>PreferAntialias</stylestrategy>
       </font>
      </property>
      <property name="autoFillBackground">
@@ -101,16 +103,22 @@
    </item>
    <item>
     <widget class="QPushButton" name="checkout">
+     <property name="font">
+      <font>
+       <family>Helvetica</family>
+       <pointsize>13</pointsize>
+      </font>
+     </property>
      <property name="autoFillBackground">
       <bool>false</bool>
      </property>
      <property name="styleSheet">
       <string notr="true">/* Let's make the size of the button 1,5 times of font size. */
-   min-height: 2em;
+   min-height: 1.5em;
    /* Font size just 1.*/
    font: 1em;
    /* Margins so that we get a little space on the left and right. */
-   margin: 0 5px 0 5px;
+   margin: 15px 5px 15px 5px;
    /* The font color */ 
    color: white;
    /* Here's the background gradient with start point, end point, 
@@ -134,22 +142,28 @@ pressed {
 }</string>
      </property>
      <property name="text">
-      <string>Check this book out!</string>
+      <string>Checkout</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QPushButton" name="checkin">
+     <property name="font">
+      <font>
+       <family>Helvetica</family>
+       <pointsize>13</pointsize>
+      </font>
+     </property>
      <property name="autoFillBackground">
       <bool>false</bool>
      </property>
      <property name="styleSheet">
       <string notr="true">/* Let's make the size of the button 1,5 times of font size. */
-   min-height: 2em;
+   min-height: 1.5em;
    /* Font size just 1.*/
    font: 1em;
    /* Margins so that we get a little space on the left and right. */
-   margin: 0 3px 0 3px;
+   margin: 15px 3px 15px 3px;
    /* The font color */ 
    color: white;
    /* Here's the background gradient with start point, end point, 
@@ -173,7 +187,7 @@ pressed {
 }</string>
      </property>
      <property name="text">
-      <string>Return this book!</string>
+      <string>Return</string>
      </property>
     </widget>
    </item>

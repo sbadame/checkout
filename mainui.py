@@ -28,7 +28,7 @@ class BookWidget(QtGui.QWidget, BookBase):
         self.onInventoryChange(book.checked_in, book.checked_out)
 
     def uiText(self):
-        return ('%s <i><font color="gray">by</font></i> %s' %
+        return ('%s <i><font color="#777">by</font></i> %s' %
                 (self.book.title, self.book.author))
 
     def focusInEvent(self, event):
