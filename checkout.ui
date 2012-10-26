@@ -96,7 +96,7 @@
               <enum>Qt::LeftToRight</enum>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: white</string>
+              <string notr="true"/>
              </property>
              <property name="horizontalScrollBarPolicy">
               <enum>Qt::ScrollBarAsNeeded</enum>
@@ -119,6 +119,9 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="autoFillBackground">
+               <bool>true</bool>
+              </property>
               <property name="styleSheet">
                <string notr="true">BookWidget {
 	border: 2px solid black;
@@ -129,6 +132,9 @@
                 <enum>QLayout::SetDefaultConstraint</enum>
                </property>
                <property name="margin">
+                <number>0</number>
+               </property>
+               <property name="spacing">
                 <number>0</number>
                </property>
                <item row="0" column="0">
