@@ -152,6 +152,10 @@ class Main(QtGui.QMainWindow):
             _LIBRARY_SHELF_KEY,
             lambda x: self.ui.library_shelf_label.setText(
                 self.library_shelf(x)))
+        config.connectKey(
+            _LIBRARY_SHELF_KEY,
+            lambda x: self.ui.sync_button.setText("Sync with your '%s' shelf"
+                                                  % x))
 
         try:
             with open(CONFIG_FILE_PATH, "r") as configfile:
