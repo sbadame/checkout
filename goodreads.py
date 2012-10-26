@@ -82,7 +82,6 @@ class GoodReads(QtCore.QObject):
 
     def _request(self, methodname, params={}, method='GET', success=HTTP_OK):
         MAX_ATTEMPTS = 5
-        self.log("Accessing: " + methodname)
         client = oauth.Client(self.consumer, self.access_token)
         body = urllib.urlencode(params)
         headers = {'content-type': 'application/x-www-form-urlencoded'}
@@ -115,6 +114,7 @@ class GoodReads(QtCore.QObject):
         return content
 
     def user(self):
+        self.log("Finding out who you are on GoodReads")
         response = self._request("api/auth_user")
         xml = ET.fromstring(response)
         user = xml.find("user")
@@ -145,6 +145,7 @@ class GoodReads(QtCore.QObject):
             # We may need to load multiple pages of reponse we only get a max
             # of 200 books per page
             load_next_page = True
+            self.log('Grabbing page 1')
             while load_next_page:
                 response = self._request("review/list/%d.xml" %
                                          self._cached_user_id(), params)
@@ -178,11 +179,13 @@ class GoodReads(QtCore.QObject):
         return books
 
     def shelves(self):
+        self.logger('Getting a list of your shelves')
         params = {'key': self.dev_key, 'user_id': self._cached_user_id()}
         xml = ET.fromstring(self._request('shelf/list.xml', params))
         return [name.text for name in xml.findall('shelves/user_shelf/name')]
 
     def add_shelf(self, name):
+        self.log("Adding a shelf called '%s'" % name)
         return self._request('user_shelves.xml', {'user_shelf[name]': name},
                              'POST')
 

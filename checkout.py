@@ -84,6 +84,7 @@ class Main(QtGui.QMainWindow):
             lambda: self.ui.uistack.setCurrentWidget(self.ui.optionspage))
         self.ui.back_to_books.clicked.connect(
             lambda: self.ui.uistack.setCurrentWidget(self.ui.bookpage))
+        self.ui.back_to_books.clicked.connect(self.ui.bookpage.setFocus)
 
         self.searchTimer = None
 
@@ -242,12 +243,7 @@ class Main(QtGui.QMainWindow):
             lambda: async_sync(shelf))
         self._syncWorker.finished.connect(
             lambda: self.ui.sync_button.setEnabled(True))
-        oldText = self.ui.sync_button.text()
-        self._syncThread.started.connect(
-            lambda: self.ui.sync_button.setText('Syncing...'))
-        self._syncWorker.finished.connect(
-            lambda: self.ui.sync_button.setText(oldText))
-
+        self._syncWorker.finished.connect(self.ui.back_to_books.setFocus)
         self._syncThread.start()
 
     def on_switch_user_button_pressed(self):
