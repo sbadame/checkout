@@ -168,7 +168,7 @@
               <item row="1" column="0">
                <widget class="QPushButton" name="sync_button">
                 <property name="text">
-                 <string>Sync With Goodreads</string>
+                 <string>Sync with your '%s' shelf on GoodReads</string>
                 </property>
                </widget>
               </item>

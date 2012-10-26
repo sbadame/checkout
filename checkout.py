@@ -38,6 +38,7 @@ USER_LABEL_TEXT = None
 LIBRARY_SHELF_LABEL_TEXT = None
 LOG_LABEL_TEXT = None
 INVENTORY_LABEL_TEXT = None
+SYNC_BUTTON_TEXT = None
 SHELF_DIALOG_LABEL_TEXT = "Which shelf should be used for the library books?"
 
 DEVELOPER_KEY = "DEVELOPER_KEY"
@@ -93,6 +94,7 @@ class Main(QtGui.QMainWindow):
 
         self.setup_authentication()
         self.setup_inventory()
+        self.ui.bookpage.setFocus()
 
     def setup_authentication(self):
         self._waitDialog = QtGui.QMessageBox(
@@ -132,9 +134,7 @@ class Main(QtGui.QMainWindow):
 
     def wait_for_user(self):
         self.startWaitForAuth.emit()
-        print("Waiting on semahore...")
         self._waitSemaphore.acquire()
-        print("Got it!")
 
     def populate_table(self, books):
         self.ui.populate_table(books, self.checkin_pressed,
@@ -154,8 +154,7 @@ class Main(QtGui.QMainWindow):
                 self.library_shelf(x)))
         config.connectKey(
             _LIBRARY_SHELF_KEY,
-            lambda x: self.ui.sync_button.setText("Sync with your '%s' shelf"
-                                                  % x))
+            lambda x: self.ui.sync_button.setText(self.sync_button(x)))
 
         try:
             with open(CONFIG_FILE_PATH, "r") as configfile:
@@ -388,16 +387,19 @@ class Main(QtGui.QMainWindow):
     def inventory_file(self, inventory_file):
         """Text used in the Options GUI for the inventory file."""
         global INVENTORY_LABEL_TEXT
-
-        logging.info("Figuring out where I keep track of your books")
         if not INVENTORY_LABEL_TEXT:
             INVENTORY_LABEL_TEXT = str(self.ui.inventory_label.text())
         return INVENTORY_LABEL_TEXT % inventory_file
 
+    def sync_button(self, shelf):
+        global SYNC_BUTTON_TEXT
+        if not SYNC_BUTTON_TEXT:
+            SYNC_BUTTON_TEXT = str(self.ui.sync_button.text())
+        return SYNC_BUTTON_TEXT % shelf
+
     def library_shelf(self, shelf):
         global LIBRARY_SHELF_LABEL_TEXT
         """ Returns the string used in the Options GUI for the shelf """
-        logging.info("Figuring out where you keep your books")
         if not LIBRARY_SHELF_LABEL_TEXT:
             LIBRARY_SHELF_LABEL_TEXT = str(self.ui.library_shelf_label.text())
         return LIBRARY_SHELF_LABEL_TEXT % shelf
