@@ -6,19 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>125</height>
+    <width>600</width>
+    <height>64</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
-    <horstretch>0</horstretch>
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>1</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
   <property name="maximumSize">
    <size>
-    <width>400</width>
+    <width>600</width>
     <height>16777215</height>
    </size>
   </property>
@@ -32,109 +32,81 @@
    <enum>Qt::LeftToRight</enum>
   </property>
   <property name="autoFillBackground">
-   <bool>false</bool>
+   <bool>true</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true"> border-bottom: 5px solid gray;</string>
+   <string notr="true"/>
   </property>
-  <layout class="QGridLayout" name="gridLayout" columnstretch="1,0">
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0,0">
+   <property name="spacing">
+    <number>0</number>
+   </property>
    <property name="sizeConstraint">
     <enum>QLayout::SetMaximumSize</enum>
    </property>
    <property name="leftMargin">
-    <number>9</number>
+    <number>0</number>
    </property>
    <property name="topMargin">
     <number>0</number>
    </property>
    <property name="rightMargin">
-    <number>9</number>
-   </property>
-   <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item row="0" column="0" colspan="2">
-    <widget class="QWidget" name="widget" native="true">
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
+   <property name="bottomMargin">
+    <number>6</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="title">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+       <horstretch>5</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>5</width>
+       <height>5</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>800</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>Title</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="author">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="checkout">
+     <property name="autoFillBackground">
+      <bool>true</bool>
      </property>
      <property name="styleSheet">
-      <string notr="true">QLabel {
-   font-size: 14pt;
-}</string>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <property name="margin">
-       <number>0</number>
-      </property>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1,0">
-        <property name="spacing">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="title">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>5</width>
-            <height>5</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>800</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Title</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="author">
-          <property name="maximumSize">
-           <size>
-            <width>250</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Author</string>
-          </property>
-          <property name="textFormat">
-           <enum>Qt::AutoText</enum>
-          </property>
-          <property name="scaledContents">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="checkout">
-            <property name="styleSheet">
-             <string notr="true">/* Let's make the size of the button 1,5 times of font size. */
+      <string notr="true">/* Let's make the size of the button 1,5 times of font size. */
    min-height: 2em;
    /* Font size just 1.*/
    font: 1em;
@@ -161,16 +133,19 @@ pressed {
    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                      stop: 0 #0d5ca6, stop: 1 #2198c0);
 }</string>
-            </property>
-            <property name="text">
-             <string>Check this book out!</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="checkin">
-            <property name="styleSheet">
-             <string notr="true">/* Let's make the size of the button 1,5 times of font size. */
+     </property>
+     <property name="text">
+      <string>Check this book out!</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="checkin">
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">/* Let's make the size of the button 1,5 times of font size. */
    min-height: 2em;
    /* Font size just 1.*/
    font: 1em;
@@ -197,30 +172,10 @@ pressed {
    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                      stop: 0 #5ca60d, stop: 1 #98c021);
 }</string>
-            </property>
-            <property name="text">
-             <string>Return this book!</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </item>
-     </layout>
+     </property>
+     <property name="text">
+      <string>Return this book!</string>
+     </property>
     </widget>
    </item>
   </layout>

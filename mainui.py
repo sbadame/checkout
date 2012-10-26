@@ -29,10 +29,12 @@ class BookWidget(QtGui.QWidget, BookBase):
         self.onInventoryChange(book.checked_in, book.checked_out)
 
     def focusInEvent(self, event):
-        self.setStyleSheet('background-color: "%s"' % SELECTED_COLOR)
+        pass
+        #self.setStyleSheet('background-color: "%s"' % SELECTED_COLOR)
 
     def focusOutEvent(self, event):
-        self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
+        pass
+        #self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
 
     @QtCore.pyqtSlot(int, int)
     def onInventoryChange(self, checked_in, checked_out):
