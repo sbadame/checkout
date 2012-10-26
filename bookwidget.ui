@@ -38,12 +38,12 @@
    <enum>Qt::LeftToRight</enum>
   </property>
   <property name="autoFillBackground">
-   <bool>true</bool>
+   <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true"/>
+   <string notr="true">background-color: white</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0">
    <property name="spacing">
     <number>0</number>
    </property>
@@ -129,7 +129,7 @@ border-bottom: 5px solid gray;</string>
       </font>
      </property>
      <property name="autoFillBackground">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="styleSheet">
       <string notr="true">/* Let's make the size of the button 1,5 times of font size. */
@@ -186,7 +186,7 @@ pressed {
       </font>
      </property>
      <property name="autoFillBackground">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="styleSheet">
       <string notr="true">/* Let's make the size of the button 1,5 times of font size. */
