@@ -20,13 +20,16 @@ class BookWidget(QtGui.QWidget, BookBase):
     def __init__(self, book, oncheckedin, oncheckedout):
         QtGui.QWidget.__init__(self)
         self.setupUi(self)
-        self.title.setText(book.title)
-        self.author.setText(book.author)
+        self.book = book
+        self.text.setText(self.uiText())
         self.checkin.clicked.connect(lambda _: oncheckedin(book))
         self.checkout.clicked.connect(lambda _: oncheckedout(book))
-        self.book = book
         book.inventory_changed.connect(self.onInventoryChange)
         self.onInventoryChange(book.checked_in, book.checked_out)
+
+    def uiText(self):
+        return ('%s <i><font color="gray">by</font></i> %s' %
+                (self.book.title, self.book.author))
 
     def focusInEvent(self, event):
         self.setStyleSheet('background-color: "%s"' % SELECTED_COLOR)
@@ -52,31 +55,22 @@ class BookWidget(QtGui.QWidget, BookBase):
                 self.setStyleSheet('background-color: "%s"' % BACKGROUND_COLOR)
 
     def setSearchQuery(self, query):
-        ui_title_sanitized = self.book.title.lower()
-        ui_author_sanitized = self.book.author.lower()
-        if query in ui_title_sanitized or query in ui_author_sanitized:
+        if (query in self.book.title.lower() or
+                (query in self.book.author.lower())):
+
             self.show()
             q_len = len(query)
-            if query in ui_title_sanitized:
-                i = ui_title_sanitized.find(query)
-                ui_text = self.book.title
-                content = (ui_text[:i] + "<u><b>" +
-                           ui_text[i:i + q_len] + "</b></u>" +
-                           ui_text[i + q_len:])
-                self.title.setText(content)
-            if query in ui_author_sanitized:
-                i = ui_author_sanitized.find(query)
-                ui_text = self.book.author
-                content = (ui_text[:i] + "<u><b>" +
-                           ui_text[i:i + q_len] + "</b></u>" +
-                           ui_text[i + q_len:])
-                self.author.setText(content)
+            ui_text = self.uiText()
+            i = ui_text.lower().find(query)
+            content = (ui_text[:i] + "<u><b>" +
+                       ui_text[i:i + q_len] + "</b></u>" +
+                       ui_text[i + q_len:])
+            self.text.setText(content)
         else:
             self.hide()
 
     def clearSearchQuery(self):
-        self.title.setText(self.book.title)
-        self.author.setText(self.book.author)
+        self.text.setText(self.uiText())
         self.show()
 
 
