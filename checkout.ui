@@ -64,7 +64,7 @@
               <item>
                <widget class="CustomLineEdit" name="search_query">
                 <property name="text">
-                 <string>What are you looking for?</string>
+                 <string>Search here for your book...</string>
                 </property>
                </widget>
               </item>
