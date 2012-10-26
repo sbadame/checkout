@@ -74,10 +74,7 @@ class Main(QtGui.QMainWindow):
         self.progress.setWindowTitle("Working...")
         self.books_in_table = []
         self._goodreads = None
-        self._inventoryThread = None
-        self._inventoryWorker = None
-        self._syncThread = None
-        self._syncWorker = None
+        self.workers = []
 
     def startup(self):
         self.ui = MainUi()
@@ -417,7 +414,9 @@ class Main(QtGui.QMainWindow):
         thread.finished.connect(worker.deleteLater)
         thread.finished.connect(thread.deleteLater)
 
-        return (thread, worker)
+        refs = (thread, worker)
+        self.workers.append(refs)
+        return refs
 
 
 class SyncWorker(QtCore.QObject):
