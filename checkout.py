@@ -242,19 +242,12 @@ class Main(QtGui.QMainWindow):
             lambda: async_sync(shelf))
         self._syncWorker.finished.connect(
             lambda: self.ui.sync_button.setEnabled(True))
+        oldText = self.ui.sync_button.text()
+        self._syncThread.started.connect(
+            lambda: self.ui.sync_button.setText('Syncing...'))
+        self._syncWorker.finished.connect(
+            lambda: self.ui.sync_button.setText(oldText))
 
-        # self._syncThread = QtCore.QThread()
-        # self._syncWorker = SyncWorker(lambda: self.async_sync(shelf))
-        # self._syncWorker.moveToThread(self._syncThread)
-        # self._syncThread.started.connect(self.progress.show)
-        # self._syncThread.started.connect(self._syncWorker.work)
-        # self._syncWorker.finished.connect(self._syncThread.quit)
-        # self._syncWorker.finished.connect(self._syncWorker.deleteLater)
-        # self._syncWorker.finished.connect(self.progress.hide)
-        # self._syncWorker.finished.connect(
-        #     lambda: self.ui.sync_button.setEnabled(True))
-        # self._syncThread.finished.connect(self._syncWorker.deleteLater)
-        # self._syncThread.finished.connect(self._syncThread.deleteLater)
         self._syncThread.start()
 
     def on_switch_user_button_pressed(self):
