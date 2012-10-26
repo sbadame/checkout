@@ -13,9 +13,6 @@ class CustomLineEdit(QLineEdit):
             self.setStyleSheet("color: black; font-style: normal")
         QLineEdit.focusInEvent(self, QFocusEvent(QEvent.FocusIn))
 
-    def textChanged(self, txt):
-        print("Yo: " + str(txt))
-
     def focusOutEvent(self, event):
         if self.defaultText and not str(self.displayText()).strip():
             self.setText(self.defaultText)
