@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>546</width>
-    <height>50</height>
+    <height>75</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -25,7 +25,7 @@
   <property name="maximumSize">
    <size>
     <width>600</width>
-    <height>50</height>
+    <height>75</height>
    </size>
   </property>
   <property name="focusPolicy">
@@ -38,10 +38,10 @@
    <enum>Qt::LeftToRight</enum>
   </property>
   <property name="autoFillBackground">
-   <bool>false</bool>
+   <bool>true</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">border: 2px solid gray;</string>
+   <string notr="true"/>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
    <property name="spacing">
@@ -94,7 +94,8 @@
       <bool>false</bool>
      </property>
      <property name="styleSheet">
-      <string notr="true">margin-top:3px;</string>
+      <string notr="true">margin-top:3px;
+border-bottom: 5px solid gray;</string>
      </property>
      <property name="text">
       <string>Title</string>
