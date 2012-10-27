@@ -116,7 +116,7 @@ border-bottom: 5px solid gray;</string>
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>39</height>
+          <height>44</height>
          </size>
         </property>
         <property name="maximumSize">
@@ -137,10 +137,13 @@ border-bottom: 5px solid gray;</string>
         <property name="styleSheet">
          <string notr="true">/* Let's make the size of the button 1,5 times of font size. */
    min-height: 1.5em;
-   /* Font size just 1.*/
    font: 1em;
-   /* Margins so that we get a little space on the left and right. */
-   margin: 0px 5px 5px 0px;
+
+   margin-top: 5px;
+   margin-right: 5px;
+   margin-bottom: 5px;
+   margin-left: 0px;
+
    /* The font color */ 
    color: white;
    /* Here's the background gradient with start point, end point, 
@@ -173,7 +176,7 @@ pressed {
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>39</height>
+          <height>44</height>
          </size>
         </property>
         <property name="maximumSize">
@@ -194,10 +197,13 @@ pressed {
         <property name="styleSheet">
          <string notr="true">/* Let's make the size of the button 1,5 times of font size. */
    min-height: 1.5em;
-   /* Font size just 1.*/
    font: 1em;
-   /* Margins so that we get a little space on the left and right. */
-   margin: 0px 5px 5px 0px;
+
+   margin-top: 5px;
+   margin-right: 5px;
+   margin-bottom: 5px;
+   margin-left: 0px;
+
    /* The font color */ 
    color: white;
    /* Here's the background gradient with start point, end point, 
