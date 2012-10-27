@@ -63,7 +63,7 @@
      </property>
      <property name="styleSheet">
       <string notr="true">background-color:white;
-border-bottom: 5px solid gray;</string>
+border-bottom: 1px solid #555555;</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
