@@ -99,7 +99,8 @@ border-bottom: 1px solid #AAA;</string>
          <bool>false</bool>
         </property>
         <property name="styleSheet">
-         <string notr="true">margin-top: 3px;</string>
+         <string notr="true">margin-top: 3px;
+margin-left: 3px;</string>
         </property>
         <property name="text">
          <string>Title</string>
