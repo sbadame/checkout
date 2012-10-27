@@ -397,11 +397,15 @@ class Main(QtGui.QMainWindow):
         worker.moveToThread(thread)
         thread.started.connect(self.progress.show)
         thread.started.connect(worker.work)
+        thread.started.connect(
+            lambda: QtGui.QApplication.setOverrideCursor(
+                QtGui.QCursor(QtCore.Qt.WaitCursor)))
         worker.finished.connect(thread.quit)
         worker.finished.connect(worker.deleteLater)
         worker.finished.connect(self.progress.hide)
         thread.finished.connect(worker.deleteLater)
         thread.finished.connect(thread.deleteLater)
+        thread.finished.connect(QtGui.QApplication.restoreOverrideCursor)
 
         refs = (thread, worker)
         self.workers.append(refs)
