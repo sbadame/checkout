@@ -75,6 +75,11 @@
                   <height>100</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <pointsize>16</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Search here for your book...</string>
                 </property>
@@ -122,7 +127,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>742</width>
-                <height>577</height>
+                <height>568</height>
                </rect>
               </property>
               <property name="sizePolicy">
