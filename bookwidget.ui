@@ -98,7 +98,7 @@ border-bottom: 5px solid gray;</string>
          <bool>false</bool>
         </property>
         <property name="styleSheet">
-         <string notr="true"/>
+         <string notr="true">margin-top: 3px;</string>
         </property>
         <property name="text">
          <string>Title</string>
