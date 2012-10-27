@@ -29,8 +29,9 @@ class BookWidget(QtGui.QWidget, BookBase):
         self.onInventoryChange(book.checked_in, book.checked_out)
 
     def uiText(self):
-        return (self.formatter % {"title": self.book.title,
-                                  "author": self.book.author})
+        return (self.formatter %
+                {"title": self.book.title,
+                 "author": self.book.author.replace(' ', '&nbsp;')})
 
     def focusInEvent(self, event):
         self.setStyleSheet('background-color: "%s"' % SELECTED_COLOR)
