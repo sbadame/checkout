@@ -135,9 +135,7 @@
                <bool>true</bool>
               </property>
               <property name="styleSheet">
-               <string notr="true">BookWidget {
-	border: 2px solid black;
-}</string>
+               <string notr="true"/>
               </property>
               <layout class="QGridLayout" name="gridLayout">
                <property name="sizeConstraint">

@@ -21,6 +21,7 @@ class BookWidget(QtGui.QWidget, BookBase):
         QtGui.QWidget.__init__(self)
         self.setupUi(self)
         self.book = book
+        self.formatter = str(self.text.text())
         self.text.setText(self.uiText())
         self.checkin.clicked.connect(lambda _: oncheckedin(book))
         self.checkout.clicked.connect(lambda _: oncheckedout(book))
@@ -28,8 +29,8 @@ class BookWidget(QtGui.QWidget, BookBase):
         self.onInventoryChange(book.checked_in, book.checked_out)
 
     def uiText(self):
-        return ('%s <i><font color="#777">by</font></i> %s' %
-                (self.book.title, self.book.author))
+        return (self.formatter % {"title": self.book.title,
+                                  "author": self.book.author})
 
     def focusInEvent(self, event):
         self.setStyleSheet('background-color: "%s"' % SELECTED_COLOR)
@@ -62,8 +63,8 @@ class BookWidget(QtGui.QWidget, BookBase):
             q_len = len(query)
             ui_text = self.uiText()
             i = ui_text.lower().find(query)
-            content = (ui_text[:i] + "<u><b>" +
-                       ui_text[i:i + q_len] + "</b></u>" +
+            content = (ui_text[:i] + "<u><span style='color:#2358ac;'>" +
+                       ui_text[i:i + q_len] + "</span></u>" +
                        ui_text[i + q_len:])
             self.text.setText(content)
         else:
