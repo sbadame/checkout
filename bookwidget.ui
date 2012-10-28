@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>546</width>
-    <height>100</height>
+    <height>62</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,13 +19,13 @@
   <property name="minimumSize">
    <size>
     <width>0</width>
-    <height>100</height>
+    <height>50</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>600</width>
-    <height>100</height>
+    <height>68</height>
    </size>
   </property>
   <property name="focusPolicy">
@@ -100,7 +100,8 @@ border-bottom: 1px solid #AAA;</string>
         </property>
         <property name="styleSheet">
          <string notr="true">margin-top: 3px;
-margin-left: 3px;</string>
+margin-left: 3px;
+border: none;</string>
         </property>
         <property name="text">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600; color:#000000;&quot;&gt;%(title)s&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-style:italic; color:#ac9a91;&quot;&gt; by&amp;nbsp;%(author)s &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
