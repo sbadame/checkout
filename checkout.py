@@ -44,7 +44,7 @@ SHELF_DIALOG_LABEL_TEXT = "Which shelf should be used for the library books?"
 DEVELOPER_KEY = "DEVELOPER_KEY"
 DEVELOPER_SECRET = "DEVELOPER_SECRET"
 
-SEARCH_TIMEOUT = 800
+SEARCH_TIMEOUT = 100
 
 
 def openfile(filepath):
