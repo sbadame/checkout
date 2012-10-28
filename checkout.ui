@@ -81,7 +81,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>Search here for your book...</string>
+                 <string>Search for your book...</string>
                 </property>
                </widget>
               </item>

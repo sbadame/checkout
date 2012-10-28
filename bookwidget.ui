@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>546</width>
-    <height>62</height>
+    <height>100</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+   <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
     <horstretch>1</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -19,7 +19,7 @@
   <property name="minimumSize">
    <size>
     <width>0</width>
-    <height>0</height>
+    <height>100</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -70,15 +70,15 @@ border-bottom: 1px solid #AAA;</string>
       <item>
        <widget class="QLabel" name="text">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-          <horstretch>5</horstretch>
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>1</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
          <size>
           <width>5</width>
-          <height>25</height>
+          <height>50</height>
          </size>
         </property>
         <property name="maximumSize">
@@ -109,7 +109,7 @@ margin-left: 3px;</string>
          <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
         </property>
         <property name="wordWrap">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
