@@ -338,7 +338,6 @@ class Main(QtGui.QMainWindow):
 
     def checkout_pressed(self, book):
         """ Connected to signal in populate_table """
-        raise ValueError("Test error on checkout")
 
         name, success = QtGui.QInputDialog.getText(
             self,
