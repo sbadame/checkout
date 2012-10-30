@@ -157,6 +157,34 @@ class Main(QtGui.QMainWindow):
             _LIBRARY_SHELF_KEY,
             lambda x: self.ui.sync_button.setText(self.sync_button(x)))
 
+        def update_report_login_ui(login_info):
+            username, password = login_info.split(',')
+            self.ui.report_account_field.setText(username)
+            self.ui.report_password_field.setText(password)
+        config.connectKey(_REPORTING_ADDRESS_KEY, update_report_login_ui)
+
+        def update_report_login_account(new_username):
+            if _REPORTING_ADDRESS_KEY in config:
+                old_username, password = (
+                    config[_REPORTING_ADDRESS_KEY].split(','))
+            else:
+                old_username, password = "", ""
+            config[_REPORTING_ADDRESS_KEY] = '%s,%s' % (
+                str(new_username), str(password))
+        self.ui.report_account_field.textEdited.connect(
+            update_report_login_account)
+
+        def update_report_login_password(new_password):
+            if _REPORTING_ADDRESS_KEY in config:
+                username, old_password = (
+                    config[_REPORTING_ADDRESS_KEY].split(','))
+            else:
+                username, old_password = "", ""
+            config[_REPORTING_ADDRESS_KEY] = '%s,%s' % (
+                str(username), str(new_password))
+        self.ui.report_password_field.textEdited.connect(
+            update_report_login_password)
+
         try:
             with open(CONFIG_FILE_PATH, "r") as configfile:
                 config.load_from_file(configfile)
@@ -177,17 +205,17 @@ class Main(QtGui.QMainWindow):
                 logger.info("Missing a value for your %s property" % key)
                 config[key] = loader()
 
-        if config[_REPORTING_ADDRESS_KEY]:
+        if _REPORTING_ADDRESS_KEY in config:
             username, password = config[_REPORTING_ADDRESS_KEY].split(',')
-        eh = SMTPHandler(
-            ('smtp.gmail.com', 587),
-            username,  # From
-            username,  # To
-            'Crash report',  # Subject
-            (username, password),  # Login
-            ())  # Empty tuple needed for TLS (which gmail requires)
-        eh.setLevel(logging.ERROR)
-        logger.addHandler(eh)
+            eh = SMTPHandler(
+                ('smtp.gmail.com', 587),
+                username,  # From
+                username,  # To
+                'Crash report',  # Subject
+                (username, password),  # Login
+                ())  # Empty tuple needed for TLS (which gmail requires)
+            eh.setLevel(logging.ERROR)
+            logger.addHandler(eh)
 
         return config
 
