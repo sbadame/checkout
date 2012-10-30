@@ -164,6 +164,7 @@ class Main(QtGui.QMainWindow):
         config.connectKey(_REPORTING_ADDRESS_KEY, update_report_login_ui)
 
         def update_report_login_account(new_username):
+            new_username = str(new_username).strip()
             if _REPORTING_ADDRESS_KEY in config:
                 old_username, password = (
                     config[_REPORTING_ADDRESS_KEY].split(','))
@@ -175,6 +176,7 @@ class Main(QtGui.QMainWindow):
             update_report_login_account)
 
         def update_report_login_password(new_password):
+            new_password = str(new_password).strip()
             if _REPORTING_ADDRESS_KEY in config:
                 username, old_password = (
                     config[_REPORTING_ADDRESS_KEY].split(','))
