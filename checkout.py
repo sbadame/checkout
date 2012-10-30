@@ -9,6 +9,7 @@ from config import Config
 from dialogs import ListDialog
 from datetime import datetime
 from mainui import MainUi
+from logging.handlers import SMTPHandler
 import unicodecsv as csv
 
 logger = logging.getLogger()
@@ -21,6 +22,7 @@ fh = logging.FileHandler(path.expanduser("~/checkout.programlog"))
 fh.setLevel(logging.DEBUG)
 fh.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
 logger.addHandler(fh)
+
 logger.setLevel(logging.DEBUG)
 
 # Default file paths for configuration
@@ -32,6 +34,7 @@ DEFAULT_LOG_PATH = path.normpath(path.expanduser("~/checkout.csv"))
 _LIBRARY_SHELF_KEY = "LIBRARY_SHELF"
 _LOG_PATH_KEY = 'LOG_PATH'
 _INVENTORY_PATH_KEY = 'INVENTORY_PATH'
+_REPORTING_ADDRESS_KEY = 'REPORTING_ADDRESS_KEY'
 
 # UI Constants
 USER_LABEL_TEXT = None
@@ -174,6 +177,18 @@ class Main(QtGui.QMainWindow):
                 logger.info("Missing a value for your %s property" % key)
                 config[key] = loader()
 
+        if config[_REPORTING_ADDRESS_KEY]:
+            username, password = config[_REPORTING_ADDRESS_KEY].split(',')
+        eh = SMTPHandler(
+            ('smtp.gmail.com', 587),
+            username,  # From
+            username,  # To
+            'Crash report',  # Subject
+            (username, password),  # Login
+            ())  # Empty tuple needed for TLS (which gmail requires)
+        eh.setLevel(logging.ERROR)
+        logger.addHandler(eh)
+
         return config
 
     def shelf(self):
@@ -295,6 +310,7 @@ class Main(QtGui.QMainWindow):
 
     def checkout_pressed(self, book):
         """ Connected to signal in populate_table """
+        raise ValueError("Test error on checkout")
 
         name, success = QtGui.QInputDialog.getText(
             self,
