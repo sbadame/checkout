@@ -80,7 +80,7 @@ class Inventory(QtCore.QObject):
         self.inventory = []
 
     def load_inventory(self):
-        with open(self.path, 'rb') as inventoryfile:
+        with open(self.path, 'rbU') as inventoryfile:
             logger.info("Loading inventory from %s", self.path)
             number_of_fields = InventoryRecord.NUMBER_OF_CSV_FIELDS
             for row in csv.reader(inventoryfile):
